@@ -43,40 +43,41 @@ As a Customer, I want the AI assistant to recommend dungeons based on my party s
 ## Dungeon Owners (Provider)
 This user type represents B2B Users. These Users provide the venue and experience to Customers. This user type will be referred to as a "Provider" in this document.
 
-Dungeon & Schedule Management (MVP Core)
-US-DO-01
+### Dungeon & Schedule Management (MVP Core)
+
+**US-DO-01**  
 As a Provider, I want to create and manage dungeon listings so that adventure parties can book raids.
 
-US-DO-02
+**US-DO-02**  
 As a Provider, I want to define available raid schedules and time slots so that bookings align with my capacity.
 
-US-DO-03
+**US-DO-03**  
 As a Provider, I want to block off unavailable dates or times so that bookings reflect real-world constraints.
 
-Rulesets & Policies (MVP)
+### Rulesets & Policies (MVP)
 
-US-DO-04
+**US-DO-04**  
 As a Provider, I want to define rulesets (party size, level requirements, cancellation policy) so that bookings follow my dungeon’s constraints.
 
-US-DO-05
+**US-DO-05**  
 As a Provider, I want rulesets enforced automatically during booking so that invalid reservations cannot be made.
 
-Booking & Revenue Management (MVP)
+### Booking & Revenue Management (MVP)
 
-US-DO-06
+**US-DO-06**  
 As a Provider, I want to view upcoming and past bookings so that I can prepare for raids.
 
-US-DO-07
+**US-DO-07**  
 As a Provider, I want to see revenue generated from bookings so that I can track dungeon performance.
 
-US-DO-08
+**US-DO-08**  
 As a Provider, I want to manage payout details so that I can receive payments through the platform.
 
-Analytics & Marketing (Post-MVP / Stretch)
+### Analytics & Marketing (Post-MVP / Stretch)
 
-US-DO-09
+**US-DO-09**  
 As a Provider, I want to view analytics on booking frequency and occupancy rates so that I can optimize my schedule.
 
-US-DO-10
+**US-DO-10**  
 As a Provider, I want to opt into marketing features provided by WizardsTowerCorp so that my dungeon gains more visibility.
 
