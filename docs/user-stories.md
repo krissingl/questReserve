@@ -83,29 +83,28 @@ As a Provider, I want to opt into marketing features provided by WizardsTowerCor
 
 ## WizardsTowerCorp Admins (Internal Users)
 
-Platform Administration (MVP Core)
+### Platform Administration (MVP Core)
 US-WT-01
 As a WizardsTowerCorp admin, I want to manage dungeon owner accounts so that I can onboard, suspend, or assist clients.
 
 US-WT-02
 As a WizardsTowerCorp admin, I want to view platform-wide booking activity so that I can monitor system health and usage.
-Analytics & Insights (MVP → Post-MVP)
+
+### Analytics & Insights (MVP → Post-MVP)
 US-WT-03
 As a WizardsTowerCorp admin, I want to view aggregated booking and revenue analytics so that I can understand regional demand.
 
 US-WT-04
 As a WizardsTowerCorp admin, I want to identify high-performing and underperforming dungeons so that I can target marketing efforts.
-Configuration & Governance (Post-MVP)
+
+### Configuration & Governance (Post-MVP)
 US-WT-05
 As a WizardsTowerCorp admin, I want to configure global rules (fees, commission rates, default policies) so that the platform remains consistent.
 
 US-WT-06
 As a WizardsTowerCorp admin, I want audit logs of critical actions so that I can investigate disputes or system issues.
 
-
-
-Platform & System Responsibilities
-
+### Platform & System Responsibilities
 US-SYS-01
 As the platform, I want to support multiple dungeon owners as isolated tenants so that data remains secure and scalable.
 
