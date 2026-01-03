@@ -31,7 +31,8 @@ As a Customer, I want to view my upcoming and past bookings so that I can track 
 
 **US-AP-08**  
 As a Customer, I want to cancel or reschedule a booking according to the dungeon’s ruleset so that I can adjust plans.
-AI Assistance (Lightweight / Stretch MVP)
+
+### AI Assistance (Lightweight / Stretch MVP)
 
 **US-AP-09**  
 As a Customer, I want to ask an AI assistant questions about dungeon difficulty, rules, or availability so that I can make informed booking decisions.
