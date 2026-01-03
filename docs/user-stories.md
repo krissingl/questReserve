@@ -83,11 +83,11 @@ This user type represents our Internal users and our client. These Users belong 
 ## Platform & System Responsibilities
 Stories to keep in mind from a platform perspective.  
 
-**US-SYS-01** : As the platform, I want to support multiple dungeon owners as isolated tenants so that data remains secure and scalable.
+**US-SYS-01** : As the platform, I want to support multiple Providers as isolated tenants so that data remains secure and scalable.
 
 **US-SYS-02** : As the platform, I want booking availability to be consistent under concurrent access so that double-bookings cannot occur.
 
-**US-SYS-03** : As the platform, I want payment processing to be idempotent so that users are not charged multiple times for the same booking.
+**US-SYS-03** : As the platform, I want payment processing to be idempotent so that Customers are not charged multiple times for the same booking.
 
 **US-SYS-04** : As the platform, I want core services to be observable (logging, metrics, tracing) so that system issues can be diagnosed.
 
