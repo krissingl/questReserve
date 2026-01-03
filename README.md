@@ -13,29 +13,6 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 **Quest Reserve is WIP**
 
-## User Stories
-
-### Adventure Parties (End Users)
-
-#### Discovery & Booking (MVP Core)
-**US-AP-01**  
-As an adventure party leader, I want to browse available dungeon raids by location, difficulty, and date so that I can find a raid suitable for my party.
-
-**US-AP-02**  
-As an adventure party leader, I want to view detailed dungeon information (ruleset, difficulty rating, loot type, party size limits) so that I can decide whether to book.
-
-**US-AP-03**  
-As an adventure party leader, I want to see real-time availability for raid slots so that I do not attempt to book unavailable times.
-
-**US-AP-04**  
-As an adventure party leader, I want to book a dungeon raid for a specific date and time so that my party is reserved.
-
-**US-AP-05**  
-As an adventure party leader, I want to pay for a booking during checkout so that my reservation is confirmed.  
-Acceptance notes:
-   * Payment success confirms booking
-   * Payment failure does not block slot availability indefinitely
-
 
 ## Usage
 
