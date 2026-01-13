@@ -26,13 +26,10 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 #### Organization Users (Dungeon Owners)
 
-Create and manage BookingLocations.
-
-Define TimeSlots for availability.
-
-Define dynamic rules (BookingLocationRule) per location.
-
-View bookings and basic revenue reporting.
+- Create and manage BookingLocations.
+- Define TimeSlots for availability.
+- Define dynamic rules (BookingLocationRule) per location.
+- View bookings and basic revenue reporting.
 
 #### WizardsTowerCorp Admins (Platform Users)
 
