@@ -29,7 +29,7 @@ Account creation and booking history management.
 
 Cancel or reschedule bookings according to BookingLocation rules.
 
-Organization Users (Dungeon Owners)
+#### Organization Users (Dungeon Owners)
 
 Create and manage BookingLocations.
 
@@ -55,19 +55,19 @@ Idempotent payment processing.
 
 Logging, metrics, and observability for core services.
 
-Stretch / Post-MVP Features
+### Stretch / Post-MVP Features
 
 #### Adventure Parties
 
 AI assistant for recommendations and rule guidance.
 
-Organization Users
+#### Organization Users
 
 Advanced analytics (booking trends, occupancy rates).
 
 Opt-in marketing features for BookingLocations.
 
-WizardsTowerCorp Admins
+#### WizardsTowerCorp Admins
 
 Aggregated analytics (regional demand, high/low-performing locations).
 
@@ -75,7 +75,7 @@ Global configuration of fees, commissions, default rules.
 
 Audit logs for critical actions.
 
-Platform / System
+#### Platform / System
 
 More complex rules or conditional logic for BookingLocationRules (seasonal rules, special events).
 
