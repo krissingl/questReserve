@@ -33,25 +33,19 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 #### WizardsTowerCorp Admins (Platform Users)
 
-Manage Organization accounts (onboard, suspend, assist).
-
-Monitor platform-wide booking activity.
-
-Platform / System Responsibilities
-
-Multi-tenancy with isolated Organization data.
-
-Strong consistency for bookings (avoid double-booking).
-
-Idempotent payment processing.
-
-Logging, metrics, and observability for core services.
+- Manage Organization accounts (onboard, suspend, assist).
+- Monitor platform-wide booking activity.
+- Platform / System Responsibilities
+- Multi-tenancy with isolated Organization data.
+- Strong consistency for bookings (avoid double-booking).
+- Idempotent payment processing.
+- Logging, metrics, and observability for core services.
 
 ### Stretch / Post-MVP Features
 
 #### Adventure Parties
 
-AI assistant for recommendations and rule guidance.
+- AI assistant for recommendations and rule guidance.
 
 #### Organization Users
 
