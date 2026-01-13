@@ -13,9 +13,9 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 **Quest Reserve is WIP**
 
-MVP Features
+### MVP Features
 
-Adventure Parties (End Users)
+#### Adventure Parties (End Users)
 
 Browse BookingLocations by date, location, difficulty, and features.
 
@@ -39,7 +39,7 @@ Define dynamic rules (BookingLocationRule) per location.
 
 View bookings and basic revenue reporting.
 
-WizardsTowerCorp Admins (Platform Users)
+#### WizardsTowerCorp Admins (Platform Users)
 
 Manage Organization accounts (onboard, suspend, assist).
 
@@ -57,7 +57,7 @@ Logging, metrics, and observability for core services.
 
 Stretch / Post-MVP Features
 
-Adventure Parties
+#### Adventure Parties
 
 AI assistant for recommendations and rule guidance.
 
