@@ -17,17 +17,12 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 #### Adventure Parties (End Users)
 
-Browse BookingLocations by date, location, difficulty, and features.
-
-View detailed BookingLocation info (description, difficulty, cancellation policy, features).
-
-Real-time availability and booking of TimeSlots.
-
-Payment processing (COMPLETE / PENDING / FAILED).
-
-Account creation and booking history management.
-
-Cancel or reschedule bookings according to BookingLocation rules.
+- Browse BookingLocations by date, location, difficulty, and features.
+- View detailed BookingLocation info (description, difficulty, cancellation policy, features).
+- Real-time availability and booking of TimeSlots.
+- Payment processing (COMPLETE / PENDING / FAILED).
+- Account creation and booking history management.
+- Cancel or reschedule bookings according to BookingLocation rules.
 
 #### Organization Users (Dungeon Owners)
 
