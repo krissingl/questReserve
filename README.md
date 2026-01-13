@@ -49,23 +49,19 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 #### Organization Users
 
-Advanced analytics (booking trends, occupancy rates).
-
-Opt-in marketing features for BookingLocations.
+- Advanced analytics (booking trends, occupancy rates).
+- Opt-in marketing features for BookingLocations.
 
 #### WizardsTowerCorp Admins
 
-Aggregated analytics (regional demand, high/low-performing locations).
-
-Global configuration of fees, commissions, default rules.
-
-Audit logs for critical actions.
+- Aggregated analytics (regional demand, high/low-performing locations).
+- Global configuration of fees, commissions, default rules.
+- Audit logs for critical actions.
 
 #### Platform / System
 
-More complex rules or conditional logic for BookingLocationRules (seasonal rules, special events).
-
-Additional payment workflows (refunds, deposits).
+- More complex rules or conditional logic for BookingLocationRules (seasonal rules, special events).
+- Additional payment workflows (refunds, deposits).
 
 ## Usage
 
