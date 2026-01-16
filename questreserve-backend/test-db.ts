@@ -1,7 +1,7 @@
 import path from 'path';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') }); // <-- points to root .env
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import knex from 'knex';
 import knexConfig from './knexfile';
