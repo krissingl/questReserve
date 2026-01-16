@@ -1,6 +1,6 @@
 # Quest Reserve
 
-### Problem Statement
+## Problem Statement
 Current dungeon raid booking systems deprecated and not built to scale. Client wishes to create a new app that can be used to organize and collect data on regional dungeon raid bookings. App will allow dungeon owners to manage their bookings, establish rulesets for their clients, and track analytics and potential dungeon marketing.
 Would like to have an MVP deployed before the start of the busy season to maximize profits and protect stakeholder interests.
 ### Potential Users
@@ -13,9 +13,9 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 
 **Quest Reserve is WIP**
 
-### MVP Features
+## MVP Features
 
-#### Adventure Parties (End Users)
+### Adventure Parties (End Users)
 
 - Browse BookingLocations by date, location, difficulty, and features.
 - View detailed BookingLocation info (description, difficulty, cancellation policy, features).
@@ -24,14 +24,14 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 - Account creation and booking history management.
 - Cancel or reschedule bookings according to BookingLocation rules.
 
-#### Organization Users (Dungeon Owners)
+### Organization Users (Dungeon Owners)
 
 - Create and manage BookingLocations.
 - Define TimeSlots for availability.
 - Define dynamic rules (BookingLocationRule) per location.
 - View bookings and basic revenue reporting.
 
-#### WizardsTowerCorp Admins (Platform Users)
+### WizardsTowerCorp Admins (Platform Users)
 
 - Manage Organization accounts (onboard, suspend, assist).
 - Monitor platform-wide booking activity.
@@ -41,24 +41,24 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 - Idempotent payment processing.
 - Logging, metrics, and observability for core services.
 
-### Stretch / Post-MVP Features
+## Stretch / Post-MVP Features
 
-#### Adventure Parties
+### Adventure Parties
 
 - AI assistant for recommendations and rule guidance.
 
-#### Organization Users
+### Organization Users
 
 - Advanced analytics (booking trends, occupancy rates).
 - Opt-in marketing features for BookingLocations.
 
-#### WizardsTowerCorp Admins
+### WizardsTowerCorp Admins
 
 - Aggregated analytics (regional demand, high/low-performing locations).
 - Global configuration of fees, commissions, default rules.
 - Audit logs for critical actions.
 
-#### Platform / System
+### Platform / System
 
 - More complex rules or conditional logic for BookingLocationRules (seasonal rules, special events).
 - Additional payment workflows (refunds, deposits).
