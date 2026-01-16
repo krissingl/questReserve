@@ -63,6 +63,19 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 - More complex rules or conditional logic for BookingLocationRules (seasonal rules, special events).
 - Additional payment workflows (refunds, deposits).
 
+## Data Model Evolution
+
+This MVP implements a reduced subset of the full data model.
+
+Planned (not yet implemented):
+- Customer accounts & authentication
+- Payment processing
+- Booking rules engine
+- Feature flagging per booking location
+- Subscription plan enforcement
+
+The schema is intentionally designed to evolve without breaking changes.
+
 ## Usage
 
 ```
