@@ -5,49 +5,55 @@ export async function up(knex: Knex): Promise<void> {
      CREATE TABLES
   ===================== */
 
-  // ORGANIZATION
-  await knex.schema.createTable("organization", (table) => {
+  // --- PROVIDERS / ORGANIZATIONS ---
+  await knex.schema.createTable("provider", (table) => {
     table.uuid("id").primary();
     table.string("name").notNullable();
-    table.string("plan").notNullable().defaultTo("FREE");
+    table.string("plan").notNullable().defaultTo("FREE"); // FREE, STANDARD, PREMIUM
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
-  // ADMIN USER
+  // --- ADMIN USERS (platform staff / wizards) ---
   await knex.schema.createTable("admin_user", (table) => {
     table.uuid("id").primary();
-    table
-      .uuid("organization_id")
-      .references("id")
-      .inTable("organization")
-      .onDelete("CASCADE");
     table.string("name").notNullable();
     table.string("email").notNullable().unique();
     table.string("password_hash").notNullable();
-    table.string("role").notNullable();
+    table.string("role").notNullable(); // PLATFORM_ADMIN, CLIENT_SUCCESS, SUPERUSER
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
-    table.index(["organization_id"]);
   });
 
-  // BOOKING LOCATION
+  // --- END USERS / CUSTOMERS ---
+  await knex.schema.createTable("end_user", (table) => {
+    table.uuid("id").primary();
+    table.string("name").notNullable();
+    table.string("email").notNullable().unique();
+    table.string("password_hash").notNullable();
+    table.string("role").notNullable().defaultTo("REGULAR"); // REGULAR, PREMIERE, CORPORATE, RESTRICTED
+    table.timestamp("created_at").defaultTo(knex.fn.now());
+    table.timestamp("updated_at").defaultTo(knex.fn.now());
+  });
+
+  // --- BOOKING LOCATIONS ---
   await knex.schema.createTable("booking_location", (table) => {
     table.uuid("id").primary();
     table
-      .uuid("organization_id")
+      .uuid("provider_id")
       .references("id")
-      .inTable("organization")
+      .inTable("provider")
       .onDelete("CASCADE");
     table.string("name").notNullable();
     table.text("description");
-    table.string("difficulty").notNullable();
+    table.string("difficulty").notNullable(); // EASY, MEDIUM, HARD, LEGENDARY
+    table.text("cancellation_policy");
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
-    table.index(["organization_id"]);
+    table.index(["provider_id"]);
   });
 
-  // TIME SLOT
+  // --- TIME SLOTS ---
   await knex.schema.createTable("time_slot", (table) => {
     table.uuid("id").primary();
     table
@@ -62,7 +68,7 @@ export async function up(knex: Knex): Promise<void> {
     table.index(["booking_location_id"]);
   });
 
-  // BOOKING
+  // --- BOOKINGS ---
   await knex.schema.createTable("booking", (table) => {
     table.uuid("id").primary();
     table
@@ -70,26 +76,34 @@ export async function up(knex: Knex): Promise<void> {
       .references("id")
       .inTable("time_slot")
       .onDelete("CASCADE");
-    table.string("customer_name").notNullable();
-    table.string("customer_email").notNullable();
-    table.string("status").notNullable().defaultTo("BOOKED");
+    table
+      .uuid("end_user_id")
+      .references("id")
+      .inTable("end_user")
+      .onDelete("CASCADE");
+    table.string("status").notNullable().defaultTo("BOOKED"); // BOOKED, CANCELLED
     table.timestamp("created_at").defaultTo(knex.fn.now());
     table.timestamp("updated_at").defaultTo(knex.fn.now());
     table.index(["time_slot_id"]);
+    table.index(["end_user_id"]);
   });
 
   /* =====================
-     ADD CONSTRAINTS FOR ALLOWED VALUES
+     ENUM-LIKE CONSTRAINTS
   ===================== */
 
   await knex.raw(`
-    ALTER TABLE organization
-      ADD CONSTRAINT organization_plan_allowed_values_check
-      CHECK (plan IN ('FREE','PRO','ENTERPRISE'));
+    ALTER TABLE provider
+      ADD CONSTRAINT provider_plan_allowed_values_check
+      CHECK (plan IN ('FREE','STANDARD','PREMIUM'));
 
     ALTER TABLE admin_user
       ADD CONSTRAINT admin_user_role_allowed_values_check
-      CHECK (role IN ('PLATFORM_ADMIN','ORG_ADMIN','SUPERUSER'));
+      CHECK (role IN ('PLATFORM_ADMIN','CLIENT_SUCCESS','SUPERUSER'));
+
+    ALTER TABLE end_user
+      ADD CONSTRAINT end_user_role_allowed_values_check
+      CHECK (role IN ('REGULAR','PREMIERE','CORPORATE','RESTRICTED'));
 
     ALTER TABLE booking_location
       ADD CONSTRAINT booking_location_difficulty_allowed_values_check
@@ -105,6 +119,7 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("booking");
   await knex.schema.dropTableIfExists("time_slot");
   await knex.schema.dropTableIfExists("booking_location");
+  await knex.schema.dropTableIfExists("end_user");
   await knex.schema.dropTableIfExists("admin_user");
-  await knex.schema.dropTableIfExists("organization");
+  await knex.schema.dropTableIfExists("provider");
 }

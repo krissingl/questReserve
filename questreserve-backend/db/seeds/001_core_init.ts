@@ -12,9 +12,9 @@ export async function seed(knex: Knex): Promise<void> {
     // --- Organizations ---
     const organizations = await trx('organization')
       .insert([
-        { name: 'org1', status: 'active', created_at: trx.fn.now(), updated_at: trx.fn.now() },
-        { name: 'org2', status: 'active', created_at: trx.fn.now(), updated_at: trx.fn.now() },
-        { name: 'org3', status: 'inactive', created_at: trx.fn.now(), updated_at: trx.fn.now() },
+        { name: 'Castle Ravenloft', status: 'active', created_at: trx.fn.now(), updated_at: trx.fn.now() },
+        { name: 'The Misty Mountains', status: 'active', created_at: trx.fn.now(), updated_at: trx.fn.now() },
+        { name: 'Mad Mage Tower', status: 'inactive', created_at: trx.fn.now(), updated_at: trx.fn.now() },
       ])
       .returning('*');
 
