@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 import knex from 'knex';
-import knexConfig from './knexfile';
+import knexConfig from './db/knexfile';
 
 const db = knex(knexConfig.development);
 
