@@ -115,11 +115,11 @@ Automated tests are encouraged but not required for Done status.
 - [ ] Can view stubbed analytics or provider list
 
 ## Documentation & Portfolio Readiness
-- [ ] README includes:
-  - [ ] Project overview
-  - [ ] Tech stack
-  - [ ] Architecture explanation
-  - [ ] Setup instructions
+- [X] README includes:
+  - [X] Project overview
+  - [X] Tech stack
+  - [X] Architecture explanation
+  - [X] Setup instructions
 - [ ] Folder structure documented
 - [ ] Key design decisions explained briefly
 - [ ] Known limitations clearly listed
