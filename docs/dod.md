@@ -16,22 +16,14 @@ While the theme is playful, the architecture, data modeling, and code quality ar
 
 ## Goals & Constraints
 ### Primary Goals
-
-Demonstrate senior-level backend architecture
-
-Clearly separate concerns across layers
-
-Model real-world booking constraints cleanly
-
-Remain deployable and demoable as an MVP
-
+- Demonstrate senior-level backend architecture
+- Clearly separate concerns across layers
+- Model real-world booking constraints cleanly
+- Remain deployable and demoable as an MVP
 ### Explicit Constraints
-
-Modular monolith (not microservices)
-
-MVP scope only — no overengineering
-
-Readability and correctness over feature count
+- Modular monolith (not microservices)
+- MVP scope only — no overengineering
+- Readability and correctness over feature count
 
 ## Architecture Overview
 ### Backend
