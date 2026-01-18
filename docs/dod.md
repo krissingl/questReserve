@@ -39,22 +39,15 @@ src/
 ├── tests/            # Unit & integration tests
 ```
 
-### Key Principles
-
-Controllers handle HTTP only
-
-Services contain business rules
-
-Repositories handle data access
-
-No SQL in controllers or services
-
+#### Key Principles
+- Controllers handle HTTP only
+- Services contain business rules
+- Repositories handle data access
+- No SQL in controllers or services
 ### Frontend
-
-Stack: React, TypeScript
-
-Style: Modular monolith with role-based layouts
-
+- Stack: React, TypeScript
+- Style: Modular monolith with role-based layouts
+```
 src/
 ├── api/              # API client wrappers
 ├── components/       # Reusable UI components
@@ -63,28 +56,18 @@ src/
 ├── pages/            # Route-level pages
 ├── contexts/         # Auth & feature flags
 ├── utils/            # Formatting & helpers
-
+```
 ## User Roles & Capabilities
 ### Platform Admins (WizardsTowerCorp)
-
-Platform-level access
-
-Provider visibility
-
-Analytics (stubbed or aggregated)
-
-No booking or venue ownership
-
+- Platform-level access
+- Provider visibility
+- Analytics (stubbed or aggregated)
+- No booking or venue ownership
 ### Providers (Dungeon Owners)
-
-Manage booking locations
-
-View time slots and bookings
-
-Access provider dashboard
-
-Cannot view other providers’ data
-
+- Manage booking locations
+- View time slots and bookings
+- Access provider dashboard
+- Cannot view other providers’ data
 ### End Users (Adventure Parties)
 
 Browse available dungeons
