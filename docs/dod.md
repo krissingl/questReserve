@@ -1,3 +1,7 @@
+# QuestReserve: Definition of Done
+The project is considered Done when all sections below are satisfied.
+“Stretch” items explicitly do not block Done status.
+
 ## Architecture & Codebase Integrity
 
 ### Backend
@@ -11,16 +15,11 @@
 - [ ] No circular dependencies
 
 ### Frontend
-
-React + TypeScript used throughout
-
-API calls isolated in /api
-
-Data fetching logic isolated in hooks
-
-Layouts wrap role-specific pages cleanly
-
-Components are presentational where possible
+- [ ] React + TypeScript used throughout
+- [ ] API calls isolated in /api
+- [ ] Data fetching logic isolated in hooks
+- [ ] Layouts wrap role-specific pages cleanly
+- [ ] Components are presentational where possible
 
 2. Data Model & Persistence
 
