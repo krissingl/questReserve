@@ -94,77 +94,49 @@ Provider
 ```
 
 Design decisions:
-
-Separate tables per user type (no polymorphic users)
-
-Explicit foreign keys and cascading rules
-
-Minimal booking model to preserve MVP scope
+- Separate tables per user type (no polymorphic users)
+- Explicit foreign keys and cascading rules
+- Minimal booking model to preserve MVP scope
 
 ## API Overview (MVP)
 ### Providers
-
-GET /api/providers/:id
-
-GET /api/providers/:id/dashboard
+- ```GET /api/providers/:id```
+- ```GET /api/providers/:id/dashboard```
 
 ### Booking Locations
-
-GET /api/venues
-
-GET /api/venues/:id
-
-GET /api/venues/:id/timeslots
+- ```GET /api/venues```
+- ```GET /api/venues/:id```
+- ```GET /api/venues/:id/timeslots```
 
 ### End Users
-
-GET /api/end-users/:id/bookings
+- ```GET /api/end-users/:id/bookings```
 
 ### API Characteristics
-
-Consistent JSON response shapes
-
-Empty states return empty arrays
-
-Invalid IDs return 404
-
-Centralized error handling
+- Consistent JSON response shapes
+- Empty states return empty arrays
+- Invalid IDs return 404
+- Centralized error handling
 
 ## Authentication & Authorization
-
-JWT-based authentication
-
-Tokens include user ID and user type
-
-Role-based route protection
-
-Passwords stored as secure hashes
-
-OAuth, refresh tokens, and MFA are intentionally out of scope for MVP.
+- JWT-based authentication
+- Tokens include user ID and user type
+- Role-based route protection
+- Passwords stored as secure hashes
+- OAuth, refresh tokens, and MFA are intentionally out of scope for MVP.
 
 ## Business Rules (MVP)
-
-Time slots cannot be double-booked
-
-Cancelled bookings excluded from availability
-
-Past and future bookings correctly separated
-
-Availability calculated server-side
-
-Chronological ordering enforced at query level
+- Time slots cannot be double-booked
+- Cancelled bookings excluded from availability
+- Past and future bookings correctly separated
+- Availability calculated server-side
+- Chronological ordering enforced at query level
 
 ## Testing & Validation
-
-Database migrations and seeds validated
-
-API endpoints manually smoke-tested
-
-Centralized error handling in place
-
-Edge cases verified:
-
-Empty datasets
+- Database migrations and seeds validated
+- API endpoints manually smoke-tested
+- Centralized error handling in place
+- Edge cases verified:
+-   Empty datasets
 
 Invalid IDs
 
