@@ -70,39 +70,28 @@ src/
 - Access provider dashboard
 - Cannot view other providers’ data
 ### End Users (Adventure Parties)
-
-Browse available dungeons
-
-View time slot availability
-
-Book and manage reservations
-
-View booking history
+- Browse available dungeons
+- View time slot availability
+- Book and manage reservations
+- View booking history
 
 ## Data Model Overview
-
 Core entities:
-
-admin_user
-
-provider
-
-end_user
-
-booking_location
-
-time_slot
-
-booking
+- ```admin_user```
+- ```provider```
+- ```end_user```
+- ```booking_location```
+- ```time_slot```
+- ```booking```
 
 Relationships:
-
+```
 Provider
   → BookingLocation
     → TimeSlot
       → Booking
         → EndUser
-
+```
 
 Design decisions:
 
