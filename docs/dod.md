@@ -21,84 +21,49 @@ The project is considered Done when all sections below are satisfied.
 - [ ] Layouts wrap role-specific pages cleanly
 - [ ] Components are presentational where possible
 
-2. Data Model & Persistence
+## Data Model & Persistence
+- [ ] Database schema matches approved migration exactly
+- [ ] All foreign keys enforced
+- [ ] All seed data runs without error
+- [ ] Seed data demonstrates:
+  - [ ] At least 1 Admin user (each type)
+  - [ ] At least 2 Providers
+  - [ ] At least 3 End Users
+  - [ ] Multiple booking locations
+  - [ ] Multiple time slots
+  - [ ] Past and future bookings
+- [ ] Indexes exist on all foreign key columns
+- [ ] No orphaned records possible
 
-Database schema matches approved migration exactly
+## User Roles & Access Boundaries
+### Admin Users (WizardsTowerCorp)
+- [ ] Can authenticate successfully
+- [ ] Can view platform-level data (stubbed or real)
+- [ ] Cannot book venues
+- [ ] Cannot own booking locations
 
-All foreign keys enforced
+### Providers (Dungeon Owners)
+- [ ] Can authenticate successfully
+- [ ] Can view their own booking locations
+- [ ] Can view bookings tied to their locations
+- [ ] Cannot view other providers’ data
+- [ ] Cannot access platform admin routes
 
-All seed data runs without error
+### End Users (Adventure Parties)
+- [ ] Can authenticate successfully
+- [ ] Can browse available booking locations
+- [ ] Can view time slot availability
+- [ ] Can view their own booking history
+- [ ] Cannot manage venues or providers
 
-Seed data demonstrates:
-
-At least 1 Admin user (each type)
-
-At least 2 Providers
-
-At least 3 End Users
-
-Multiple booking locations
-
-Multiple time slots
-
-Past and future bookings
-
-Indexes exist on all foreign key columns
-
-No orphaned records possible
-
-3. User Roles & Access Boundaries
-
-Admin Users (WizardsTowerCorp)
-
-Can authenticate successfully
-
-Can view platform-level data (stubbed or real)
-
-Cannot book venues
-
-Cannot own booking locations
-
-Providers (Dungeon Owners)
-
-Can authenticate successfully
-
-Can view their own booking locations
-
-Can view bookings tied to their locations
-
-Cannot view other providers’ data
-
-Cannot access platform admin routes
-
-End Users (Adventure Parties)
-
-Can authenticate successfully
-
-Can browse available booking locations
-
-Can view time slot availability
-
-Can view their own booking history
-
-Cannot manage venues or providers
-
-4. API Contracts & Behavior
-
+## API Contracts & Behavior
 All MVP endpoints implemented and reachable
-
 All endpoints return consistent JSON shapes
-
 Read endpoints return empty arrays instead of errors
-
 Invalid IDs return 404
-
 Server errors return standardized error objects
-
 No sensitive fields (password hashes) exposed
-
 Pagination-ready response structures where applicable
-
 Minimum API Surface:
 
 Providers dashboard endpoint
