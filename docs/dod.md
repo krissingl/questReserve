@@ -1,16 +1,16 @@
 ## Architecture & Codebase Integrity
 
 ### Backend
-Modular monolith structure exists and is consistently followed:
-- [ ] api / application / infrastructure / middleware / utils
+- [ ] Modular monolith structure exists and is consistently followed:
+  - api / application / infrastructure / middleware / utils
 - [ ] No business logic inside controllers
 - [ ] No SQL inside controllers or services
 - [ ] Repositories handle only data access
-Services handle only business rules
-All enums/constants defined centrally and reused
-No circular dependencies
+- [ ] Services handle only business rules
+- [ ] All enums/constants defined centrally and reused
+- [ ] No circular dependencies
 
-Frontend
+### Frontend
 
 React + TypeScript used throughout
 
