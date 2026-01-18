@@ -143,52 +143,37 @@ Design decisions:
 Automated tests are present where useful but not exhaustive by design.
 
 ## Local Development
-Prerequisites
+### Prerequisites
+- Node.js
+- PostgreSQL
+- npm or yarn
 
-Node.js
-
-PostgreSQL
-
-npm or yarn
-
-Setup
+### Setup
+```
 git clone <repo>
 cd questreserve
 npm install
 npm run migrate
 npm run seed
 npm run dev
-
-
+```
 The application should be fully demoable locally in under 10 minutes.
 
 ## Known Limitations (By Design)
-
 The following features are intentionally out of scope for this MVP:
-
-Payments
-
-Marketing tools
-
-Background jobs
-
-Advanced analytics
-
-Feature flag infrastructure
-
-Microservices architecture
+- Payments
+- Marketing tools
+- Background jobs
+- Advanced analytics
+- Feature flag infrastructure
+- Microservices architecture
 
 ## Potential Enhancements
-
-Soft-delete bookings
-
-Booking cancellation endpoint
-
-Admin impersonation
-
-Availability optimization
-
-Analytics aggregation
+- Soft-delete bookings
+- Booking cancellation endpoint
+- Admin impersonation
+- Availability optimization
+- Analytics aggregation
 
 ## Why This Project Exists
 
