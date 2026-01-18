@@ -56,7 +56,8 @@ src/
 ├── pages/            # Route-level pages
 ├── contexts/         # Auth & feature flags
 ├── utils/            # Formatting & helpers
-```
+``` 
+
 ## User Roles & Capabilities
 ### Platform Admins (WizardsTowerCorp)
 - Platform-level access
