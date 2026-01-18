@@ -136,11 +136,9 @@ Design decisions:
 - API endpoints manually smoke-tested
 - Centralized error handling in place
 - Edge cases verified:
--   Empty datasets
-
-Invalid IDs
-
-Cancelled bookings
+  - Empty datasets
+  - Invalid IDs
+  - Cancelled bookings
 
 Automated tests are present where useful but not exhaustive by design.
 
