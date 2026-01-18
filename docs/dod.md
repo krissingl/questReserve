@@ -27,11 +27,9 @@ While the theme is playful, the architecture, data modeling, and code quality ar
 
 ## Architecture Overview
 ### Backend
-
-Stack: Node.js, TypeScript, Express, Knex, PostgreSQL
-
-Style: Modular monolith with layered architecture
-
+- Stack: Node.js, TypeScript, Express, Knex, PostgreSQL
+- Style: Modular monolith with layered architecture
+```
 src/
 ├── api/              # Controllers & route handlers
 ├── application/      # Business logic (services / use cases)
@@ -39,7 +37,7 @@ src/
 ├── middleware/       # Auth, error handling, logging
 ├── utils/            # Shared helpers, enums, constants
 ├── tests/            # Unit & integration tests
-
+```
 
 ### Key Principles
 
