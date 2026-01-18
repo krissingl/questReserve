@@ -8,11 +8,9 @@ QuestReserve is a booking and management platform designed for WizardsTowerCorp,
 
 The application supports three distinct user types:
 
-Platform Admins — WizardsTowerCorp employees providing customer success and platform oversight
-
-Providers — Dungeon owners who manage booking locations and schedules
-
-End Users — Adventure parties who browse, book, and manage dungeon raids
+- Platform Admins - WizardsTowerCorp employees providing customer success and platform oversight
+- Providers - Dungeon owners who manage booking locations and schedules
+- End Users - Adventure parties who browse, book, and manage dungeon raids
 
 While the theme is playful, the architecture, data modeling, and code quality are intentionally professional and production-minded.
 
