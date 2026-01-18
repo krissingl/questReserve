@@ -1,8 +1,8 @@
-🧙 QuestReserve (WizardsTowerCorp)
+# QuestReserve (WizardsTowerCorp)
 
 A modular, role-based booking platform for managing dungeon raid reservations, built as a senior-level portfolio project emphasizing clean architecture, domain modeling, and scalable backend design.
 
-📌 Project Overview
+## Project Overview
 
 QuestReserve is a booking and management platform designed for WizardsTowerCorp, enabling dungeon owners to manage raid availability while allowing adventure parties to browse and book dungeon experiences.
 
@@ -16,8 +16,8 @@ End Users — Adventure parties who browse, book, and manage dungeon raids
 
 While the theme is playful, the architecture, data modeling, and code quality are intentionally professional and production-minded.
 
-🎯 Goals & Constraints
-Primary Goals
+## Goals & Constraints
+### Primary Goals
 
 Demonstrate senior-level backend architecture
 
@@ -27,7 +27,7 @@ Model real-world booking constraints cleanly
 
 Remain deployable and demoable as an MVP
 
-Explicit Constraints
+### Explicit Constraints
 
 Modular monolith (not microservices)
 
@@ -35,8 +35,8 @@ MVP scope only — no overengineering
 
 Readability and correctness over feature count
 
-🧱 Architecture Overview
-Backend
+## Architecture Overview
+### Backend
 
 Stack: Node.js, TypeScript, Express, Knex, PostgreSQL
 
@@ -51,7 +51,7 @@ src/
 ├── tests/            # Unit & integration tests
 
 
-Key Principles
+### Key Principles
 
 Controllers handle HTTP only
 
@@ -61,7 +61,7 @@ Repositories handle data access
 
 No SQL in controllers or services
 
-Frontend
+### Frontend
 
 Stack: React, TypeScript
 
@@ -76,8 +76,8 @@ src/
 ├── contexts/         # Auth & feature flags
 ├── utils/            # Formatting & helpers
 
-👤 User Roles & Capabilities
-Platform Admins (WizardsTowerCorp)
+## User Roles & Capabilities
+### Platform Admins (WizardsTowerCorp)
 
 Platform-level access
 
@@ -87,7 +87,7 @@ Analytics (stubbed or aggregated)
 
 No booking or venue ownership
 
-Providers (Dungeon Owners)
+### Providers (Dungeon Owners)
 
 Manage booking locations
 
@@ -97,7 +97,7 @@ Access provider dashboard
 
 Cannot view other providers’ data
 
-End Users (Adventure Parties)
+### End Users (Adventure Parties)
 
 Browse available dungeons
 
@@ -107,7 +107,7 @@ Book and manage reservations
 
 View booking history
 
-🗄️ Data Model Overview
+## Data Model Overview
 
 Core entities:
 
@@ -140,14 +140,14 @@ Explicit foreign keys and cascading rules
 
 Minimal booking model to preserve MVP scope
 
-🌐 API Overview (MVP)
-Providers
+## API Overview (MVP)
+### Providers
 
 GET /api/providers/:id
 
 GET /api/providers/:id/dashboard
 
-Booking Locations
+### Booking Locations
 
 GET /api/venues
 
@@ -155,11 +155,11 @@ GET /api/venues/:id
 
 GET /api/venues/:id/timeslots
 
-End Users
+### End Users
 
 GET /api/end-users/:id/bookings
 
-API Characteristics
+### API Characteristics
 
 Consistent JSON response shapes
 
@@ -169,7 +169,7 @@ Invalid IDs return 404
 
 Centralized error handling
 
-🔐 Authentication & Authorization
+## Authentication & Authorization
 
 JWT-based authentication
 
@@ -181,7 +181,7 @@ Passwords stored as secure hashes
 
 OAuth, refresh tokens, and MFA are intentionally out of scope for MVP.
 
-🧠 Business Rules (MVP)
+## Business Rules (MVP)
 
 Time slots cannot be double-booked
 
@@ -193,7 +193,7 @@ Availability calculated server-side
 
 Chronological ordering enforced at query level
 
-🧪 Testing & Validation
+## Testing & Validation
 
 Database migrations and seeds validated
 
@@ -211,7 +211,7 @@ Cancelled bookings
 
 Automated tests are present where useful but not exhaustive by design.
 
-🚀 Local Development
+## Local Development
 Prerequisites
 
 Node.js
@@ -231,7 +231,7 @@ npm run dev
 
 The application should be fully demoable locally in under 10 minutes.
 
-📉 Known Limitations (By Design)
+## Known Limitations (By Design)
 
 The following features are intentionally out of scope for this MVP:
 
@@ -247,7 +247,7 @@ Feature flag infrastructure
 
 Microservices architecture
 
-⭐ Potential Enhancements
+## Potential Enhancements
 
 Soft-delete bookings
 
@@ -259,7 +259,7 @@ Availability optimization
 
 Analytics aggregation
 
-🧠 Why This Project Exists
+## Why This Project Exists
 
 This project exists to demonstrate:
 
