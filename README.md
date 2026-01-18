@@ -1,83 +1,187 @@
-# Quest Reserve
+# QuestReserve (WizardsTowerCorp)
 
-## Problem Statement
-Current dungeon raid booking systems deprecated and not built to scale. Client wishes to create a new app that can be used to organize and collect data on regional dungeon raid bookings. App will allow dungeon owners to manage their bookings, establish rulesets for their clients, and track analytics and potential dungeon marketing.
-Would like to have an MVP deployed before the start of the busy season to maximize profits and protect stakeholder interests.
-### Potential Users
-* WizardsTowerCorp Employees (Client)
-    * Admin level access and dashboard feature for tracking booking analytics and managing marketing for dungeon owner clients.
-* Dungeon Owner Providers
-    * Admin level for their own portal access to manage their bookings, establish rulesets for their clients, and track analytics. Potential dungeon marketing may be a feature they can purchase separately. Payment managed through the site.
-* Adventure Parties Customers
-    * Can browser available Dungeon reservations and schedules and book their party for a raid. Can view and manage their bookings through a login portal.
+A modular, role-based booking platform for managing dungeon raid reservations, built as a senior-level portfolio project emphasizing clean architecture, domain modeling, and scalable backend design.
 
-**Quest Reserve is WIP**
+## Project Overview
 
-## MVP Features
+QuestReserve is a booking and management platform designed for WizardsTowerCorp, enabling dungeon owners to manage raid availability while allowing adventure parties to browse and book dungeon experiences.
 
-### Adventure Parties (End Users)
+The application supports three distinct user types:
 
-- Browse BookingLocations by date, location, difficulty, and features.
-- View detailed BookingLocation info (description, difficulty, cancellation policy, features).
-- Real-time availability and booking of TimeSlots.
-- Payment processing (COMPLETE / PENDING / FAILED).
-- Account creation and booking history management.
-- Cancel or reschedule bookings according to BookingLocation rules.
+- Platform Admins - WizardsTowerCorp employees providing customer success and platform oversight
+- Providers - Dungeon owners who manage booking locations and schedules
+- End Users - Adventure parties who browse, book, and manage dungeon raids
 
-### Dungeon Owners (Providers)
+While the theme is playful, the architecture, data modeling, and code quality are intentionally professional and production-minded.
 
-- Create and manage BookingLocations.
-- Define TimeSlots for availability.
-- Define dynamic rules (BookingLocationRule) per location.
-- View bookings and basic revenue reporting.
+## Goals & Constraints
+### Primary Goals
+- Demonstrate senior-level backend architecture
+- Clearly separate concerns across layers
+- Model real-world booking constraints cleanly
+- Remain deployable and demoable as an MVP
+### Explicit Constraints
+- Modular monolith (not microservices)
+- MVP scope only — no overengineering
+- Readability and correctness over feature count
 
-### WizardsTowerCorp Client Users (Admin Users)
-
-- Manage Organization accounts (onboard, suspend, assist).
-- Monitor platform-wide booking activity.
-- Platform / System Responsibilities
-- Multi-tenancy with isolated Organization data.
-- Strong consistency for bookings (avoid double-booking).
-- Idempotent payment processing.
-- Logging, metrics, and observability for core services.
-
-## Stretch / Post-MVP Features
-
-### Adventure Parties
-
-- AI assistant for recommendations and rule guidance.
-
-### Organization Users
-
-- Advanced analytics (booking trends, occupancy rates).
-- Opt-in marketing features for BookingLocations.
-
-### WizardsTowerCorp Admins
-
-- Aggregated analytics (regional demand, high/low-performing locations).
-- Global configuration of fees, commissions, default rules.
-- Audit logs for critical actions.
-
-### Platform / System
-
-- More complex rules or conditional logic for BookingLocationRules (seasonal rules, special events).
-- Additional payment workflows (refunds, deposits).
-
-## Data Model Evolution
-
-This MVP implements a reduced subset of the full data model.
-
-Planned (not yet implemented):
-- Customer accounts & authentication
-- Payment processing
-- Booking rules engine
-- Feature flagging per booking location
-- Subscription plan enforcement
-
-The schema is intentionally designed to evolve without breaking changes.
-
-## Usage
-
+## Architecture Overview
+### Backend
+- Stack: Node.js, TypeScript, Express, Knex, PostgreSQL
+- Style: Modular monolith with layered architecture
 ```
-WIP
+src/
+├── api/              # Controllers & route handlers
+├── application/      # Business logic (services / use cases)
+├── infrastructure/   # Database access & external integrations
+├── middleware/       # Auth, error handling, logging
+├── utils/            # Shared helpers, enums, constants
+├── tests/            # Unit & integration tests
 ```
+
+#### Key Principles
+- Controllers handle HTTP only
+- Services contain business rules
+- Repositories handle data access
+- No SQL in controllers or services
+### Frontend
+- Stack: React, TypeScript
+- Style: Modular monolith with role-based layouts
+```
+src/
+├── api/              # API client wrappers
+├── components/       # Reusable UI components
+├── hooks/            # Data-fetching and state logic
+├── layouts/          # Role-based layout wrappers
+├── pages/            # Route-level pages
+├── contexts/         # Auth & feature flags
+├── utils/            # Formatting & helpers
+``` 
+
+## User Roles & Capabilities
+### Platform Admins (WizardsTowerCorp)
+- Platform-level access
+- Provider visibility
+- Analytics (stubbed or aggregated)
+- No booking or venue ownership
+### Providers (Dungeon Owners)
+- Manage booking locations
+- View time slots and bookings
+- Access provider dashboard
+- Cannot view other providers’ data
+### End Users (Adventure Parties)
+- Browse available dungeons
+- View time slot availability
+- Book and manage reservations
+- View booking history
+
+## Data Model Overview
+Core entities:
+- ```admin_user```
+- ```provider```
+- ```end_user```
+- ```booking_location```
+- ```time_slot```
+- ```booking```
+
+Relationships:
+```
+Provider
+  → BookingLocation
+    → TimeSlot
+      → Booking
+        → EndUser
+```
+
+Design decisions:
+- Separate tables per user type (no polymorphic users)
+- Explicit foreign keys and cascading rules
+- Minimal booking model to preserve MVP scope
+
+## API Overview (MVP)
+### Providers
+- ```GET /api/providers/:id```
+- ```GET /api/providers/:id/dashboard```
+
+### Booking Locations
+- ```GET /api/venues```
+- ```GET /api/venues/:id```
+- ```GET /api/venues/:id/timeslots```
+
+### End Users
+- ```GET /api/end-users/:id/bookings```
+
+### API Characteristics
+- Consistent JSON response shapes
+- Empty states return empty arrays
+- Invalid IDs return 404
+- Centralized error handling
+
+## Authentication & Authorization
+- JWT-based authentication
+- Tokens include user ID and user type
+- Role-based route protection
+- Passwords stored as secure hashes
+- OAuth, refresh tokens, and MFA are intentionally out of scope for MVP.
+
+## Business Rules (MVP)
+- Time slots cannot be double-booked
+- Cancelled bookings excluded from availability
+- Past and future bookings correctly separated
+- Availability calculated server-side
+- Chronological ordering enforced at query level
+
+## Testing & Validation
+- Database migrations and seeds validated
+- API endpoints manually smoke-tested
+- Centralized error handling in place
+- Edge cases verified:
+  - Empty datasets
+  - Invalid IDs
+  - Cancelled bookings
+
+Automated tests are present where useful but not exhaustive by design.
+
+## Local Development
+### Prerequisites
+- Node.js
+- PostgreSQL
+- npm or yarn
+
+### Setup
+```
+git clone <repo>
+cd questreserve
+npm install
+npm run migrate
+npm run seed
+npm run dev
+```
+The application should be fully demoable locally in under 10 minutes.
+
+## Known Limitations (By Design)
+The following features are intentionally out of scope for this MVP:
+- Payments
+- Marketing tools
+- Background jobs
+- Advanced analytics
+- Feature flag infrastructure
+- Microservices architecture
+
+## Potential Enhancements
+- Soft-delete bookings
+- Booking cancellation endpoint
+- Admin impersonation
+- Availability optimization
+- Analytics aggregation
+
+## Why This Project Exists
+- This project exists to demonstrate:
+  - Architectural judgment
+  - Scope control
+  - Data modeling clarity
+  - Clean separation of concerns
+It prioritizes finishing well over building endlessly.
+
+The project is considered Done when all sections below are satisfied.
+“Stretch” items explicitly do not block Done status.
