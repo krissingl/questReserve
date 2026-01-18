@@ -176,15 +176,9 @@ The following features are intentionally out of scope for this MVP:
 - Analytics aggregation
 
 ## Why This Project Exists
-
-This project exists to demonstrate:
-
-Architectural judgment
-
-Scope control
-
-Data modeling clarity
-
-Clean separation of concerns
-
+- This project exists to demonstrate:
+  - Architectural judgment
+  - Scope control
+  - Data modeling clarity
+  - Clean separation of concerns
 It prioritizes finishing well over building endlessly.
