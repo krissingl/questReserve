@@ -57,141 +57,86 @@ The project is considered Done when all sections below are satisfied.
 - [ ] Cannot manage venues or providers
 
 ## API Contracts & Behavior
-All MVP endpoints implemented and reachable
-All endpoints return consistent JSON shapes
-Read endpoints return empty arrays instead of errors
-Invalid IDs return 404
-Server errors return standardized error objects
-No sensitive fields (password hashes) exposed
-Pagination-ready response structures where applicable
-Minimum API Surface:
+- [ ] All MVP endpoints implemented and reachable
+- [ ] All endpoints return consistent JSON shapes
+- [ ] Read endpoints return empty arrays instead of errors
+- [ ] Invalid IDs return 404
+- [ ] Server errors return standardized error objects
+- [ ] No sensitive fields (password hashes) exposed
+- [ ] Pagination-ready response structures where applicable
+### Minimum API Surface:
+- [ ] Providers dashboard endpoint
+- [ ] Venue list + detail endpoints
+- [ ] Time slot availability endpoint
+- [ ] End user booking history endpoint
 
-Providers dashboard endpoint
+## Business Logic Rules (MVP Scope)
+- [ ] Bookings reference valid time slots and end users
+- [ ] Cancelled bookings excluded from availability
+- [ ] Past vs future bookings correctly identified
+- [ ] Time slots ordered chronologically
+- [ ] Availability excludes already-booked slots
+- [ ] No double-booking possible at read level
 
-Venue list + detail endpoints
+## Authentication & Security (MVP-Level)
+- [ ] JWT-based authentication implemented
+- [ ] Tokens include user ID and user type
+- [ ] Auth middleware protects role-specific routes
+- [ ] Passwords stored as hashes
+- [ ] Auth failures return 401/403 appropriately
+- [ ] No secrets committed to repo
 
-Time slot availability endpoint
-
-End user booking history endpoint
-
-5. Business Logic Rules (MVP Scope)
-
-Bookings reference valid time slots and end users
-
-Cancelled bookings excluded from availability
-
-Past vs future bookings correctly identified
-
-Time slots ordered chronologically
-
-Availability excludes already-booked slots
-
-No double-booking possible at read level
-
-6. Authentication & Security (MVP-Level)
-
-JWT-based authentication implemented
-
-Tokens include user ID and user type
-
-Auth middleware protects role-specific routes
-
-Passwords stored as hashes
-
-Auth failures return 401/403 appropriately
-
-No secrets committed to repo
-
-7. Validation & Stability
-
-App boots cleanly with no runtime errors
-
-API smoke-tested via Postman or similar
-
-Common edge cases tested manually:
-
-Empty datasets
-
-Invalid IDs
-
-Cancelled bookings
-
-Centralized error handling exists
-
-Logging present for dev debugging
+## Validation & Stability
+- [ ] App boots cleanly with no runtime errors
+- [ ] API smoke-tested via Postman or similar
+- [ ] Common edge cases tested manually:
+  - [ ] Empty datasets
+  - [ ] Invalid IDs
+  - [ ] Cancelled bookings
+- [ ] Centralized error handling exists
+- [ ] Logging present for dev debugging
 
 Automated tests are encouraged but not required for Done status.
 
-8. Frontend MVP Experience
+## Frontend MVP Experience
+### End User Experience
+- [ ] Can browse booking locations
+- [ ] Can view venue details
+- [ ] Can see available time slots
+- [ ] Can view booking history
 
-End User Experience
+### Provider Experience
+- [ ] Can view provider dashboard
+- [ ] Can view owned booking locations
+- [ ] Can see upcoming bookings
 
-Can browse booking locations
+### Admin Experience
+- [ ] Can access admin layout
+- [ ] Can view stubbed analytics or provider list
 
-Can view venue details
+## Documentation & Portfolio Readiness
+- [ ] README includes:
+  - [ ] Project overview
+  - [ ] Tech stack
+  - [ ] Architecture explanation
+  - [ ] Setup instructions
+- [ ] Folder structure documented
+- [ ] Key design decisions explained briefly
+- [ ] Known limitations clearly listed
+- [ ] Project can be demoed locally in <10 minutes
 
-Can see available time slots
-
-Can view booking history
-
-Provider Experience
-
-Can view provider dashboard
-
-Can view owned booking locations
-
-Can see upcoming bookings
-
-Admin Experience
-
-Can access admin layout
-
-Can view stubbed analytics or provider list
-
-9. Documentation & Portfolio Readiness
-
-README includes:
-
-Project overview
-
-Tech stack
-
-Architecture explanation
-
-Setup instructions
-
-Folder structure documented
-
-Key design decisions explained briefly
-
-Known limitations clearly listed
-
-Project can be demoed locally in <10 minutes
-
-10. Scope Control (Explicit Non-Requirements)
-
+## Scope Control (Explicit Non-Requirements)
 The following do NOT block Done:
+- Payments
+- Marketing features
+- Advanced analytics
+- Background jobs
+- Feature flag system
+- Full admin tooling
 
-Payments
-
-Marketing features
-
-Advanced analytics
-
-Background jobs
-
-Feature flag system
-
-Full admin tooling
-
-Stretch Goals (Optional)
-
-Soft-delete bookings
-
-Booking cancellation endpoint
-
-Admin impersonation of providers
-
-Availability calculation utility
-
-Basic analytics aggregation
+## Stretch Goals (Optional)
+- Soft-delete bookings
+- Booking cancellation endpoint
+- Admin impersonation of providers
+- Availability calculation utility
+- Basic analytics aggregation
