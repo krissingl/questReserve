@@ -24,14 +24,14 @@ Would like to have an MVP deployed before the start of the busy season to maximi
 - Account creation and booking history management.
 - Cancel or reschedule bookings according to BookingLocation rules.
 
-### Organization Users (Dungeon Owners)
+### Dungeon Owners (Providers)
 
 - Create and manage BookingLocations.
 - Define TimeSlots for availability.
 - Define dynamic rules (BookingLocationRule) per location.
 - View bookings and basic revenue reporting.
 
-### WizardsTowerCorp Admins (Platform Users)
+### WizardsTowerCorp Client Users (Admin Users)
 
 - Manage Organization accounts (onboard, suspend, assist).
 - Monitor platform-wide booking activity.
