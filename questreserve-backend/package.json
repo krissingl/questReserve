@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "knex": "knex --require dotenv/config --knexfile knexfile.ts --esm",
+    "knex": "knex --knexfile knexfile.ts --esm",
     "migrate": "npm run knex migrate:latest"
   },
   "keywords": [],
