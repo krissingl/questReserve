@@ -1,1 +1,5 @@
 .env
+
+# Internal working documents — not production artifacts.
+# The spec/ folder is the durable tracked record.
+sessions/
