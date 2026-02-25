@@ -1,4 +1,4 @@
-# QuestReserve (WizardsTowerCorp)
+# QuestReserve
 
 A modular, role-based booking platform for managing dungeon raid reservations, built as a senior-level portfolio project emphasizing clean architecture, domain modeling, and scalable backend design.
 
