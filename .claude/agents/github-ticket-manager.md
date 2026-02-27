@@ -59,6 +59,24 @@ When gathering information to create or update a ticket, follow this strict orde
 
 ---
 
+## TITLE PREFIX TAXONOMY
+
+Every ticket title must begin with a prefix that identifies its category. Apply the correct prefix when drafting — do not omit it, do not invent new ones.
+
+| Prefix | Used for |
+|--------|----------|
+| `P1:` `P2:` ... `P12:` | Tickets belonging to a specific MVP phase (match the phase number from the roadmap) |
+| `AGENT:` | Agent or tooling improvements |
+| `BUG:` | Bug reports |
+| `CHORE:` | Housekeeping, configuration, non-feature work |
+| `SPEC:` | Spec or planning document changes |
+
+**Format:** `PREFIX:Title` — e.g. `P3:Add JWT utility functions` or `AGENT:Fix batch creation curl pattern`
+
+For batch creation, the prefix is specified in the ticket plan header. For single tickets, determine the prefix from context. If the correct prefix is ambiguous, ask before drafting.
+
+---
+
 ## TICKET OPERATIONS
 
 ### Creating a Ticket
