@@ -77,3 +77,13 @@ Manage locations, timeslots, view bookings and revenue.
 ## Phase 12: Frontend — Admin Panel
 
 Provider management, platform activity view.
+
+---
+
+## Stretch Goals
+
+### Admin User Creation Endpoint
+
+Add `POST /api/auth/admin/register`, protected by `authenticate` + `requireRole('admin')` with an additional `SUPERUSER` role check at the service layer. Only a logged-in `SUPERUSER` may create new AdminUser accounts.
+
+This is a prerequisite for the Admin Portal (Phase 6) to be fully self-managed by WizardsTowerCorp staff without direct DB access. The `SUPERUSER` role is already defined in the `AdminUser` domain model. Should be implemented as the first addition when Admin Portal work begins.
