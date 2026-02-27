@@ -1,5 +1,5 @@
-import express from 'express';
 import { sanityCheckDbConnection } from './db/db';
+import app from './app';
 
 async function main() {
   try {
@@ -9,11 +9,7 @@ async function main() {
     process.exit(1);
   }
 
-  const app = express();
   const PORT = process.env.PORT || 3001;
-
-  app.use(express.json());
-  app.get('/', (_req, res) => res.send('Ollo, Backend?'));
 
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
