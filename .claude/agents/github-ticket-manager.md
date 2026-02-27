@@ -80,13 +80,35 @@ When gathering information to create or update a ticket, follow this strict orde
    ```
 
 3. Present the draft to the user for review.
-4. Submit only after the user confirms — using `curl -X POST`.
+4. Submit only after the user confirms, using the heredoc pattern below.
 
 ### Updating a Ticket
 1. Fetch the current ticket via `curl GET /repos/{owner}/{repo}/issues/{number}`.
 2. Read the spec and session logs for relevant updates.
 3. Propose your specific changes (show what changes, what stays).
-4. Submit only after the user confirms — using `curl -X PATCH`.
+4. Submit only after the user confirms, using the heredoc pattern below.
+
+### curl JSON Pattern — Always Use This
+
+`jq` is not available in this environment. Shell-escaping JSON inline causes 400/422 errors. Always write the payload to a temp file via heredoc, then pass it to curl:
+
+```bash
+cat > /tmp/gh_payload.json << 'EOF'
+{
+  "title": "Your ticket title",
+  "body": "Your ticket body"
+}
+EOF
+
+curl -s -o /tmp/gh_response.json -w "%{http_code}" \
+  -X POST \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data-binary @/tmp/gh_payload.json \
+  "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/issues"
+```
+
+Capture the HTTP status code from `-w "%{http_code}"`. A `201` means success. Anything else is a failure — halt and report.
 
 ### Reading / Listing Tickets
 Read and list tickets freely at any time. Use `curl GET /repos/{owner}/{repo}/issues`.
@@ -116,14 +138,16 @@ When the user provides a completed ticket plan document (following the `sessions
 3. **Wait for explicit go-ahead.** Do not begin creation until the user confirms.
 
 4. **Create tickets sequentially.** After confirmation:
-   - Create each ticket in order using `curl -X POST`.
+   - Create each ticket in order using the heredoc curl pattern.
+   - After each POST, capture the HTTP status code. A `201` is success — proceed immediately to the next ticket. Do NOT verify, fetch, or check state between tickets.
    - After each successful creation, report: `Created N/total: #<issue-number> — <Title>`
-   - Do not pause or ask for confirmation between tickets.
+   - Do not pause, verify, or ask for confirmation between tickets under any circumstances.
 
-5. **On failure.** If any single ticket creation fails:
+5. **On failure.** If any single ticket returns a status code other than `201`:
    - Halt immediately.
-   - Report which tickets succeeded and which failed (with the error).
+   - Report which tickets succeeded and which failed (include the status code and raw response).
    - Wait for explicit user instruction before retrying or continuing.
+   - Do not retry automatically.
 
 6. **Completion report.** After all tickets are created, output a summary:
    ```
