@@ -1,0 +1,25 @@
+import jwt from 'jsonwebtoken';
+
+export type TokenType = 'admin' | 'provider' | 'end_user';
+
+export interface TokenPayload {
+  sub: string;
+  type: TokenType;
+}
+
+function getSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is not set');
+  return secret;
+}
+
+export function signToken(payload: TokenPayload): string {
+  const expiry = process.env.JWT_EXPIRY || '24h';
+  return jwt.sign(payload, getSecret(), { expiresIn: expiry } as jwt.SignOptions);
+}
+
+export function verifyToken(token: string): TokenPayload {
+  const decoded = jwt.verify(token, getSecret());
+  if (typeof decoded === 'string') throw new jwt.JsonWebTokenError('Invalid token payload');
+  return decoded as TokenPayload;
+}
