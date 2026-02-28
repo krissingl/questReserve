@@ -87,3 +87,9 @@ Provider management, platform activity view.
 Add `POST /api/auth/admin/register`, protected by `authenticate` + `requireRole('admin')` with an additional `SUPERUSER` role check at the service layer. Only a logged-in `SUPERUSER` may create new AdminUser accounts.
 
 This is a prerequisite for the Admin Portal (Phase 6) to be fully self-managed by WizardsTowerCorp staff without direct DB access. The `SUPERUSER` role is already defined in the `AdminUser` domain model. Should be implemented as the first addition when Admin Portal work begins.
+
+### Replace Scaffolded `/api/protected/me` with Real User-Fetch Endpoints
+
+`GET /api/protected/me` was added in Phase 3 as scaffolding to validate the auth middleware chain. It returns the raw token payload and lives in `src/api/protected/`. It is not a production feature.
+
+When domain routes are built out (Phases 4–6), this route should be replaced with real identity endpoints per user type (e.g. `GET /api/end-users/me`, `GET /api/providers/me`) that fetch the full user record from the database. The `src/api/protected/` directory and its scaffolding route should be removed at that point.
