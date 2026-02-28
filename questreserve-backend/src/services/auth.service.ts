@@ -2,9 +2,10 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { Knex } from 'knex';
 import { signToken } from '../utils/jwt';
-import { AdminUser, EndUser, Provider } from '../types';
+import { AdminUser, EndUser, Provider, ProviderPlan } from '../types';
 
 const SALT_ROUNDS = 10;
+const DEFAULT_PROVIDER_PLAN: ProviderPlan = 'FREE';
 
 export class InvalidCredentialsError extends Error {
   constructor() {
@@ -90,6 +91,7 @@ export class AuthService {
       email: input.email,
       password_hash,
       organization_name: input.organization_name ?? null,
+      plan: DEFAULT_PROVIDER_PLAN,
     });
 
     return { token: signToken({ sub: id, type: 'provider' }) };

@@ -7,19 +7,27 @@ export interface TokenPayload {
   type: TokenType;
 }
 
+const TOKEN_TYPES: TokenType[] = ['admin', 'provider', 'end_user'];
+
 function getSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET environment variable is not set');
   return secret;
 }
 
+function isTokenPayload(decoded: unknown): decoded is TokenPayload {
+  if (typeof decoded !== 'object' || decoded === null) return false;
+  const d = decoded as Record<string, unknown>;
+  return typeof d.sub === 'string' && TOKEN_TYPES.includes(d.type as TokenType);
+}
+
 export function signToken(payload: TokenPayload): string {
   const expiry = process.env.JWT_EXPIRY || '24h';
-  return jwt.sign(payload, getSecret(), { expiresIn: expiry } as jwt.SignOptions);
+  return jwt.sign(payload, getSecret(), { expiresIn: expiry });
 }
 
 export function verifyToken(token: string): TokenPayload {
   const decoded = jwt.verify(token, getSecret());
-  if (typeof decoded === 'string') throw new jwt.JsonWebTokenError('Invalid token payload');
-  return decoded as TokenPayload;
+  if (!isTokenPayload(decoded)) throw new jwt.JsonWebTokenError('Invalid token payload');
+  return decoded;
 }
