@@ -87,3 +87,15 @@ Provider management, platform activity view.
 Add `POST /api/auth/admin/register`, protected by `authenticate` + `requireRole('admin')` with an additional `SUPERUSER` role check at the service layer. Only a logged-in `SUPERUSER` may create new AdminUser accounts.
 
 This is a prerequisite for the Admin Portal (Phase 6) to be fully self-managed by WizardsTowerCorp staff without direct DB access. The `SUPERUSER` role is already defined in the `AdminUser` domain model. Should be implemented as the first addition when Admin Portal work begins.
+
+### Provider Revenue & Analytics Dashboard
+
+US-DO-07 ("see revenue generated from bookings") and US-DO-09 ("view analytics on booking frequency and occupancy rates") require payment data that does not yet exist in the schema. Payment processing is explicitly Post-MVP per the spec constraints.
+
+Once a payment model is introduced, implement a provider-facing reporting endpoint that surfaces: revenue per location, booking frequency trends, and occupancy rates. This fulfils both user stories and feeds the provider dashboard (Phase 11). US-DO-09 (analytics/trends) is Post-MVP/Stretch by its own classification and should be addressed after US-DO-07 is unblocked by the payment schema.
+
+### Replace Scaffolded `/api/protected/me` with Real User-Fetch Endpoints
+
+`GET /api/protected/me` was added in Phase 3 as scaffolding to validate the auth middleware chain. It returns the raw token payload and lives in `src/api/protected/`. It is not a production feature.
+
+When domain routes are built out (Phases 4–6), this route should be replaced with real identity endpoints per user type (e.g. `GET /api/end-users/me`, `GET /api/providers/me`) that fetch the full user record from the database. The `src/api/protected/` directory and its scaffolding route should be removed at that point.

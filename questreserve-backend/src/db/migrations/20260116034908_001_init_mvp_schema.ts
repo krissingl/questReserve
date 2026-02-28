@@ -1,9 +1,6 @@
 import { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
-  /* =====================
-     CREATE TABLES
-  ===================== */
 
   // ADMIN USERS
   await knex.schema.createTable("admin_user", (table) => {
