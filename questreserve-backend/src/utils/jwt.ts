@@ -7,8 +7,6 @@ export interface TokenPayload {
   type: TokenType;
 }
 
-const TOKEN_TYPES: TokenType[] = ['admin', 'provider', 'end_user'];
-
 function getSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET environment variable is not set');
@@ -18,7 +16,7 @@ function getSecret(): string {
 function isTokenPayload(decoded: unknown): decoded is TokenPayload {
   if (typeof decoded !== 'object' || decoded === null) return false;
   const d = decoded as Record<string, unknown>;
-  return typeof d.sub === 'string' && TOKEN_TYPES.includes(d.type as TokenType);
+  return typeof d.sub === 'string' && ['admin', 'provider', 'end_user'].includes(d.type as string);
 }
 
 export function signToken(payload: TokenPayload): string {
