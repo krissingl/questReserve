@@ -1,5 +1,5 @@
 # QuestReserve — Project Spec
-_Last updated: 2026-02-17 | Status: DRAFT_
+_Last updated: 2026-03-01 | Status: DRAFT_
 
 ## Vision
 QuestReserve is a reservation and booking platform for escape room experiences
@@ -44,10 +44,11 @@ The platform serves three user types:
 - Framework: Express.js (v5)
 - Language: TypeScript
 - Database access: Knex.js
-- Pattern: Modular monolith — `api / application / infrastructure / middleware / utils`
+- Pattern: Modular monolith — `api / services / repositories / infrastructure / middleware / utils`
   - Controllers handle HTTP only (no business logic)
-  - Services handle business rules only
-  - Repositories handle data access only (no SQL elsewhere)
+  - Services (`src/services/`) handle business rules only
+  - Repositories (`src/repositories/`) contain all concrete repository implementations; introduced in Phase 4
+  - `src/infrastructure/` is narrowed to `BaseRepository` and DB connection concerns only
 - Location: `questreserve-backend/`
 
 ### Frontend
@@ -76,7 +77,7 @@ The platform serves three user types:
 ### Provider (Dungeon Owner)
 - Can authenticate and access provider dashboard
 - Can create and manage their own BookingLocations and TimeSlots
-- Can view bookings tied to their locations and basic revenue reporting
+- Can view bookings tied to their locations (revenue reporting deferred — see stretch goals)
 - Cannot view other providers' data or access admin routes
 
 ### Customer (EndUser)
@@ -96,11 +97,12 @@ The platform serves three user types:
 - Customer account creation and booking history
 - Cancel bookings (status → CANCELLED)
 - Provider: create and manage BookingLocations and TimeSlots
-- Provider: view upcoming bookings and basic revenue reporting
+- Provider: view upcoming bookings
 - Admin: manage Provider accounts
 - Admin: view platform-wide booking activity
 
 ### Post-MVP / Stretch
+- Revenue reporting for providers (booking revenue summaries, earnings dashboards) — deferred from MVP; no payment schema exists; see US-DO-07 and US-DO-09
 - Payment processing (COMPLETE / PENDING / FAILED)
 - Location / geographic filtering of BookingLocations
 - BookingLocation features field and feature-based filtering
