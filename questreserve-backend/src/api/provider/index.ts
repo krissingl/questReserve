@@ -57,7 +57,7 @@ router.post('/locations', async (req: Request, res: Response, next: NextFunction
   try {
     const location = await providerService.createLocation(req.user!.sub, {
       name: b.name!,
-      description: b.description !== undefined ? b.description : undefined,
+      description: b.description,
       difficulty: b.difficulty as Difficulty,
       cancellation_policy: b.cancellation_policy!,
     });
@@ -89,16 +89,25 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
   if (typeof req.body !== 'object' || req.body === null) {
     res.status(400).json({ error: 'Request body must be a JSON object' }); return;
   }
-  const b = req.body as Record<string, string | undefined>;
-  if (b.difficulty !== undefined && !VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) {
+  const b = req.body as Record<string, unknown>;
+  if (b.difficulty !== undefined && (typeof b.difficulty !== 'string' || !VALID_DIFFICULTIES.includes(b.difficulty as Difficulty))) {
     res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
     return;
   }
   const updates: { name?: string; description?: string; difficulty?: Difficulty; cancellation_policy?: string } = {};
-  if (b.name !== undefined) updates.name = b.name;
-  if (b.description !== undefined) updates.description = b.description;
+  if (b.name !== undefined) {
+    if (typeof b.name !== 'string') { res.status(400).json({ error: 'name must be a string' }); return; }
+    updates.name = b.name;
+  }
+  if (b.description !== undefined) {
+    if (typeof b.description !== 'string') { res.status(400).json({ error: 'description must be a string' }); return; }
+    updates.description = b.description;
+  }
   if (b.difficulty !== undefined) updates.difficulty = b.difficulty as Difficulty;
-  if (b.cancellation_policy !== undefined) updates.cancellation_policy = b.cancellation_policy;
+  if (b.cancellation_policy !== undefined) {
+    if (typeof b.cancellation_policy !== 'string') { res.status(400).json({ error: 'cancellation_policy must be a string' }); return; }
+    updates.cancellation_policy = b.cancellation_policy;
+  }
   try {
     const location = await providerService.updateLocation(req.user!.sub, req.params.id, updates);
     res.json(location);
@@ -153,14 +162,16 @@ router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunctio
   if (typeof req.body !== 'object' || req.body === null) {
     res.status(400).json({ error: 'Request body must be a JSON object' }); return;
   }
-  const b = req.body as Record<string, string | undefined>;
+  const b = req.body as Record<string, unknown>;
   const data: { start_time?: Date; end_time?: Date } = {};
   if (b.start_time !== undefined) {
+    if (typeof b.start_time !== 'string') { res.status(400).json({ error: 'start_time must be a string' }); return; }
     const d = new Date(b.start_time);
     if (isNaN(d.getTime())) { res.status(400).json({ error: 'start_time must be a valid ISO date string' }); return; }
     data.start_time = d;
   }
   if (b.end_time !== undefined) {
+    if (typeof b.end_time !== 'string') { res.status(400).json({ error: 'end_time must be a string' }); return; }
     const d = new Date(b.end_time);
     if (isNaN(d.getTime())) { res.status(400).json({ error: 'end_time must be a valid ISO date string' }); return; }
     data.end_time = d;
