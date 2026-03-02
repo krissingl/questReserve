@@ -89,18 +89,18 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
   if (typeof req.body !== 'object' || req.body === null) {
     res.status(400).json({ error: 'Request body must be a JSON object' }); return;
   }
-  const b = req.body as Record<string, string>;
+  const b = req.body as Record<string, string | undefined>;
   if (b.difficulty !== undefined && !VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) {
     res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
     return;
   }
+  const updates: { name?: string; description?: string; difficulty?: Difficulty; cancellation_policy?: string } = {};
+  if (b.name !== undefined) updates.name = b.name;
+  if (b.description !== undefined) updates.description = b.description;
+  if (b.difficulty !== undefined) updates.difficulty = b.difficulty as Difficulty;
+  if (b.cancellation_policy !== undefined) updates.cancellation_policy = b.cancellation_policy;
   try {
-    const location = await providerService.updateLocation(req.user!.sub, req.params.id, {
-      name: b.name || undefined,
-      description: b.description || undefined,
-      difficulty: b.difficulty as Difficulty | undefined,
-      cancellation_policy: b.cancellation_policy || undefined,
-    });
+    const location = await providerService.updateLocation(req.user!.sub, req.params.id, updates);
     res.json(location);
   } catch (err) {
     handleProviderError(err, res, next);
