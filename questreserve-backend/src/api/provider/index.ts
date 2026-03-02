@@ -31,10 +31,12 @@ function validateRequiredStrings(body: unknown, fields: string[]): string | null
 }
 
 function handleProviderError(err: unknown, res: Response, next: NextFunction): void {
-  if (err instanceof LocationNotFoundError || err instanceof SlotNotFoundError) {
-    res.status(404).json({ error: (err as Error).message });
-  } else if (err instanceof LocationOwnershipError) {
-    res.status(403).json({ error: (err as Error).message });
+  if (
+    err instanceof LocationNotFoundError ||
+    err instanceof SlotNotFoundError ||
+    err instanceof LocationOwnershipError
+  ) {
+    res.status(404).json({ error: 'Not found' });
   } else {
     next(err);
   }
