@@ -49,17 +49,17 @@ router.use(authenticate, requireRole('provider'));
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['name', 'difficulty', 'cancellation_policy']);
   if (validationError) { res.status(400).json({ error: validationError }); return; }
-  const b = req.body as Record<string, string>;
+  const b = req.body as Record<string, string | undefined>;
   if (!VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) {
     res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
     return;
   }
   try {
     const location = await providerService.createLocation(req.user!.sub, {
-      name: b.name,
-      description: b.description || undefined,
+      name: b.name!,
+      description: b.description !== undefined ? b.description : undefined,
       difficulty: b.difficulty as Difficulty,
-      cancellation_policy: b.cancellation_policy,
+      cancellation_policy: b.cancellation_policy!,
     });
     res.status(201).json(location);
   } catch (err) {
@@ -153,7 +153,7 @@ router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunctio
   if (typeof req.body !== 'object' || req.body === null) {
     res.status(400).json({ error: 'Request body must be a JSON object' }); return;
   }
-  const b = req.body as Record<string, string>;
+  const b = req.body as Record<string, string | undefined>;
   const data: { start_time?: Date; end_time?: Date } = {};
   if (b.start_time !== undefined) {
     const d = new Date(b.start_time);
