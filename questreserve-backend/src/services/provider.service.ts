@@ -138,7 +138,7 @@ export class ProviderService {
   // --- Bookings (read-only view) ---
 
   async getBookings(providerId: string): Promise<ProviderBookingView[]> {
-    return this.knex('booking')
+    const rows = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
       .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
       .where('booking_location.provider_id', providerId)
@@ -154,6 +154,7 @@ export class ProviderService {
         'time_slot.booking_location_id',
         'booking_location.name as location_name'
       );
+    return rows as ProviderBookingView[];
   }
 
   // --- Private helpers ---
