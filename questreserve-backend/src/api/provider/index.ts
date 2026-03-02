@@ -1,0 +1,183 @@
+import { Router, Request, Response, NextFunction } from 'express';
+import db from '../../db/db';
+import { authenticate, requireRole } from '../../middleware';
+import { BookingLocationRepository } from '../../repositories/booking-location.repository';
+import { TimeSlotRepository } from '../../repositories/time-slot.repository';
+import {
+  ProviderService,
+  LocationNotFoundError,
+  LocationOwnershipError,
+  SlotNotFoundError,
+} from '../../services/provider.service';
+import { Difficulty } from '../../types';
+
+const router = Router();
+
+const locationRepo = new BookingLocationRepository(db);
+const slotRepo = new TimeSlotRepository(db);
+const providerService = new ProviderService(locationRepo, slotRepo, db);
+
+const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
+
+function validateRequiredStrings(body: unknown, fields: string[]): string | null {
+  if (typeof body !== 'object' || body === null) return 'Request body must be a JSON object';
+  const b = body as Record<string, unknown>;
+  for (const field of fields) {
+    if (typeof b[field] !== 'string' || (b[field] as string).trim() === '') {
+      return `${field} is required`;
+    }
+  }
+  return null;
+}
+
+function handleProviderError(err: unknown, res: Response, next: NextFunction): void {
+  if (err instanceof LocationNotFoundError || err instanceof SlotNotFoundError) {
+    res.status(404).json({ error: (err as Error).message });
+  } else if (err instanceof LocationOwnershipError) {
+    res.status(403).json({ error: (err as Error).message });
+  } else {
+    next(err);
+  }
+}
+
+router.use(authenticate, requireRole('provider'));
+
+// --- Location routes ---
+
+router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
+  const validationError = validateRequiredStrings(req.body, ['name', 'difficulty', 'cancellation_policy']);
+  if (validationError) { res.status(400).json({ error: validationError }); return; }
+  const b = req.body as Record<string, string>;
+  if (!VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) {
+    res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
+    return;
+  }
+  try {
+    const location = await providerService.createLocation(req.user!.sub, {
+      name: b.name,
+      description: b.description || undefined,
+      difficulty: b.difficulty as Difficulty,
+      cancellation_policy: b.cancellation_policy,
+    });
+    res.status(201).json(location);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const locations = await providerService.getLocations(req.user!.sub);
+    res.json(locations);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.get('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const location = await providerService.getLocation(req.user!.sub, req.params.id);
+    res.json(location);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.patch('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
+  if (typeof req.body !== 'object' || req.body === null) {
+    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
+  }
+  const b = req.body as Record<string, string>;
+  if (b.difficulty !== undefined && !VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) {
+    res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
+    return;
+  }
+  try {
+    const location = await providerService.updateLocation(req.user!.sub, req.params.id, {
+      name: b.name || undefined,
+      description: b.description || undefined,
+      difficulty: b.difficulty as Difficulty | undefined,
+      cancellation_policy: b.cancellation_policy || undefined,
+    });
+    res.json(location);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+// --- Booking view (read-only) ---
+
+router.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const bookings = await providerService.getBookings(req.user!.sub);
+    res.json(bookings);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+// --- Slot routes ---
+
+router.post('/locations/:locationId/slots', async (req: Request, res: Response, next: NextFunction) => {
+  const validationError = validateRequiredStrings(req.body, ['start_time', 'end_time']);
+  if (validationError) { res.status(400).json({ error: validationError }); return; }
+  const b = req.body as Record<string, string>;
+  const startTime = new Date(b.start_time);
+  const endTime = new Date(b.end_time);
+  if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+    res.status(400).json({ error: 'start_time and end_time must be valid ISO date strings' }); return;
+  }
+  try {
+    const slot = await providerService.createSlot(req.user!.sub, req.params.locationId, {
+      start_time: startTime,
+      end_time: endTime,
+    });
+    res.status(201).json(slot);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.get('/locations/:locationId/slots', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const slots = await providerService.getSlots(req.user!.sub, req.params.locationId);
+    res.json(slots);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
+  if (typeof req.body !== 'object' || req.body === null) {
+    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
+  }
+  const b = req.body as Record<string, string>;
+  const data: { start_time?: Date; end_time?: Date } = {};
+  if (b.start_time !== undefined) {
+    const d = new Date(b.start_time);
+    if (isNaN(d.getTime())) { res.status(400).json({ error: 'start_time must be a valid ISO date string' }); return; }
+    data.start_time = d;
+  }
+  if (b.end_time !== undefined) {
+    const d = new Date(b.end_time);
+    if (isNaN(d.getTime())) { res.status(400).json({ error: 'end_time must be a valid ISO date string' }); return; }
+    data.end_time = d;
+  }
+  try {
+    const slot = await providerService.updateSlot(req.user!.sub, req.params.id, data);
+    res.json(slot);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.delete('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await providerService.deleteSlot(req.user!.sub, req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+export default router;
