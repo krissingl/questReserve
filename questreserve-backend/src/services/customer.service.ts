@@ -111,6 +111,7 @@ export class CustomerService {
     if (booking.status === 'CANCELLED') throw new BookingAlreadyCancelledError();
 
     const updated = await this.bookingRepo.update(bookingId, { status: 'CANCELLED' });
-    return updated!;
+    if (!updated) throw new BookingNotFoundError();
+    return updated;
   }
 }

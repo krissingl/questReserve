@@ -1,5 +1,5 @@
 import { Knex } from 'knex';
-import { Booking, BookingStatus, Provider, ProviderStatus } from '../types';
+import { BookingStatus, Provider, ProviderStatus } from '../types';
 
 export class ProviderNotFoundError extends Error {
   constructor() {

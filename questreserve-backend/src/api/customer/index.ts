@@ -81,6 +81,9 @@ router.get('/locations/:id/slots', async (req: Request, res: Response, next: Nex
   if (date !== undefined && typeof date !== 'string') {
     res.status(400).json({ error: 'date must be a string' }); return;
   }
+  if (date !== undefined && isNaN(new Date(date as string).getTime())) {
+    res.status(400).json({ error: 'date must be a valid ISO date string' }); return;
+  }
   try {
     const slots = await customerService.getAvailableSlots(req.params.id, date as string | undefined);
     res.json(slots);
