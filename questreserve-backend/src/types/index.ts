@@ -1,5 +1,6 @@
 export type AdminRole = 'PLATFORM_ADMIN' | 'CLIENT_SUCCESS' | 'SUPERUSER';
 export type ProviderPlan = 'FREE' | 'STANDARD' | 'PREMIUM';
+export type ProviderStatus = 'ACTIVE' | 'SUSPENDED';
 export type EndUserRole = 'REGULAR' | 'PREMIERE' | 'CORPORATE' | 'RESTRICTED';
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'LEGENDARY';
 export type BookingStatus = 'BOOKED' | 'CANCELLED';
@@ -23,6 +24,7 @@ export interface Provider {
   password_hash: string;
   organization_name: string | null;
   plan: ProviderPlan;
+  status: ProviderStatus;
   created_at: Date;
   updated_at: Date;
 }
