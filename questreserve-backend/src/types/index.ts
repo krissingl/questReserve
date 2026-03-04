@@ -68,3 +68,31 @@ export interface Booking {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface ProviderBookingView {
+  id: string;
+  time_slot_id: string;
+  end_user_id: string;
+  status: BookingStatus;
+  created_at: Date;
+  updated_at: Date;
+  start_time: Date;
+  end_time: Date;
+  booking_location_id: string;
+  location_name: string;
+}
+
+export interface AdminBookingView {
+  id: string;
+  time_slot_id: string;
+  end_user_id: string;
+  status: BookingStatus;
+  created_at: Date;
+  updated_at: Date;
+  start_time: Date;
+  end_time: Date;
+  booking_location_id: string;
+  location_name: string;
+  provider_id: string;
+  provider_name: string;
+}

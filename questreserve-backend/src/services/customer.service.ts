@@ -59,17 +59,13 @@ export class CustomerService {
 
   async getAvailableSlots(locationId: string, date?: string): Promise<TimeSlot[]> {
     const slots = await this.slotRepo.findAllByLocation(locationId);
+    if (slots.length === 0) return [];
 
-    const availabilityChecks = await Promise.all(
-      slots.map(async (slot) => {
-        const booking = await this.bookingRepo.findByTimeSlot(slot.id);
-        return { slot, available: booking === null };
-      })
-    );
+    const slotIds = slots.map((s) => s.id);
+    const bookedBookings = await this.bookingRepo.findBookedByTimeSlots(slotIds);
+    const bookedSlotIds = new Set(bookedBookings.map((b) => b.time_slot_id));
 
-    const available = availabilityChecks
-      .filter((entry) => entry.available)
-      .map((entry) => entry.slot);
+    const available = slots.filter((slot) => !bookedSlotIds.has(slot.id));
 
     if (date) {
       const filterDate = new Date(date);

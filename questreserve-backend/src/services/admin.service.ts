@@ -1,26 +1,11 @@
 import { Knex } from 'knex';
-import { BookingStatus, Provider, ProviderStatus } from '../types';
+import { AdminBookingView, Provider, ProviderStatus } from '../types';
 
 export class ProviderNotFoundError extends Error {
   constructor() {
     super('Provider not found');
     this.name = 'ProviderNotFoundError';
   }
-}
-
-export interface AdminBookingView {
-  id: string;
-  time_slot_id: string;
-  end_user_id: string;
-  status: BookingStatus;
-  created_at: Date;
-  updated_at: Date;
-  start_time: Date;
-  end_time: Date;
-  booking_location_id: string;
-  location_name: string;
-  provider_id: string;
-  provider_name: string;
 }
 
 export class AdminService {
@@ -37,13 +22,11 @@ export class AdminService {
   }
 
   async setProviderStatus(providerId: string, status: ProviderStatus): Promise<Provider> {
-    const existing = await this.knex<Provider>('provider').where({ id: providerId }).first();
-    if (!existing) throw new ProviderNotFoundError();
-
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ status, updated_at: new Date() })
       .returning('*');
+    if (!updated) throw new ProviderNotFoundError();
     return updated;
   }
 

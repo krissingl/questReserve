@@ -30,6 +30,14 @@ export class BookingRepository extends BaseRepository<Booking> {
     return row ?? null;
   }
 
+  async findBookedByTimeSlots(slotIds: string[]): Promise<Booking[]> {
+    if (slotIds.length === 0) return [];
+    return this.knex<Booking>('booking')
+      .whereIn('time_slot_id', slotIds)
+      .where({ status: 'BOOKED' })
+      .select('*');
+  }
+
   async create(
     data: Omit<Booking, 'id' | 'created_at' | 'updated_at'>
   ): Promise<Booking> {

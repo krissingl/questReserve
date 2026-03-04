@@ -15,6 +15,8 @@ import {
 import { Difficulty } from '../../types';
 
 const router = Router();
+const publicRouter = Router();
+const protectedRouter = Router();
 
 const locationRepo = new BookingLocationRepository(db);
 const slotRepo = new TimeSlotRepository(db);
@@ -48,9 +50,9 @@ function handleCustomerError(err: unknown, res: Response, next: NextFunction): v
   }
 }
 
-// --- Public location browsing ---
+// --- Public routes ---
 
-router.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
+publicRouter.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const { difficulty } = req.query;
   if (difficulty !== undefined) {
     if (typeof difficulty !== 'string' || !VALID_DIFFICULTIES.includes(difficulty as Difficulty)) {
@@ -66,7 +68,7 @@ router.get('/locations', async (req: Request, res: Response, next: NextFunction)
   }
 });
 
-router.get('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
+publicRouter.get('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const location = await customerService.getLocation(req.params.id);
     if (!location) { res.status(404).json({ error: 'Not found' }); return; }
@@ -76,7 +78,7 @@ router.get('/locations/:id', async (req: Request, res: Response, next: NextFunct
   }
 });
 
-router.get('/locations/:id/slots', async (req: Request, res: Response, next: NextFunction) => {
+publicRouter.get('/locations/:id/slots', async (req: Request, res: Response, next: NextFunction) => {
   const { date } = req.query;
   if (date !== undefined && typeof date !== 'string') {
     res.status(400).json({ error: 'date must be a string' }); return;
@@ -92,9 +94,11 @@ router.get('/locations/:id/slots', async (req: Request, res: Response, next: Nex
   }
 });
 
-// --- Authenticated booking routes ---
+// --- Protected routes (end_user only) ---
 
-router.post('/bookings', authenticate, requireRole('end_user'), async (req: Request, res: Response, next: NextFunction) => {
+protectedRouter.use(authenticate, requireRole('end_user'));
+
+protectedRouter.post('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['time_slot_id']);
   if (validationError) { res.status(400).json({ error: validationError }); return; }
   const { time_slot_id } = req.body as Record<string, string>;
@@ -106,7 +110,7 @@ router.post('/bookings', authenticate, requireRole('end_user'), async (req: Requ
   }
 });
 
-router.get('/bookings', authenticate, requireRole('end_user'), async (req: Request, res: Response, next: NextFunction) => {
+protectedRouter.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bookings = await customerService.getBookingHistory(req.user!.sub);
     res.json(bookings);
@@ -115,7 +119,7 @@ router.get('/bookings', authenticate, requireRole('end_user'), async (req: Reque
   }
 });
 
-router.delete('/bookings/:id', authenticate, requireRole('end_user'), async (req: Request, res: Response, next: NextFunction) => {
+protectedRouter.delete('/bookings/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const booking = await customerService.cancelBooking(req.user!.sub, req.params.id);
     res.json(booking);
@@ -123,5 +127,8 @@ router.delete('/bookings/:id', authenticate, requireRole('end_user'), async (req
     handleCustomerError(err, res, next);
   }
 });
+
+router.use(publicRouter);
+router.use(protectedRouter);
 
 export default router;
