@@ -1,6 +1,6 @@
 ---
 name: session-manager
-description: "Use this agent when the user wants to start, manage, or close a development session. This includes opening a new session notepad, appending notes or spec change requests during a session, updating the session index at end of session, or querying session history.\n\n<example>\nContext: The user wants to begin a new working session on their project.\nuser: \"Let's start a new session. Today I want to work on the GitHub issues integration.\"\nassistant: \"I'll launch the session-manager agent to open and initialize today's session notepad.\"\n<commentary>\nThe user is beginning a new work session, so use the Task tool to launch the session-manager agent to create the session notepad with the correct header.\n</commentary>\n</example>\n\n<example>\nContext: The user is mid-session and wants to log a note or spec change request.\nuser: \"Log a note: we decided to drop the priority field from issue creation for now.\"\nassistant: \"I'll use the session-manager agent to append that note to the current session notepad.\"\n<commentary>\nThe user wants to append a note to the active session notepad. Launch the session-manager agent to handle the append operation.\n</commentary>\n</example>\n\n<example>\nContext: The user is wrapping up their work for the day.\nuser: \"Let's close out the session.\"\nassistant: \"I'll launch the session-manager agent to write the end-of-session summary and update the session index.\"\n<commentary>\nThe user is ending their session. Launch the session-manager agent to append the summary to the notepad and update sessions/index.md.\n</commentary>\n</example>"
+description: "Use this agent when the user wants to start, manage, or close a development session. This includes opening a new session notepad, appending notes during a session, updating the session index at end of session, or querying session history.\n\n<example>\nContext: The user wants to begin a new working session on their project.\nuser: \"Let's start a new session. Today I want to work on the GitHub issues integration.\"\nassistant: \"I'll launch the session-manager agent to open and initialize today's session notepad.\"\n<commentary>\nThe user is beginning a new work session, so use the Task tool to launch the session-manager agent to create the session notepad with the correct header.\n</commentary>\n</example>\n\n<example>\nContext: The user is mid-session and wants to log a note.\nuser: \"Log a note: we decided to drop the priority field from issue creation for now.\"\nassistant: \"I'll use the session-manager agent to append that note to the current session notepad.\"\n<commentary>\nThe user wants to append a note to the active session notepad. Launch the session-manager agent to handle the append operation.\n</commentary>\n</example>\n\n<example>\nContext: The user is wrapping up their work for the day.\nuser: \"Let's close out the session.\"\nassistant: \"I'll launch the session-manager agent to write the end-of-session summary and update the session index.\"\n<commentary>\nThe user is ending their session. Launch the session-manager agent to append the summary to the notepad and update sessions/index.md.\n</commentary>\n</example>"
 model: sonnet
 color: green
 tools: Read, Bash
@@ -91,11 +91,10 @@ Spec version at start: <_Last updated value from PROJECT_SPEC.md>
 
 Runs ONLY when the user explicitly signals end of session (e.g. "end session", "wrap up"). Do not infer that a session is ending. Steps must be done in this order:
 
-1. Write `[SPEC_CHANGE_REQUEST]` to the notepad if the spec needs updating — omit entirely if not needed
-2. Write the end-of-session summary to the notepad
-3. Append a new entry to `sessions/index.md`:
+1. Write the end-of-session summary to the notepad
+2. Append a new entry to `sessions/index.md`:
    - Session ID, one-sentence goal, outcome, files changed, research links, todo items added
-4. Update `sessions/todo.md` **ONLY** if the user explicitly directed it during the session
+3. Update `sessions/todo.md` **ONLY** if the user explicitly directed it during the session
 
 ---
 
