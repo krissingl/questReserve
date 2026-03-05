@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, BookingStatus, Difficulty, TimeSlot } from '../types';
+import { BookingLocation, Difficulty, ProviderBookingView, TimeSlot } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -46,19 +46,6 @@ export interface CreateSlotInput {
 export interface UpdateSlotInput {
   start_time?: Date;
   end_time?: Date;
-}
-
-export interface ProviderBookingView {
-  id: string;
-  time_slot_id: string;
-  end_user_id: string;
-  status: BookingStatus;
-  created_at: Date;
-  updated_at: Date;
-  start_time: Date;
-  end_time: Date;
-  booking_location_id: string;
-  location_name: string;
 }
 
 export class ProviderService {

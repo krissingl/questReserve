@@ -1,5 +1,6 @@
 export type AdminRole = 'PLATFORM_ADMIN' | 'CLIENT_SUCCESS' | 'SUPERUSER';
 export type ProviderPlan = 'FREE' | 'STANDARD' | 'PREMIUM';
+export type ProviderStatus = 'ACTIVE' | 'SUSPENDED';
 export type EndUserRole = 'REGULAR' | 'PREMIERE' | 'CORPORATE' | 'RESTRICTED';
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'LEGENDARY';
 export type BookingStatus = 'BOOKED' | 'CANCELLED';
@@ -23,6 +24,7 @@ export interface Provider {
   password_hash: string;
   organization_name: string | null;
   plan: ProviderPlan;
+  status: ProviderStatus;
   created_at: Date;
   updated_at: Date;
 }
@@ -65,4 +67,32 @@ export interface Booking {
   status: BookingStatus;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface ProviderBookingView {
+  id: string;
+  time_slot_id: string;
+  end_user_id: string;
+  status: BookingStatus;
+  created_at: Date;
+  updated_at: Date;
+  start_time: Date;
+  end_time: Date;
+  booking_location_id: string;
+  location_name: string;
+}
+
+export interface AdminBookingView {
+  id: string;
+  time_slot_id: string;
+  end_user_id: string;
+  status: BookingStatus;
+  created_at: Date;
+  updated_at: Date;
+  start_time: Date;
+  end_time: Date;
+  booking_location_id: string;
+  location_name: string;
+  provider_id: string;
+  provider_name: string;
 }

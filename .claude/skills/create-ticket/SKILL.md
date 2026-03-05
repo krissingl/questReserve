@@ -1,3 +1,9 @@
+---
+name: create-ticket
+description: Create a new GitHub issue for the questreserve project
+disable-model-invocation: true
+---
+
 Use the github-ticket-manager agent to create a new GitHub issue for the questreserve project.
 
 Every ticket must follow this template exactly — no additional fields, no bloat:

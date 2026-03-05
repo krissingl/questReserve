@@ -21,6 +21,13 @@ export class DuplicateAccountError extends Error {
   }
 }
 
+export class SuspendedAccountError extends Error {
+  constructor() {
+    super('This account has been suspended');
+    this.name = 'SuspendedAccountError';
+  }
+}
+
 export interface RegisterEndUserInput {
   first_name: string;
   last_name: string;
@@ -103,6 +110,8 @@ export class AuthService {
 
     const valid = await bcrypt.compare(input.password, user.password_hash);
     if (!valid) throw new InvalidCredentialsError();
+
+    if (user.status === 'SUSPENDED') throw new SuspendedAccountError();
 
     return { token: signToken({ sub: user.id, type: 'provider' }) };
   }

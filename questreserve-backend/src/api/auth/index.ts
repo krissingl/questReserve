@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
-import { AuthService, InvalidCredentialsError, DuplicateAccountError } from '../../services/auth.service';
+import { AuthService, InvalidCredentialsError, DuplicateAccountError, SuspendedAccountError } from '../../services/auth.service';
 
 const router = Router();
 const authService = new AuthService(db);
@@ -24,6 +24,8 @@ function handleAuthError(err: unknown, res: Response, next: NextFunction): void 
     res.status(409).json({ error: err.message });
   } else if (err instanceof InvalidCredentialsError) {
     res.status(401).json({ error: err.message });
+  } else if (err instanceof SuspendedAccountError) {
+    res.status(403).json({ error: err.message });
   } else {
     next(err);
   }
