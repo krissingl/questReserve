@@ -17,16 +17,12 @@ While the scenario is framed in a fantastical context, the system is designed wi
 
 **Tech stack:** Node.js, Express 5, TypeScript, Knex, PostgreSQL, JWT
 
----
-
 ## Prerequisites
 
 - **Node.js** v18 or later
 - **PostgreSQL** v14 or later
 - **npm** v9 or later (bundled with Node.js)
 - A terminal with access to `psql` and `createdb`
-
----
 
 ## Clone and Install
 
@@ -35,8 +31,6 @@ git clone <repo-url>
 cd questreserve-backend
 npm install
 ```
-
----
 
 ## Environment Configuration
 
@@ -62,8 +56,6 @@ JWT_EXPIRY_SECONDS=86400
 | `JWT_SECRET` | Signing secret for JWT tokens | `dev-secret-change-in-prod` |
 | `JWT_EXPIRY_SECONDS` | Token lifetime in seconds (optional) | `86400` (24 hours, default) |
 
----
-
 ## Database Setup
 
 Run the following from the `questreserve-backend/` directory:
@@ -83,8 +75,6 @@ createdb questreserve_test
 ```
 
 The `test` Knex environment in `knexfile.ts` points to `questreserve_test` automatically.
-
----
 
 ## Run the Server
 
@@ -106,8 +96,6 @@ Confirm the server is up:
 curl http://localhost:3001/api/health
 # {"status":"ok"}
 ```
-
----
 
 ## Seed Accounts
 
@@ -145,8 +133,6 @@ All seed accounts share the password: `Password1!`
 | `liriel.baenre@menzoberranzan.net` | `CORPORATE` | Active |
 | `raistlin@towers-of-high-sorcery.com` | `CORPORATE` | Active |
 
----
-
 ## API Overview
 
 Full documentation: `docs/api/api-contract.md`
@@ -159,8 +145,6 @@ Full documentation: `docs/api/api-contract.md`
 | Customer browse | `/api/customer/locations*` | None (public) |
 | Customer booking | `/api/customer/bookings*` | Bearer token (end_user) |
 | Admin | `/api/admin/` | Bearer token (admin) |
-
----
 
 ## Project Structure
 
