@@ -161,9 +161,12 @@ When the user provides a completed ticket plan document (following the `sessions
 
 4. **Create tickets sequentially.** After confirmation:
    - Create each ticket in order using the heredoc curl pattern.
-   - After each POST, capture the HTTP status code. A `201` is success — proceed immediately to the next ticket. Do NOT verify, fetch, or check state between tickets.
+   - After each POST, capture the HTTP status code. A `201` is success. Extract the issue number directly from the already-captured response file — do NOT make a second GET request:
+     ```bash
+     ISSUE_NUMBER=$(grep -o '"number":[0-9]*' /tmp/gh_response.json | head -1 | grep -o '[0-9]*')
+     ```
    - After each successful creation, report: `Created N/total: #<issue-number> — <Title>`
-   - Do not pause, verify, or ask for confirmation between tickets under any circumstances.
+   - Do not pause, verify, fetch, or ask for confirmation between tickets under any circumstances. The response body from the POST contains all the information needed — never make additional curl calls between tickets.
 
 5. **On failure.** If any single ticket returns a status code other than `201`:
    - Halt immediately.
