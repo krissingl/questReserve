@@ -7,4 +7,5 @@ export abstract class BaseRepository<T> {
   abstract findAll(): Promise<T[]>;
   abstract create(data: Omit<T, 'id' | 'created_at' | 'updated_at'>): Promise<T>;
   abstract update(id: string, data: Partial<Omit<T, 'id' | 'created_at' | 'updated_at'>>): Promise<T | null>;
+  abstract delete(id: string): Promise<void>;
 }

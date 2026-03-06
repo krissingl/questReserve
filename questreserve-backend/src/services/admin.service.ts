@@ -1,6 +1,8 @@
 import { Knex } from 'knex';
 import { AdminBookingView, Provider, ProviderStatus } from '../types';
 
+type SafeProvider = Omit<Provider, 'password_hash'>;
+
 export class ProviderNotFoundError extends Error {
   constructor() {
     super('Provider not found');
@@ -8,26 +10,34 @@ export class ProviderNotFoundError extends Error {
   }
 }
 
+// Note: AdminService queries Knex directly rather than through a repository.
+// listProviders/getProvider operate on a single table and are candidates for a
+// ProviderRepository in a future refactor. The join-based getPlatformBookings
+// query spans multiple tables and is intentionally kept here as a service-level
+// read-only view. See code review SF-4.
 export class AdminService {
   constructor(private readonly knex: Knex) {}
 
-  async listProviders(): Promise<Provider[]> {
-    return this.knex<Provider>('provider').select('*');
+  async listProviders(): Promise<SafeProvider[]> {
+    const rows = await this.knex<Provider>('provider').select('*');
+    return rows.map(({ password_hash: _ph, ...safe }) => safe);
   }
 
-  async getProvider(providerId: string): Promise<Provider> {
+  async getProvider(providerId: string): Promise<SafeProvider> {
     const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
     if (!provider) throw new ProviderNotFoundError();
-    return provider;
+    const { password_hash: _ph, ...safe } = provider;
+    return safe;
   }
 
-  async setProviderStatus(providerId: string, status: ProviderStatus): Promise<Provider> {
+  async setProviderStatus(providerId: string, status: ProviderStatus): Promise<SafeProvider> {
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ status, updated_at: new Date() })
       .returning('*');
     if (!updated) throw new ProviderNotFoundError();
-    return updated;
+    const { password_hash: _ph, ...safe } = updated;
+    return safe;
   }
 
   async getPlatformBookings(): Promise<AdminBookingView[]> {

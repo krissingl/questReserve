@@ -10,6 +10,8 @@ import {
   SlotNotFoundError,
 } from '../../services/provider.service';
 import { Difficulty } from '../../types';
+import { validateRequiredStrings } from '../../utils/validation';
+import { UnauthenticatedError } from '../../utils/errors';
 
 const router = Router();
 
@@ -19,19 +21,15 @@ const providerService = new ProviderService(locationRepo, slotRepo, db);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
-function validateRequiredStrings(body: unknown, fields: string[]): string | null {
-  if (typeof body !== 'object' || body === null) return 'Request body must be a JSON object';
-  const b = body as Record<string, unknown>;
-  for (const field of fields) {
-    if (typeof b[field] !== 'string' || (b[field] as string).trim() === '') {
-      return `${field} is required`;
-    }
-  }
-  return null;
+function getUser(req: Request): NonNullable<Request['user']> {
+  if (!req.user) throw new UnauthenticatedError();
+  return req.user;
 }
 
 function handleProviderError(err: unknown, res: Response, next: NextFunction): void {
-  if (
+  if (err instanceof UnauthenticatedError) {
+    res.status(401).json({ error: err.message });
+  } else if (
     err instanceof LocationNotFoundError ||
     err instanceof SlotNotFoundError ||
     err instanceof LocationOwnershipError
@@ -55,11 +53,11 @@ router.post('/locations', async (req: Request, res: Response, next: NextFunction
     return;
   }
   try {
-    const location = await providerService.createLocation(req.user!.sub, {
-      name: b.name!,
+    const location = await providerService.createLocation(getUser(req).sub, {
+      name: b.name as string,
       description: b.description,
       difficulty: b.difficulty as Difficulty,
-      cancellation_policy: b.cancellation_policy!,
+      cancellation_policy: b.cancellation_policy as string,
     });
     res.status(201).json(location);
   } catch (err) {
@@ -69,7 +67,7 @@ router.post('/locations', async (req: Request, res: Response, next: NextFunction
 
 router.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const locations = await providerService.getLocations(req.user!.sub);
+    const locations = await providerService.getLocations(getUser(req).sub);
     res.json(locations);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -78,7 +76,7 @@ router.get('/locations', async (req: Request, res: Response, next: NextFunction)
 
 router.get('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const location = await providerService.getLocation(req.user!.sub, req.params.id);
+    const location = await providerService.getLocation(getUser(req).sub, req.params.id);
     res.json(location);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -109,7 +107,7 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
     updates.cancellation_policy = b.cancellation_policy;
   }
   try {
-    const location = await providerService.updateLocation(req.user!.sub, req.params.id, updates);
+    const location = await providerService.updateLocation(getUser(req).sub, req.params.id, updates);
     res.json(location);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -120,7 +118,7 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
 
 router.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const bookings = await providerService.getBookings(req.user!.sub);
+    const bookings = await providerService.getBookings(getUser(req).sub);
     res.json(bookings);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -139,7 +137,7 @@ router.post('/locations/:locationId/slots', async (req: Request, res: Response, 
     res.status(400).json({ error: 'start_time and end_time must be valid ISO date strings' }); return;
   }
   try {
-    const slot = await providerService.createSlot(req.user!.sub, req.params.locationId, {
+    const slot = await providerService.createSlot(getUser(req).sub, req.params.locationId, {
       start_time: startTime,
       end_time: endTime,
     });
@@ -151,7 +149,7 @@ router.post('/locations/:locationId/slots', async (req: Request, res: Response, 
 
 router.get('/locations/:locationId/slots', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const slots = await providerService.getSlots(req.user!.sub, req.params.locationId);
+    const slots = await providerService.getSlots(getUser(req).sub, req.params.locationId);
     res.json(slots);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -177,7 +175,7 @@ router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunctio
     data.end_time = d;
   }
   try {
-    const slot = await providerService.updateSlot(req.user!.sub, req.params.id, data);
+    const slot = await providerService.updateSlot(getUser(req).sub, req.params.id, data);
     res.json(slot);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -186,7 +184,7 @@ router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunctio
 
 router.delete('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await providerService.deleteSlot(req.user!.sub, req.params.id);
+    await providerService.deleteSlot(getUser(req).sub, req.params.id);
     res.status(204).send();
   } catch (err) {
     handleProviderError(err, res, next);

@@ -58,4 +58,8 @@ export class BookingRepository extends BaseRepository<Booking> {
       .returning('*');
     return row ?? null;
   }
+
+  async delete(id: string): Promise<void> {
+    await this.knex<Booking>('booking').where({ id }).delete();
+  }
 }
