@@ -13,6 +13,7 @@ import {
   BookingAlreadyCancelledError,
 } from '../../services/customer.service';
 import { Difficulty } from '../../types';
+import { validateRequiredStrings } from '../../utils/validation';
 
 const router = Router();
 const publicRouter = Router();
@@ -25,15 +26,9 @@ const customerService = new CustomerService(locationRepo, slotRepo, bookingRepo)
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
-function validateRequiredStrings(body: unknown, fields: string[]): string | null {
-  if (typeof body !== 'object' || body === null) return 'Request body must be a JSON object';
-  const b = body as Record<string, unknown>;
-  for (const field of fields) {
-    if (typeof b[field] !== 'string' || (b[field] as string).trim() === '') {
-      return `${field} is required`;
-    }
-  }
-  return null;
+function getUser(req: Request): NonNullable<Request['user']> {
+  if (!req.user) throw new Error('Unauthenticated request reached route handler');
+  return req.user;
 }
 
 function handleCustomerError(err: unknown, res: Response, next: NextFunction): void {
@@ -103,7 +98,7 @@ protectedRouter.post('/bookings', async (req: Request, res: Response, next: Next
   if (validationError) { res.status(400).json({ error: validationError }); return; }
   const { time_slot_id } = req.body as Record<string, string>;
   try {
-    const booking = await customerService.createBooking(req.user!.sub, time_slot_id);
+    const booking = await customerService.createBooking(getUser(req).sub, time_slot_id);
     res.status(201).json(booking);
   } catch (err) {
     handleCustomerError(err, res, next);
@@ -112,7 +107,7 @@ protectedRouter.post('/bookings', async (req: Request, res: Response, next: Next
 
 protectedRouter.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const bookings = await customerService.getBookingHistory(req.user!.sub);
+    const bookings = await customerService.getBookingHistory(getUser(req).sub);
     res.json(bookings);
   } catch (err) {
     handleCustomerError(err, res, next);
@@ -121,7 +116,7 @@ protectedRouter.get('/bookings', async (req: Request, res: Response, next: NextF
 
 protectedRouter.delete('/bookings/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const booking = await customerService.cancelBooking(req.user!.sub, req.params.id);
+    const booking = await customerService.cancelBooking(getUser(req).sub, req.params.id);
     res.json(booking);
   } catch (err) {
     handleCustomerError(err, res, next);

@@ -69,6 +69,7 @@ export class CustomerService {
 
     if (date) {
       const filterDate = new Date(date);
+      if (isNaN(filterDate.getTime())) return [];
       return available.filter((slot) => {
         const slotDate = new Date(slot.start_time);
         return (
