@@ -14,6 +14,7 @@ import {
 } from '../../services/customer.service';
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
+import { UnauthenticatedError } from '../../utils/errors';
 
 const router = Router();
 const publicRouter = Router();
@@ -25,13 +26,6 @@ const bookingRepo = new BookingRepository(db);
 const customerService = new CustomerService(locationRepo, slotRepo, bookingRepo);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
-
-class UnauthenticatedError extends Error {
-  constructor() {
-    super('Missing or invalid Authorization header');
-    this.name = 'UnauthenticatedError';
-  }
-}
 
 function getUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthenticatedError();

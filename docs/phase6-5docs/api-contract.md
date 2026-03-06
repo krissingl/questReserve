@@ -184,6 +184,7 @@ Common error responses that apply to all provider endpoints:
 |---|---|---|
 | 401 | Missing or malformed Authorization header | `"Missing or invalid Authorization header"` |
 | 401 | Token invalid or expired | `"Invalid or expired token"` |
+| 401 | Auth middleware did not populate `req.user` (defensive guard in route handlers) | `"Missing or invalid Authorization header"` |
 | 403 | Token is not a provider token | `"Forbidden"` |
 
 ---
@@ -407,6 +408,7 @@ Common error responses for authenticated customer endpoints:
 |---|---|---|
 | 401 | Missing or malformed Authorization header | `"Missing or invalid Authorization header"` |
 | 401 | Token invalid or expired | `"Invalid or expired token"` |
+| 401 | Auth middleware did not populate `req.user` (defensive guard in route handlers) | `"Missing or invalid Authorization header"` |
 | 403 | Token is not an end_user token | `"Forbidden"` |
 
 ---
