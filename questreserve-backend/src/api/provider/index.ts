@@ -20,13 +20,22 @@ const providerService = new ProviderService(locationRepo, slotRepo, db);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
+class UnauthenticatedError extends Error {
+  constructor() {
+    super('Missing or invalid Authorization header');
+    this.name = 'UnauthenticatedError';
+  }
+}
+
 function getUser(req: Request): NonNullable<Request['user']> {
-  if (!req.user) throw new Error('Unauthenticated request reached route handler');
+  if (!req.user) throw new UnauthenticatedError();
   return req.user;
 }
 
 function handleProviderError(err: unknown, res: Response, next: NextFunction): void {
-  if (
+  if (err instanceof UnauthenticatedError) {
+    res.status(401).json({ error: err.message });
+  } else if (
     err instanceof LocationNotFoundError ||
     err instanceof SlotNotFoundError ||
     err instanceof LocationOwnershipError

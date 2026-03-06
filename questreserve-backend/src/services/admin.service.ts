@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { AdminBookingView, Provider, ProviderStatus } from '../types';
 
-export type SafeProvider = Omit<Provider, 'password_hash'>;
+type SafeProvider = Omit<Provider, 'password_hash'>;
 
 export class ProviderNotFoundError extends Error {
   constructor() {

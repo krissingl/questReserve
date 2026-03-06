@@ -12,12 +12,12 @@ const FIXED_END_USER_ID = "33333333-3333-3333-3333-333333333333";
 
 // Deterministic future dates relative to a fixed reference point.
 // Slots are spread across 6 future weeks at varied times of day.
-function futureDate(weeksFromNow: number, dayOfWeek: number, hour: number): Date {
+function futureDate(weeksFromNow: number, dayOffset: number, hour: number): Date {
   const now = new Date();
   const msPerDay = 24 * 60 * 60 * 1000;
   const startOfWeek = new Date(now.getTime() + weeksFromNow * 7 * msPerDay);
   startOfWeek.setHours(0, 0, 0, 0);
-  const day = new Date(startOfWeek.getTime() + dayOfWeek * msPerDay);
+  const day = new Date(startOfWeek.getTime() + dayOffset * msPerDay);
   day.setHours(hour, 0, 0, 0);
   return day;
 }
