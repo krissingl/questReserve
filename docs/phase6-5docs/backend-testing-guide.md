@@ -2,11 +2,10 @@
 
 _QuestReserve — Backend Environment Setup_
 
-This guide gets a local backend environment to a running state with seed data. It assumes you know what you want to test and just need the environment working.
+This guide gets a local backend environment to a running state with seed data.
 
 For the full environment variable reference, see `questreserve-backend/README.md`.
 
----
 
 ## Prerequisites
 
@@ -14,7 +13,6 @@ For the full environment variable reference, see `questreserve-backend/README.md
 - **PostgreSQL** v14 or later (v18 used in development)
 - A terminal with access to `psql` and `createdb`
 
----
 
 ## Install
 
@@ -22,8 +20,6 @@ For the full environment variable reference, see `questreserve-backend/README.md
 cd questreserve-backend
 npm install
 ```
-
----
 
 ## Environment Configuration
 
@@ -41,7 +37,6 @@ JWT_EXPIRY_SECONDS=86400
 
 `JWT_EXPIRY_SECONDS` is optional and defaults to 86400 (24 hours).
 
----
 
 ## Database Setup
 
@@ -81,7 +76,6 @@ Ran 1 seed files
 
 The seed bcrypt-hashes all passwords at `SALT_ROUNDS = 10`. This takes a few seconds — that is normal.
 
----
 
 ## Start the Server
 
@@ -108,8 +102,6 @@ Expected response:
 ```json
 { "status": "ok" }
 ```
-
----
 
 ## Smoke Checks
 
@@ -168,8 +160,6 @@ curl -s http://localhost:3001/api/customer/bookings \
 
 Expected: JSON array containing one booking for Laios (Ravenloft Great Hall slot, status `BOOKED`).
 
----
-
 ## Common Failure Modes
 
 **Server fails to start: `DB sanity check failed`**
@@ -190,8 +180,6 @@ Expected: JSON array containing one booking for Laios (Ravenloft Great Hall slot
 
 **Wrong Node version**
 - Run `node --version`. If the output is below v18, install a supported version via nvm or the Node.js installer.
-
----
 
 ## Advisory: Automated Testing Strategy
 
