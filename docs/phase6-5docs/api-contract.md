@@ -8,8 +8,6 @@ All request bodies must be `Content-Type: application/json`. All authenticated r
 
 All error responses use the shape: `{ "error": "<message>" }`.
 
----
-
 ## Contents
 
 1. [Health](#1-health)
@@ -19,20 +17,16 @@ All error responses use the shape: `{ "error": "<message>" }`.
 5. [Admin](#5-admin)
 6. [Deprecated](#6-deprecated)
 
----
-
 ## 1. Health
 
 ### `GET /api/health`
 
 Auth: none
 
-**Success — 200**
+**Success : 200**
 ```json
 { "status": "ok" }
 ```
-
----
 
 ## 2. Auth
 
@@ -49,7 +43,7 @@ Auth: none
 | `email` | string | yes | non-empty |
 | `password` | string | yes | non-empty, max 72 characters |
 
-**Success — 201**
+**Success : 201**
 ```json
 { "token": "<jwt>" }
 ```
@@ -63,8 +57,6 @@ Auth: none
 | 400 | Password exceeds 72 characters | `"password must not exceed 72 characters"` |
 | 409 | Email already registered | `"An account with this email already exists"` |
 
----
-
 ### `POST /api/auth/end-user/login`
 
 Auth: none
@@ -76,7 +68,7 @@ Auth: none
 | `email` | string | yes |
 | `password` | string | yes |
 
-**Success — 200**
+**Success : 200**
 ```json
 { "token": "<jwt>" }
 ```
@@ -88,8 +80,6 @@ Auth: none
 | 400 | Missing or empty required field | `"<field> is required"` |
 | 400 | Body is not a JSON object | `"Request body must be a JSON object"` |
 | 401 | Email not found or password incorrect | `"Invalid email or password"` |
-
----
 
 ### `POST /api/auth/provider/register`
 
@@ -105,7 +95,7 @@ Auth: none
 | `password` | string | yes | non-empty, max 72 characters |
 | `organization_name` | string | no | omit or empty string treated as null |
 
-**Success — 201**
+**Success : 201**
 ```json
 { "token": "<jwt>" }
 ```
@@ -119,8 +109,6 @@ Auth: none
 | 400 | Password exceeds 72 characters | `"password must not exceed 72 characters"` |
 | 409 | Email already registered | `"An account with this email already exists"` |
 
----
-
 ### `POST /api/auth/provider/login`
 
 Auth: none
@@ -132,7 +120,7 @@ Auth: none
 | `email` | string | yes |
 | `password` | string | yes |
 
-**Success — 200**
+**Success : 200**
 ```json
 { "token": "<jwt>" }
 ```
@@ -146,8 +134,6 @@ Auth: none
 | 401 | Email not found or password incorrect | `"Invalid email or password"` |
 | 403 | Provider account is suspended | `"This account has been suspended"` |
 
----
-
 ### `POST /api/auth/admin/login`
 
 Auth: none
@@ -159,7 +145,7 @@ Auth: none
 | `email` | string | yes |
 | `password` | string | yes |
 
-**Success — 200**
+**Success : 200**
 ```json
 { "token": "<jwt>" }
 ```
@@ -171,8 +157,6 @@ Auth: none
 | 400 | Missing or empty required field | `"<field> is required"` |
 | 400 | Body is not a JSON object | `"Request body must be a JSON object"` |
 | 401 | Email not found or password incorrect | `"Invalid email or password"` |
-
----
 
 ## 3. Provider
 
@@ -187,8 +171,6 @@ Common error responses that apply to all provider endpoints:
 | 401 | Auth middleware did not populate `req.user` (defensive guard in route handlers) | `"Missing or invalid Authorization header"` |
 | 403 | Token is not a provider token | `"Forbidden"` |
 
----
-
 ### `POST /api/provider/locations`
 
 Create a new booking location owned by the authenticated provider.
@@ -202,7 +184,7 @@ Create a new booking location owned by the authenticated provider.
 | `cancellation_policy` | string | yes | non-empty |
 | `description` | string | no | optional |
 
-**Success — 201**
+**Success : 201**
 ```json
 {
   "id": "<uuid>",
@@ -224,23 +206,19 @@ Create a new booking location owned by the authenticated provider.
 | 400 | Body is not a JSON object | `"Request body must be a JSON object"` |
 | 400 | Invalid difficulty value | `"difficulty must be one of: EASY, MEDIUM, HARD, LEGENDARY"` |
 
----
-
 ### `GET /api/provider/locations`
 
 List all booking locations owned by the authenticated provider.
 
-**Success — 200**
+**Success : 200**
 
 Array of `BookingLocation` objects (same shape as POST success response above).
-
----
 
 ### `GET /api/provider/locations/:id`
 
 Get a single booking location. Returns 404 if the location does not exist or does not belong to the authenticated provider.
 
-**Success — 200**
+**Success : 200**
 
 Single `BookingLocation` object.
 
@@ -249,8 +227,6 @@ Single `BookingLocation` object.
 | Status | Condition | Message |
 |---|---|---|
 | 404 | Location not found or not owned by this provider | `"Not found"` |
-
----
 
 ### `PATCH /api/provider/locations/:id`
 
@@ -265,7 +241,7 @@ Update a booking location. All fields are optional; only supplied fields are upd
 | `difficulty` | string | no | one of: `EASY`, `MEDIUM`, `HARD`, `LEGENDARY` |
 | `cancellation_policy` | string | no | must be a string if present |
 
-**Success — 200**
+**Success : 200**
 
 Updated `BookingLocation` object.
 
@@ -278,8 +254,6 @@ Updated `BookingLocation` object.
 | 400 | Field present but wrong type | `"<field> must be a string"` |
 | 404 | Location not found or not owned by this provider | `"Not found"` |
 
----
-
 ### `POST /api/provider/locations/:locationId/slots`
 
 Create a time slot for a specific booking location.
@@ -291,7 +265,7 @@ Create a time slot for a specific booking location.
 | `start_time` | string | yes | valid ISO 8601 datetime |
 | `end_time` | string | yes | valid ISO 8601 datetime |
 
-**Success — 201**
+**Success : 201**
 ```json
 {
   "id": "<uuid>",
@@ -312,13 +286,11 @@ Create a time slot for a specific booking location.
 | 400 | Invalid datetime format | `"start_time and end_time must be valid ISO date strings"` |
 | 404 | Location not found or not owned by this provider | `"Not found"` |
 
----
-
 ### `GET /api/provider/locations/:locationId/slots`
 
 List all time slots for a specific booking location.
 
-**Success — 200**
+**Success : 200**
 
 Array of `TimeSlot` objects (same shape as POST success response above).
 
@@ -327,8 +299,6 @@ Array of `TimeSlot` objects (same shape as POST success response above).
 | Status | Condition | Message |
 |---|---|---|
 | 404 | Location not found or not owned by this provider | `"Not found"` |
-
----
 
 ### `PATCH /api/provider/slots/:id`
 
@@ -341,7 +311,7 @@ Update a time slot. The slot must belong to a location owned by the authenticate
 | `start_time` | string | no | valid ISO 8601 datetime if present |
 | `end_time` | string | no | valid ISO 8601 datetime if present |
 
-**Success — 200**
+**Success : 200**
 
 Updated `TimeSlot` object.
 
@@ -354,13 +324,11 @@ Updated `TimeSlot` object.
 | 400 | Invalid datetime format | `"<field> must be a valid ISO date string"` |
 | 404 | Slot not found or not owned by this provider | `"Not found"` |
 
----
-
 ### `DELETE /api/provider/slots/:id`
 
 Delete a time slot. The slot must belong to a location owned by the authenticated provider.
 
-**Success — 204**
+**Success : 204**
 
 No body.
 
@@ -370,13 +338,11 @@ No body.
 |---|---|---|
 | 404 | Slot not found or not owned by this provider | `"Not found"` |
 
----
-
 ### `GET /api/provider/bookings`
 
 Get all bookings across all of the authenticated provider's locations, as a joined view.
 
-**Success — 200**
+**Success : 200**
 
 Array of `ProviderBookingView`:
 ```json
@@ -396,8 +362,6 @@ Array of `ProviderBookingView`:
 ]
 ```
 
----
-
 ## 4. Customer
 
 Three browse/availability endpoints are publicly accessible (no auth required). Three booking lifecycle endpoints require authentication as an `end_user`.
@@ -411,8 +375,6 @@ Common error responses for authenticated customer endpoints:
 | 401 | Auth middleware did not populate `req.user` (defensive guard in route handlers) | `"Missing or invalid Authorization header"` |
 | 403 | Token is not an end_user token | `"Forbidden"` |
 
----
-
 ### `GET /api/customer/locations`
 
 Browse all booking locations. Auth: none.
@@ -423,7 +385,7 @@ Browse all booking locations. Auth: none.
 |---|---|---|---|
 | `difficulty` | string | no | one of: `EASY`, `MEDIUM`, `HARD`, `LEGENDARY` |
 
-**Success — 200**
+**Success : 200**
 
 Array of `BookingLocation` objects.
 
@@ -433,13 +395,11 @@ Array of `BookingLocation` objects.
 |---|---|---|
 | 400 | Invalid difficulty value | `"difficulty must be one of: EASY, MEDIUM, HARD, LEGENDARY"` |
 
----
-
 ### `GET /api/customer/locations/:id`
 
 Get a single booking location by ID. Auth: none.
 
-**Success — 200**
+**Success : 200**
 
 Single `BookingLocation` object.
 
@@ -448,8 +408,6 @@ Single `BookingLocation` object.
 | Status | Condition | Message |
 |---|---|---|
 | 404 | Location not found | `"Not found"` |
-
----
 
 ### `GET /api/customer/locations/:id/slots`
 
@@ -461,7 +419,7 @@ Get available (unbooked) time slots for a location. Auth: none.
 |---|---|---|---|
 | `date` | string | no | valid ISO 8601 date string; filters results to that calendar day |
 
-**Success — 200**
+**Success : 200**
 
 Array of available `TimeSlot` objects. Only slots with no active `BOOKED` booking are returned.
 
@@ -471,8 +429,6 @@ Array of available `TimeSlot` objects. Only slots with no active `BOOKED` bookin
 |---|---|---|
 | 400 | `date` present but not a string | `"date must be a string"` |
 | 400 | `date` is not a valid ISO date string | `"date must be a valid ISO date string"` |
-
----
 
 ### `POST /api/customer/bookings`
 
@@ -484,7 +440,7 @@ Book a time slot. Auth: Bearer token (end_user).
 |---|---|---|
 | `time_slot_id` | string | yes |
 
-**Success — 201**
+**Success : 201**
 ```json
 {
   "id": "<uuid>",
@@ -505,23 +461,19 @@ Book a time slot. Auth: Bearer token (end_user).
 | 404 | Time slot not found | `"Not found"` |
 | 409 | Time slot already booked | `"Time slot is not available"` |
 
----
-
 ### `GET /api/customer/bookings`
 
 Get the authenticated user's booking history. Auth: Bearer token (end_user).
 
-**Success — 200**
+**Success : 200**
 
 Array of `Booking` objects (same shape as POST success above, `status` may be `BOOKED` or `CANCELLED`).
-
----
 
 ### `DELETE /api/customer/bookings/:id`
 
 Cancel a booking. Auth: Bearer token (end_user).
 
-**Success — 200**
+**Success : 200**
 
 The updated `Booking` object with `status: "CANCELLED"`.
 
@@ -532,8 +484,6 @@ The updated `Booking` object with `status: "CANCELLED"`.
 | 403 | Booking exists but belongs to a different user | `"Booking does not belong to this user"` |
 | 404 | Booking not found | `"Not found"` |
 | 409 | Booking is already cancelled | `"Booking has already been cancelled"` |
-
----
 
 ## 5. Admin
 
@@ -547,13 +497,11 @@ Common error responses that apply to all admin endpoints:
 | 401 | Token invalid or expired | `"Invalid or expired token"` |
 | 403 | Token is not an admin token | `"Forbidden"` |
 
----
-
 ### `GET /api/admin/providers`
 
 List all registered providers. `password_hash` is excluded from all responses.
 
-**Success — 200**
+**Success : 200**
 
 Array of `SafeProvider`:
 ```json
@@ -572,13 +520,11 @@ Array of `SafeProvider`:
 ]
 ```
 
----
-
 ### `GET /api/admin/providers/:id`
 
 Get a single provider by ID. `password_hash` is excluded.
 
-**Success — 200**
+**Success : 200**
 
 Single `SafeProvider` object (same shape as list item above).
 
@@ -587,8 +533,6 @@ Single `SafeProvider` object (same shape as list item above).
 | Status | Condition | Message |
 |---|---|---|
 | 404 | Provider not found | `"Not found"` |
-
----
 
 ### `PATCH /api/admin/providers/:id/status`
 
@@ -600,7 +544,7 @@ Update a provider's account status.
 |---|---|---|---|
 | `status` | string | yes | one of: `ACTIVE`, `SUSPENDED` |
 
-**Success — 200**
+**Success : 200**
 
 Updated `SafeProvider` object. `password_hash` is excluded.
 
@@ -612,13 +556,11 @@ Updated `SafeProvider` object. `password_hash` is excluded.
 | 400 | Invalid or missing `status` value | `"status must be one of: ACTIVE, SUSPENDED"` |
 | 404 | Provider not found | `"Not found"` |
 
----
-
 ### `GET /api/admin/bookings`
 
 Get all bookings across the entire platform, as a joined view including provider information.
 
-**Success — 200**
+**Success : 200**
 
 Array of `AdminBookingView`:
 ```json
@@ -640,8 +582,6 @@ Array of `AdminBookingView`:
 ]
 ```
 
----
-
 ## 6. Deprecated
 
 ### `GET /api/protected/me`
@@ -652,7 +592,7 @@ Auth: Bearer token (any role: admin, provider, or end_user)
 
 Returns the decoded JWT payload for the authenticated user. This endpoint was created during development scaffolding and is retained pending a dedicated profile endpoint in a future phase.
 
-**Success — 200**
+**Success : 200**
 ```json
 {
   "sub": "<user id>",
