@@ -1,6 +1,19 @@
 # QuestReserve Backend
 
-QuestReserve is a booking platform for dungeon-themed escape room experiences. Providers list locations and time slots; customers browse and book; admins manage the platform. This repository contains the REST API backend.
+**QuestReserve** is a centralized booking platform commissioned by the regional wizard tower to help manage the flow of adventuring parties across independently operated dungeons. Dungeon owners (Providers) often struggle with scheduling, availability, and party management, and the tower requires a system that ensures orderly operations to prevent conflicts.
+
+The platform supports three main roles:
+* Providers - Dungeon owners who manage locations, availability, and bookings.
+* EndUsers - Adventuring parties who browse dungeons and reserve time slots.
+* Administrators - Staff at the tower who oversee operations and ensure platform integrity.
+
+The backend implements a REST API to power these workflows, providing:
+* CRUD operations for Providers, EndUsers, and bookings
+* Availability and scheduling management
+* Role-based access control
+* Multi-tenant support for dungeon operations
+
+While the scenario is framed in a fantastical context, the system is designed with professional, enterprise-grade practices to ensure reliability, scalability, and maintainability.
 
 **Tech stack:** Node.js, Express 5, TypeScript, Knex, PostgreSQL, JWT
 
