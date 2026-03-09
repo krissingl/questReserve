@@ -32,9 +32,9 @@ export async function seed(knex: Knex): Promise<void> {
     const adminUsers = [
       {
         id: FIXED_ADMIN_ID,
-        first_name: "Elminster",
-        last_name: "Aumar",
-        email: "elminster@archmages.net",
+        first_name: "The",
+        last_name: "Wizard",
+        email: "the_wizard@wiztower.com",
         password_hash: hash,
         role: "PLATFORM_ADMIN",
         created_at: trx.fn.now(),
@@ -42,9 +42,9 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-        first_name: "Morwena",
-        last_name: "Ashveil",
-        email: "morwena@archmages.net",
+        first_name: "Gandalf",
+        last_name: "the Gray",
+        email: "gandalf_the_gray@wiztower.com",
         password_hash: hash,
         role: "CLIENT_SUCCESS",
         created_at: trx.fn.now(),
@@ -52,9 +52,9 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
-        first_name: "Sylas",
-        last_name: "Dorne",
-        email: "sylas.dorne@archmages.net",
+        first_name: "Tom",
+        last_name: "Bombadil",
+        email: "tom_bombadil@wiztower.com",
         password_hash: hash,
         role: "SUPERUSER",
         created_at: trx.fn.now(),
@@ -67,7 +67,7 @@ export async function seed(knex: Knex): Promise<void> {
     // PROVIDERS
     // -----------------------------------------------------------------------
     // provider[0] = Strahd (FIXED_PROVIDER_ID, PREMIUM, ACTIVE)
-    // provider[5] = Iuz (SUSPENDED)
+    // provider[5] = Queen Gohma (SUSPENDED)
     const providers = [
       {
         id: FIXED_PROVIDER_ID,
@@ -119,23 +119,23 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "ffffffff-ffff-ffff-ffff-ffffffffffff",
-        first_name: "Mordenkainen",
-        last_name: "of Oerth",
-        email: "mord@greyhawk-adventures.com",
+        first_name: "Vlad",
+        last_name: "Dracula Tepes",
+        email: "dracula@castlevania.net",
         password_hash: hash,
-        organization_name: "Greyhawk Adventures",
-        plan: "FREE",
+        organization_name: "Castlevania Experiences",
+        plan: "PREMIUM",
         status: "ACTIVE",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
       {
         id: "00000000-ffff-0000-ffff-000000000000",
-        first_name: "Iuz",
-        last_name: "the Old",
-        email: "iuz@doomgrinder.com",
+        first_name: "Queen",
+        last_name: "Gohma",
+        email: "gohma@deku-tree.hyrule",
         password_hash: hash,
-        organization_name: "Doomgrinder Thrills",
+        organization_name: "Ganon's Forces",
         plan: "PREMIUM",
         status: "SUSPENDED",
         created_at: trx.fn.now(),
@@ -191,9 +191,9 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "44444444-5555-6666-7777-888888888888",
-        first_name: "Vin",
-        last_name: "Venture",
-        email: "vin@ashmountcorp.com",
+        first_name: "Navi",
+        last_name: "the Fairy",
+        email: "navi@kokiri-forest.hyrule",
         password_hash: hash,
         role: "PREMIERE",
         created_at: trx.fn.now(),
@@ -201,9 +201,9 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "55555555-6666-7777-8888-999999999999",
-        first_name: "Kvothe",
-        last_name: "Kingkiller",
-        email: "kvothe@chronicler.net",
+        first_name: "Tatl",
+        last_name: "the Fairy",
+        email: "tatltale231@yohaa.com",
         password_hash: hash,
         role: "PREMIERE",
         created_at: trx.fn.now(),
@@ -211,9 +211,9 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "66666666-7777-8888-9999-000000000000",
-        first_name: "Liriel",
-        last_name: "Baenre",
-        email: "liriel.baenre@menzoberranzan.net",
+        first_name: "Trevor",
+        last_name: "Belmont",
+        email: "trevor@belmont-order.net",
         password_hash: hash,
         role: "CORPORATE",
         created_at: trx.fn.now(),
@@ -221,9 +221,9 @@ export async function seed(knex: Knex): Promise<void> {
       },
       {
         id: "77777777-8888-9999-0000-111111111111",
-        first_name: "Raistlin",
-        last_name: "Majere",
-        email: "raistlin@towers-of-high-sorcery.com",
+        first_name: "Alucard",
+        last_name: "Tepes",
+        email: "alucard@castlevania.net",
         password_hash: hash,
         role: "CORPORATE",
         created_at: trx.fn.now(),
@@ -392,15 +392,15 @@ export async function seed(knex: Knex): Promise<void> {
       { id: "book0002-0000-0000-0000-000000000000", time_slot_id: "slot0007-0000-0000-0000-000000000000", end_user_id: "11111111-2222-3333-4444-555555555555", status: "BOOKED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
       // BOOKED — Ciri books Undermountain Sargauth Level
       { id: "book0003-0000-0000-0000-000000000000", time_slot_id: "slot0009-0000-0000-0000-000000000000", end_user_id: "33333333-4444-5555-6666-777777777777", status: "BOOKED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      // BOOKED — Vin books the Lonely Mountain
+      // BOOKED — Navi books the Lonely Mountain
       { id: "book0004-0000-0000-0000-000000000000", time_slot_id: "slot0013-0000-0000-0000-000000000000", end_user_id: "44444444-5555-6666-7777-888888888888", status: "BOOKED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      // BOOKED — Raistlin books the Obsidian Citadel
+      // BOOKED — Alucard books the Obsidian Citadel
       { id: "book0005-0000-0000-0000-000000000000", time_slot_id: "slot0017-0000-0000-0000-000000000000", end_user_id: "77777777-8888-9999-0000-111111111111", status: "BOOKED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      // BOOKED — Kvothe books the Whispered Tomb
+      // BOOKED — Tatl books the Whispered Tomb
       { id: "book0006-0000-0000-0000-000000000000", time_slot_id: "slot0015-0000-0000-0000-000000000000", end_user_id: "55555555-6666-7777-8888-999999999999", status: "BOOKED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
       // CANCELLED — Geralt cancelled a Crypts booking
       { id: "book0007-0000-0000-0000-000000000000", time_slot_id: "slot0004-0000-0000-0000-000000000000", end_user_id: "22222222-3333-4444-5555-666666666666", status: "CANCELLED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      // CANCELLED — Liriel cancelled an Obsidian Citadel booking
+      // CANCELLED — Trevor cancelled an Obsidian Citadel booking
       { id: "book0008-0000-0000-0000-000000000000", time_slot_id: "slot0018-0000-0000-0000-000000000000", end_user_id: "66666666-7777-8888-9999-000000000000", status: "CANCELLED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
     ];
     await trx("booking").insert(bookings);

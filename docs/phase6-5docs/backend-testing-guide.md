@@ -115,12 +115,12 @@ curl http://localhost:3001/api/health
 
 **Log in as the seed platform admin**
 
-Admin email: `elminster@archmages.net`, password: `Password1!`
+Admin email: `the_wizard@wiztower.com`, password: `Password1!`
 
 ```bash
 curl -s -X POST http://localhost:3001/api/auth/admin/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"elminster@archmages.net","password":"Password1!"}' | cat
+  -d '{"email":"the_wizard@wiztower.com","password":"Password1!"}' | cat
 ```
 
 Expected: `{ "token": "<jwt>" }`

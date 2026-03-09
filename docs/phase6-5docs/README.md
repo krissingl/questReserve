@@ -105,9 +105,9 @@ All seed accounts share the password: `Password1!`
 
 | Email | Role | Status |
 |---|---|---|
-| `elminster@archmages.net` | `PLATFORM_ADMIN` | Active |
-| `morwena@archmages.net` | `CLIENT_SUCCESS` | Active |
-| `sylas.dorne@archmages.net` | `SUPERUSER` | Active |
+| `the_wizard@wiztower.com` | `PLATFORM_ADMIN` | Active |
+| `gandalf_the_gray@wiztower.com` | `CLIENT_SUCCESS` | Active |
+| `tom_bombadil@wiztower.com` | `SUPERUSER` | Active |
 
 ### Providers
 
@@ -117,8 +117,8 @@ All seed accounts share the password: `Password1!`
 | `madmage@undermtn.com` | Undermountain Corp | STANDARD | Active |
 | `smaug@erebor.co` | _(none)_ | FREE | Active |
 | `vecna@whisperedtombs.net` | Whispered Tombs LLC | STANDARD | Active |
-| `mord@greyhawk-adventures.com` | Greyhawk Adventures | FREE | Active |
-| `iuz@doomgrinder.com` | Doomgrinder Thrills | PREMIUM | **Suspended** |
+| `dracula@castlevania.net` | Castlevania Experiences | PREMIUM | Active |
+| `gohma@deku-tree.hyrule` | Ganon's Forces | PREMIUM | **Suspended** |
 
 ### End Users
 
@@ -128,10 +128,10 @@ All seed accounts share the password: `Password1!`
 | `underhill111@aoi.com` | `REGULAR` | Active |
 | `geralt_riv@witcherscorp.com` | `REGULAR` | Active |
 | `ciri.cintra@witcherscorp.com` | `PREMIERE` | Active |
-| `vin@ashmountcorp.com` | `PREMIERE` | Active |
-| `kvothe@chronicler.net` | `PREMIERE` | Active |
-| `liriel.baenre@menzoberranzan.net` | `CORPORATE` | Active |
-| `raistlin@towers-of-high-sorcery.com` | `CORPORATE` | Active |
+| `navi@kokiri-forest.hyrule` | `PREMIERE` | Active |
+| `tatltale231@yohaa.com` | `PREMIERE` | Active |
+| `trevor@belmont-order.net` | `CORPORATE` | Active |
+| `alucard@castlevania.net` | `CORPORATE` | Active |
 
 ## API Overview
 
