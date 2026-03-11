@@ -2,7 +2,7 @@
 name: code-reviewer-spec
 description: Sub-agent launched by the orchestrator during automated review. Reviews changed files for alignment with spec/PROJECT_SPEC.md — architecture layering, domain model naming, API contracts, and MVP scope boundaries. Read-only — produces a report, makes no changes.
 model: sonnet
-color: purple
+color: yellow
 tools: Read, Bash
 ---
 

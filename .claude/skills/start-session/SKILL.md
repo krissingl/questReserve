@@ -1,7 +1,6 @@
 ---
 name: start-session
-description: Open a new session — creates the session log file, initializes state.json, and returns the session reference
-disable-model-invocation: true
+description: Open a new session — creates the session log file, initializes state.json, and returns the session reference. Invoke when the user says "start a session", "open a session", "start a new session", or similar. Also invoked by the orchestrator agent at the start of a phase.
 tools: Read, Bash
 ---
 

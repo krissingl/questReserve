@@ -1,7 +1,6 @@
 ---
 name: close-session
-description: Write the end-of-session summary to the session log and mark the session complete in the index
-disable-model-invocation: true
+description: Write the end-of-session summary to the session log and mark the session complete in the index. Invoke when the user says "close the session", "end the session", "wrap up the session", or similar. Also invoked by the orchestrator agent at the end of a phase.
 tools: Read, Bash
 ---
 
