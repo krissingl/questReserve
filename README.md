@@ -4,188 +4,42 @@
 
 ---
 
-A modular, role-based booking platform for managing dungeon raid reservations, built as a senior-level portfolio project emphasizing clean architecture, domain modeling, and scalable backend design.
+**QuestReserve** is a custom booking and reservation platform built for [WizardsTowerCorp](https://wizardstowercorp.com) — a company managing a network of dungeon raid experiences for adventure parties of all kinds.
 
-## Project Overview
+We designed and delivered QuestReserve end-to-end: from data architecture and business logic to a polished, role-aware web interface. The result is a platform that handles the full booking lifecycle, keeps each stakeholder in their lane, and runs reliably without friction.
 
-QuestReserve is a booking and management platform designed for WizardsTowerCorp, enabling dungeon owners to manage raid availability while allowing adventure parties to browse and book dungeon experiences.
+## What It Does
 
-The application supports three distinct user types:
+QuestReserve connects three types of users across a single, unified platform:
 
-- Platform Admins - WizardsTowerCorp employees providing customer success and platform oversight
-- Providers - Dungeon owners who manage booking locations and schedules
-- End Users - Adventure parties who browse, book, and manage dungeon raids
+| Role | Who They Are | What They Do |
+|---|---|---|
+| **Platform Admin** | WizardsTowerCorp staff | Oversee providers, manage the platform, and monitor activity |
+| **Provider** | Dungeon owners | List their locations, manage time slots, and track bookings |
+| **End User** | Adventure parties | Browse dungeons, check availability, and book raids |
 
-While the theme is playful, the architecture, data modeling, and code quality are intentionally professional and production-minded.
+Each role sees only what's relevant to them — no noise, no overlap.
 
-## Goals & Constraints
-### Primary Goals
-- Demonstrate senior-level backend architecture
-- Clearly separate concerns across layers
-- Model real-world booking constraints cleanly
-- Remain deployable and demoable as an MVP
-### Explicit Constraints
-- Modular monolith (not microservices)
-- MVP scope only — no overengineering
-- Readability and correctness over feature count
+## What We Built
 
-## Architecture Overview
-### Backend
-- Stack: Node.js, TypeScript, Express, Knex, PostgreSQL
-- Style: Modular monolith with layered architecture
-```
-src/
-├── api/              # Controllers & route handlers
-├── application/      # Business logic (services / use cases)
-├── infrastructure/   # Database access & external integrations
-├── middleware/       # Auth, error handling, logging
-├── utils/            # Shared helpers, enums, constants
-├── tests/            # Unit & integration tests
-```
+- A **provider management system** that lets dungeon owners control their listings, schedules, and booking visibility
+- A **real-time availability engine** that prevents double-bookings and surfaces accurate slot data to end users
+- A **role-based access layer** so admins, providers, and guests each get a tailored experience with appropriate permissions
+- A **clean, maintainable codebase** — built to be handed off, extended, and operated with confidence
 
-#### Key Principles
-- Controllers handle HTTP only
-- Services contain business rules
-- Repositories handle data access
-- No SQL in controllers or services
-### Frontend
-- Stack: React, TypeScript
-- Style: Modular monolith with role-based layouts
-```
-src/
-├── api/              # API client wrappers
-├── components/       # Reusable UI components
-├── hooks/            # Data-fetching and state logic
-├── layouts/          # Role-based layout wrappers
-├── pages/            # Route-level pages
-├── contexts/         # Auth & feature flags
-├── utils/            # Formatting & helpers
-``` 
+## Why QuestReserve
 
-## User Roles & Capabilities
-### Platform Admins (WizardsTowerCorp)
-- Platform-level access
-- Provider visibility
-- Analytics (stubbed or aggregated)
-- No booking or venue ownership
-### Providers (Dungeon Owners)
-- Manage booking locations
-- View time slots and bookings
-- Access provider dashboard
-- Cannot view other providers’ data
-### End Users (Adventure Parties)
-- Browse available dungeons
-- View time slot availability
-- Book and manage reservations
-- View booking history
+Booking platforms are a solved problem — until they aren't. Off-the-shelf tools often mean compromises: rigid workflows, vendor lock-in, or features that don't map to your domain.
 
-## Data Model Overview
-Core entities:
-- ```admin_user```
-- ```provider```
-- ```end_user```
-- ```booking_location```
-- ```time_slot```
-- ```booking```
+QuestReserve was built from scratch around WizardsTowerCorp's actual business model. That means the rules, the roles, and the data structures reflect how they actually operate — not a generic approximation.
 
-Relationships:
-```
-Provider
-  → BookingLocation
-    → TimeSlot
-      → Booking
-        → EndUser
-```
+If your business has a unique booking flow, specialized user types, or specific operational constraints, a custom platform built to your domain will always outperform a generic SaaS tool adapted to fit.
 
-Design decisions:
-- Separate tables per user type (no polymorphic users)
-- Explicit foreign keys and cascading rules
-- Minimal booking model to preserve MVP scope
+## Technical Notes
 
-## API Overview (MVP)
-### Providers
-- ```GET /api/providers/:id```
-- ```GET /api/providers/:id/dashboard```
+For implementation details, see the dedicated README files:
 
-### Booking Locations
-- ```GET /api/venues```
-- ```GET /api/venues/:id```
-- ```GET /api/venues/:id/timeslots```
+- [`questreserve-backend/README.md`](questreserve-backend/README.md) — API design, data model, backend architecture
+- [`questreserve-frontend/README.md`](questreserve-frontend/README.md) — UI architecture, component structure, local dev
 
-### End Users
-- ```GET /api/end-users/:id/bookings```
-
-### API Characteristics
-- Consistent JSON response shapes
-- Empty states return empty arrays
-- Invalid IDs return 404
-- Centralized error handling
-
-## Authentication & Authorization
-- JWT-based authentication
-- Tokens include user ID and user type
-- Role-based route protection
-- Passwords stored as secure hashes
-- OAuth, refresh tokens, and MFA are intentionally out of scope for MVP.
-
-## Business Rules (MVP)
-- Time slots cannot be double-booked
-- Cancelled bookings excluded from availability
-- Past and future bookings correctly separated
-- Availability calculated server-side
-- Chronological ordering enforced at query level
-
-## Testing & Validation
-- Database migrations and seeds validated
-- API endpoints manually smoke-tested
-- Centralized error handling in place
-- Edge cases verified:
-  - Empty datasets
-  - Invalid IDs
-  - Cancelled bookings
-
-Automated tests are present where useful but not exhaustive by design.
-
-## Local Development
-### Prerequisites
-- Node.js
-- PostgreSQL
-- npm or yarn
-
-### Setup
-```
-git clone <repo>
-cd questreserve
-npm install
-npm run migrate
-npm run seed
-npm run dev
-```
-The application should be fully demoable locally in under 10 minutes.
-
-## Known Limitations (By Design)
-The following features are intentionally out of scope for this MVP:
-- Payments
-- Marketing tools
-- Background jobs
-- Advanced analytics
-- Feature flag infrastructure
-- Microservices architecture
-
-## Potential Enhancements
-- Soft-delete bookings
-- Booking cancellation endpoint
-- Admin impersonation
-- Availability optimization
-- Analytics aggregation
-
-## Why This Project Exists
-- This project exists to demonstrate:
-  - Architectural judgment
-  - Scope control
-  - Data modeling clarity
-  - Clean separation of concerns
-It prioritizes finishing well over building endlessly.
-
-The project is considered Done when all sections below are satisfied.
-“Stretch” items explicitly do not block Done status.
+*Built with care by a team that takes boring infrastructure seriously.*

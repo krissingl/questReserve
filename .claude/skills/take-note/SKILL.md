@@ -1,7 +1,6 @@
 ---
 name: take-note
-description: Append a timestamped note to the current session log
-disable-model-invocation: true
+description: Append a timestamped note to the current session log. Invoke when the user says "take a note", "make a note", "note that", "note this down", or similar. Also invoked by the orchestrator agent to record decisions mid-session.
 tools: Read, Bash
 ---
 

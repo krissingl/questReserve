@@ -1,7 +1,6 @@
 ---
 name: add-todo
-description: Append an item to the project todo list at sessions/todo.md
-disable-model-invocation: true
+description: Append an item to the project todo list at sessions/todo.md. Invoke when the user says "add a todo", "add to the todo list", "make a todo", or similar.
 tools: Read, Bash
 ---
 

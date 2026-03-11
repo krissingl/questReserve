@@ -60,19 +60,31 @@ JWT_EXPIRY_SECONDS=86400
 
 Run the following from the `questreserve-backend/` directory:
 
+If the database doesn't exist yet, create it first:
+
 ```bash
 createdb questreserve
+```
+
+> If the database already exists, skip this step — `createdb` will error on duplicates.
+> If your PostgreSQL user requires authentication, use `createdb -U <your-pg-username> questreserve`.
+
+Then run migrations and seeds:
+
+```bash
 npx knex --knexfile src/db/knexfile.ts migrate:latest
 npx knex --knexfile src/db/knexfile.ts seed:run
 ```
 
 The seed bcrypt-hashes all passwords at `SALT_ROUNDS = 10`. Expect a few seconds of processing during seed execution.
 
-For test runs, create the test database separately:
+For test runs, create the test database separately if it doesn't exist yet:
 
 ```bash
 createdb questreserve_test
 ```
+
+> If the test database already exists, skip this step.
 
 The `test` Knex environment in `knexfile.ts` points to `questreserve_test` automatically.
 
@@ -105,9 +117,9 @@ All seed accounts share the password: `Password1!`
 
 | Email | Role | Status |
 |---|---|---|
-| `elminster@archmages.net` | `PLATFORM_ADMIN` | Active |
-| `morwena@archmages.net` | `CLIENT_SUCCESS` | Active |
-| `sylas.dorne@archmages.net` | `SUPERUSER` | Active |
+| `the_wizard@wiztower.com` | `PLATFORM_ADMIN` | Active |
+| `gandalf_the_gray@wiztower.com` | `CLIENT_SUCCESS` | Active |
+| `tom_bombadil@wiztower.com` | `SUPERUSER` | Active |
 
 ### Providers
 
@@ -117,8 +129,8 @@ All seed accounts share the password: `Password1!`
 | `madmage@undermtn.com` | Undermountain Corp | STANDARD | Active |
 | `smaug@erebor.co` | _(none)_ | FREE | Active |
 | `vecna@whisperedtombs.net` | Whispered Tombs LLC | STANDARD | Active |
-| `mord@greyhawk-adventures.com` | Greyhawk Adventures | FREE | Active |
-| `iuz@doomgrinder.com` | Doomgrinder Thrills | PREMIUM | **Suspended** |
+| `dracula@castlevania.net` | Castlevania Experiences | PREMIUM | Active |
+| `gohma@deku-tree.hyrule` | Ganon's Forces | PREMIUM | **Suspended** |
 
 ### End Users
 
@@ -128,10 +140,10 @@ All seed accounts share the password: `Password1!`
 | `underhill111@aoi.com` | `REGULAR` | Active |
 | `geralt_riv@witcherscorp.com` | `REGULAR` | Active |
 | `ciri.cintra@witcherscorp.com` | `PREMIERE` | Active |
-| `vin@ashmountcorp.com` | `PREMIERE` | Active |
-| `kvothe@chronicler.net` | `PREMIERE` | Active |
-| `liriel.baenre@menzoberranzan.net` | `CORPORATE` | Active |
-| `raistlin@towers-of-high-sorcery.com` | `CORPORATE` | Active |
+| `navi@kokiri-forest.hyrule` | `PREMIERE` | Active |
+| `tatltale231@yohaa.com` | `PREMIERE` | Active |
+| `trevor@belmont-order.net` | `CORPORATE` | Active |
+| `alucard@castlevania.net` | `CORPORATE` | Active |
 
 ## API Overview
 

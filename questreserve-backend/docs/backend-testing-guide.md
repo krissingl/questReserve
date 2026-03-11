@@ -115,12 +115,12 @@ curl http://localhost:3001/api/health
 
 **Log in as the seed platform admin**
 
-Admin email: `elminster@archmages.net`, password: `Password1!`
+Admin email: `the_wizard@wiztower.com`, password: `Password1!`
 
 ```bash
 curl -s -X POST http://localhost:3001/api/auth/admin/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"elminster@archmages.net","password":"Password1!"}' | cat
+  -d '{"email":"the_wizard@wiztower.com","password":"Password1!"}' | cat
 ```
 
 Expected: `{ "token": "<jwt>" }`
@@ -148,14 +148,19 @@ Expected: JSON array of 8 booking location objects.
 
 End user email: `laios.touden@yohaa.com` (fixed UUID: `33333333-3333-3333-3333-333333333333`), password: `Password1!`
 
-```bash
-TOKEN=$(curl -s -X POST http://localhost:3001/api/auth/end-user/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"laios.touden@yohaa.com","password":"Password1!"}' | \
-  node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).token));")
+Step 1 — log in and copy the token from the response:
 
+```bash
+curl -s -X POST http://localhost:3001/api/auth/end-user/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"laios.touden@yohaa.com","password":"Password1!"}'
+```
+
+Step 2 — paste the token in place of `<token>`:
+
+```bash
 curl -s http://localhost:3001/api/customer/bookings \
-  -H "Authorization: Bearer $TOKEN" | cat
+  -H "Authorization: Bearer <token>" | cat
 ```
 
 Expected: JSON array containing one booking for Laios (Ravenloft Great Hall slot, status `BOOKED`).
@@ -173,7 +178,7 @@ Expected: JSON array containing one booking for Laios (Ravenloft Great Hall slot
 - PostgreSQL is not running, or the `.env` is not being picked up. Confirm the `.env` is at the repo root.
 
 **Seed accounts not found / login returns 401**
-- The seed may not have run, or was run against a different database. Re-run `npx knex seed:run`. Note that re-running the seed on a non-empty database will fail with a unique-constraint error — truncate the tables first or recreate the DB.
+- The seed may not have run, or was run against a different database. Re-run `npx knex --knexfile src/db/knexfile.ts seed:run`. The seed is idempotent — it clears all tables before re-inserting, so re-running is safe.
 
 **Token expires quickly**
 - `JWT_EXPIRY_SECONDS` defaults to 86400 (24 hours). If you set it too low in `.env`, tokens expire quickly. Set it to `86400` for local development.
@@ -181,23 +186,3 @@ Expected: JSON array containing one booking for Laios (Ravenloft Great Hall slot
 **Wrong Node version**
 - Run `node --version`. If the output is below v18, install a supported version via nvm or the Node.js installer.
 
-## Advisory: Automated Testing Strategy
-
-No test files exist yet. When automated tests are introduced, the recommended approach is:
-
-**Unit tests** — `CustomerService`, `ProviderService`, `AuthService`
-- Mock all repository dependencies with jest mock functions.
-- Test each typed error case (`SlotUnavailableError`, `BookingOwnershipError`, etc.) and each happy path.
-
-**Integration tests** — use the `test` Knex environment
-- The `test` environment in `knexfile.ts` connects to `questreserve_test` (a separate DB).
-- Each test suite runs `knex migrate:latest` before tests and `knex migrate:rollback --all` after.
-- Seed only the data each test needs — avoid relying on `001_core_init.ts` in integration tests.
-
-**Test runner** — Jest with `ts-jest`
-- Consistent with the project's TypeScript stack.
-- `ts-jest` handles TypeScript compilation without a separate build step.
-
-**Setup utilities** — `src/tests/index.ts`
-- Currently an empty stub from the Phase 2 backend foundation.
-- Intended home for shared test helpers: knex instance setup, factory functions, teardown utilities.
