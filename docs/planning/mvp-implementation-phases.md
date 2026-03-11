@@ -5,80 +5,73 @@ _Created: 2026-02-24 | Status: DRAFT_
 This document captures the agreed high-level implementation sequence for the QuestReserve MVP.
 Each phase is a logical unit of work. Steps within each phase are defined separately.
 
----
+## Phase 1: Database Migrations
+Status : ✅ COMPLETE
 
-## Phase 1: Database Migrations — ✅ COMPLETE
+Provider account management, platform-wide booking activity view.
 
 All 6 MVP tables defined and migrated via Knex:
 `admin_user`, `provider`, `end_user`, `booking_location`, `time_slot`, `booking`
 
----
-
 ## Phase 2: Backend Foundation
+Status : ✅ COMPLETE
 
 Properly structure the Express app (move logic out of `index.ts` into the `app` module), populate empty module stubs, establish middleware layer (error handling, logging, JSON parsing), define base patterns (repository pattern, service layer conventions).
 
----
-
 ## Phase 3: Authentication
+Status : ✅ COMPLETE
 
 JWT middleware, login/register endpoints for all three user types, protected route scaffolding.
 
----
-
 ## Phase 4: Backend — Provider Domain
+Status : ✅ COMPLETE
 
 BookingLocation and TimeSlot CRUD, provider-scoped booking view, basic revenue reporting endpoint.
 
----
-
 ## Phase 5: Backend — Customer Domain
+Status : ✅ COMPLETE
 
 EndUser registration, browse/filter BookingLocations, TimeSlot availability, Booking creation, booking history, cancellation.
 
----
-
 ## Phase 6: Backend — Admin Domain
+Status : ✅ COMPLETE
 
 Provider account management, platform-wide booking activity view.
 
----
+## Phase 6.5: Backend Review
+Status : PENDING REVIEW
+
+Review work completed on backend against plans and spec. Formalize error handling. Create Backend Documentation.
 
 ## Phase 7: Frontend — Branding & UI Strategy
+Status : NOT STARTED
 
 Gather client branding/style guide, produce a UI strategy document covering design system, component library choice, color/type tokens. Reference document for all subsequent frontend phases.
 
----
-
 ## Phase 8: Frontend — Scaffold
+Status : NOT STARTED
 
 React app structure, routing, role-scoped layouts (`CustomerLayout`, `ProviderLayout`, `AdminLayout`), auth context, API client layer.
 
----
-
 ## Phase 9: Frontend — Auth Views
+Status : NOT STARTED
 
 Login/register pages for each user type.
 
----
-
 ## Phase 10: Frontend — Customer Portal
+Status : NOT STARTED
 
 Browse, book, manage bookings.
 
----
-
 ## Phase 11: Frontend — Provider Dashboard
+Status : NOT STARTED
 
 Manage locations, timeslots, view bookings and revenue.
 
----
-
 ## Phase 12: Frontend — Admin Panel
+Status : NOT STARTED
 
 Provider management, platform activity view.
-
----
 
 ## Stretch Goals
 
@@ -94,8 +87,11 @@ US-DO-07 ("see revenue generated from bookings") and US-DO-09 ("view analytics o
 
 Once a payment model is introduced, implement a provider-facing reporting endpoint that surfaces: revenue per location, booking frequency trends, and occupancy rates. This fulfils both user stories and feeds the provider dashboard (Phase 11). US-DO-09 (analytics/trends) is Post-MVP/Stretch by its own classification and should be addressed after US-DO-07 is unblocked by the payment schema.
 
-### Replace Scaffolded `/api/protected/me` with Real User-Fetch Endpoints
+### Save Images
 
-`GET /api/protected/me` was added in Phase 3 as scaffolding to validate the auth middleware chain. It returns the raw token payload and lives in `src/api/protected/`. It is not a production feature.
+All users should be able to add a profile picture and save it to their account. Providers should be able to add images to their booking locations for advertising and clarification reasons.
 
-When domain routes are built out (Phases 4–6), this route should be replaced with real identity endpoints per user type (e.g. `GET /api/end-users/me`, `GET /api/providers/me`) that fetch the full user record from the database. The `src/api/protected/` directory and its scaffolding route should be removed at that point.
+### Booking Reviews
+
+EndUsers should be able to leave reviews after booking a location and experience. Explore internal system for Providers to review EndUsers also - did they follow rules, were they honest about party size, ect.
+
