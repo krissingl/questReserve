@@ -78,15 +78,76 @@ npx knex --knexfile src/db/knexfile.ts seed:run
 
 The seed bcrypt-hashes all passwords at `SALT_ROUNDS = 10`. Expect a few seconds of processing during seed execution.
 
-For test runs, create the test database separately if it doesn't exist yet:
+
+## Automated Testing
+
+### Test database setup
+
+The test suite uses a separate PostgreSQL database (`questreserve_test`). Create it once if it does not already exist:
 
 ```bash
 createdb questreserve_test
 ```
 
 > If the test database already exists, skip this step.
+> If your PostgreSQL user requires authentication, use `createdb -U <your-pg-username> questreserve_test`.
 
-The `test` Knex environment in `knexfile.ts` points to `questreserve_test` automatically.
+Migrations are run and rolled back automatically by the integration test suite — no manual migration step is needed for testing.
+
+### Running the tests
+
+All commands should be run from the `questreserve-backend/` directory.
+
+**Run the full test suite (unit + integration):**
+
+```bash
+npm test
+```
+
+**Run a specific test file:**
+
+```bash
+npx jest <filename-pattern>
+# Examples:
+npx jest auth.service.test
+npx jest customer.service.integration.test
+```
+
+**Run all unit tests (no DB required):**
+
+```bash
+npx jest --testPathPatterns="(?<!integration)\.test\.ts$"
+```
+
+**Run all integration tests only:**
+
+```bash
+npx jest --testPathPatterns="integration\.test\.ts$"
+```
+
+### Test types
+
+| Type | File pattern | Requires DB |
+|---|---|---|
+| Unit | `*.test.ts` (excludes integration files) | No — uses in-memory mocks |
+| Integration | `*.integration.test.ts` | Yes — connects to `questreserve_test` |
+
+### What is tested
+
+| Service | Unit test file | Integration test file |
+|---|---|---|
+| AuthService | `auth.service.test.ts` | — |
+| CustomerService | `customer.service.test.ts` | `customer.service.integration.test.ts` |
+| ProviderService | `provider.service.test.ts` | `provider.service.integration.test.ts` |
+| AdminService | `admin.service.test.ts` | — |
+
+Integration tests cover the full booking workflow (create, cancel, re-book) and location/slot ownership enforcement against a live PostgreSQL schema.
+
+### Notes
+
+- Integration tests automatically run `migrate.latest` in `beforeAll` and `migrate.rollback --all` in `afterAll`. No manual cleanup is required between runs.
+- Each test creates its own isolated data (unique UUIDs and email addresses) so tests do not interfere with each other even when run in parallel.
+- The test environment is configured in `src/db/knexfile.ts` under the `test` key and always targets the `questreserve_test` database, never the development or production database.
 
 ## Run the Server
 
@@ -171,7 +232,7 @@ src/
   middleware/    authenticate, requireRole, requestLogger, errorHandler.
   repositories/  Concrete repository implementations (BookingLocation, TimeSlot, Booking).
   services/      Business logic layer (AuthService, ProviderService, CustomerService, AdminService).
-  tests/         Empty stub — intended home for test setup utilities when testing is introduced.
+  tests/         Shared test utilities: getTestKnex, runMigrations, rollbackMigrations, and factory helpers for seeding test data.
   types/         Shared TypeScript interfaces and type aliases for all domain entities.
   utils/         jwt.ts (sign/verify), validation.ts (shared input validation helper).
   index.ts       Entry point — DB sanity check and server start.
