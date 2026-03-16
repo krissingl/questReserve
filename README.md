@@ -4,7 +4,7 @@
 
 ---
 
-**QuestReserve** is a custom booking and reservation platform built for [WizardsTowerCorp](https://wizardstowercorp.com) — a company managing a network of dungeon raid experiences for adventure parties of all kinds.
+**QuestReserve** is a custom booking and reservation platform built for [WizardsTowerCorp](https://wizardstowercorp.com) - a company managing a network of dungeon raid experiences for adventure parties of all kinds.
 
 We designed and delivered QuestReserve end-to-end: from data architecture and business logic to a polished, role-aware web interface. The result is a platform that handles the full booking lifecycle, keeps each stakeholder in their lane, and runs reliably without friction.
 
@@ -18,7 +18,7 @@ QuestReserve connects three types of users across a single, unified platform:
 | **Provider** | Dungeon owners | List their locations, manage time slots, and track bookings |
 | **End User** | Adventure parties | Browse dungeons, check availability, and book raids |
 
-Each role sees only what's relevant to them — no noise, no overlap.
+Each role sees only what's relevant to them - no noise, no overlap.
 
 ## What We Built
 
@@ -29,7 +29,7 @@ Each role sees only what's relevant to them — no noise, no overlap.
 
 ## Why QuestReserve
 
-Booking platforms are a solved problem — until they aren't. Off-the-shelf tools often mean compromises: rigid workflows, vendor lock-in, or features that don't map to your domain.
+Booking platforms are a solved problem - until they aren't. Off-the-shelf tools often mean compromises: rigid workflows, vendor lock-in, or features that don't map to your domain.
 
 QuestReserve was built from scratch around WizardsTowerCorp's actual business model. That means the rules, the roles, and the data structures reflect how they actually operate — not a generic approximation.
 
@@ -39,7 +39,7 @@ If your business has a unique booking flow, specialized user types, or specific 
 
 For implementation details, see the dedicated README files:
 
-- [`questreserve-backend/README.md`](questreserve-backend/README.md) — API design, data model, backend architecture
-- [`questreserve-frontend/README.md`](questreserve-frontend/README.md) — UI architecture, component structure, local dev
+- [`questreserve-backend/README.md`](questreserve-backend/README.md) - API design, data model, backend architecture
+- [`questreserve-frontend/README.md`](questreserve-frontend/README.md) - UI architecture, component structure, local dev
 
 *Built with care by someone that takes boring infrastructure seriously.*
