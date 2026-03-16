@@ -11,13 +11,15 @@ export function getTestKnex(): Knex {
   return knex(knexConfig['test']);
 }
 
+const MIGRATIONS_DIR = path.resolve(__dirname, '../db/migrations');
+
 export async function runMigrations(testKnex: Knex): Promise<void> {
-  await testKnex.migrate.latest();
+  await testKnex.migrate.latest({ directory: MIGRATIONS_DIR });
 }
 
 export async function rollbackMigrations(testKnex: Knex): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await testKnex.migrate.rollback({ all: true } as any);
+  await testKnex.migrate.rollback({ all: true, directory: MIGRATIONS_DIR } as any);
 }
 
 export async function createTestEndUser(
