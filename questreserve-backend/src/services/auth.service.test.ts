@@ -69,8 +69,7 @@ describe('AuthService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockSignToken.mockReturnValue('mock-jwt-token');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (mockBcrypt.hash as any).mockResolvedValue('hashed-password');
+    mockBcrypt.hash.mockResolvedValue('hashed-password');
   });
 
   describe('registerEndUser', () => {

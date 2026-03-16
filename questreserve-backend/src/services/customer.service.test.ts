@@ -132,9 +132,6 @@ describe('CustomerService', () => {
     });
 
     it('applies a date filter correctly when one is provided', async () => {
-      // Use new Date(y, m, d, h) (local time constructor) for slots, and
-      // pass the filter date as an ISO string without 'Z' so new Date() in
-      // the service also interprets it as local time — matching the slot's local date.
       const day1Start = new Date(2030, 5, 15, 10, 0, 0); // June 15 local, 10am
       const day2Start = new Date(2030, 5, 16, 10, 0, 0); // June 16 local, 10am
       const slot1 = makeSlot({ id: 'slot-1', start_time: day1Start });
@@ -142,8 +139,6 @@ describe('CustomerService', () => {
       slotRepo.findAllByLocation.mockResolvedValue([slot1, slot2]);
       bookingRepo.findBookedByTimeSlots.mockResolvedValue([]);
 
-      // '2030-06-15T12:00:00' (no Z) is parsed as local midnight by new Date(),
-      // giving the same local date as day1Start.
       const result = await service.getAvailableSlots('loc-1', '2030-06-15T12:00:00');
 
       expect(result).toEqual([slot1]);
