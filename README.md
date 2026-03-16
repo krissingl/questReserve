@@ -25,13 +25,13 @@ Each role sees only what's relevant to them - no noise, no overlap.
 - A **provider management system** that lets dungeon owners control their listings, schedules, and booking visibility
 - A **real-time availability engine** that prevents double-bookings and surfaces accurate slot data to end users
 - A **role-based access layer** so admins, providers, and guests each get a tailored experience with appropriate permissions
-- A **clean, maintainable codebase** — built to be handed off, extended, and operated with confidence
+- A **clean, maintainable codebase** - built to be handed off, extended, and operated with confidence
 
 ## Why QuestReserve
 
 Booking platforms are a solved problem - until they aren't. Off-the-shelf tools often mean compromises: rigid workflows, vendor lock-in, or features that don't map to your domain.
 
-QuestReserve was built from scratch around WizardsTowerCorp's actual business model. That means the rules, the roles, and the data structures reflect how they actually operate — not a generic approximation.
+QuestReserve was built from scratch around WizardsTowerCorp's actual business model. That means the rules, the roles, and the data structures reflect how they actually operate - not a generic approximation.
 
 If your business has a unique booking flow, specialized user types, or specific operational constraints, a custom platform built to your domain will always outperform a generic SaaS tool adapted to fit.
 
