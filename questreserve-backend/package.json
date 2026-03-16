@@ -16,7 +16,13 @@
     "testEnvironment": "node",
     "testMatch": [
       "<rootDir>/src/**/*.test.ts"
-    ]
+    ],
+    "transformIgnorePatterns": [
+      "/node_modules/(?!uuid)"
+    ],
+    "moduleNameMapper": {
+      "^uuid$": "<rootDir>/src/tests/__mocks__/uuid.js"
+    }
   },
   "keywords": [],
   "author": "",
