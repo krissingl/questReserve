@@ -99,6 +99,29 @@ describe('ProviderService', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // getLocations
+  // ---------------------------------------------------------------------------
+  describe('getLocations', () => {
+    it('returns all locations for the provider', async () => {
+      const locations = [makeLocation(), makeLocation({ id: 'loc-2' })];
+      locationRepo.findAllByProvider.mockResolvedValue(locations);
+
+      const result = await service.getLocations('prov-a');
+
+      expect(result).toEqual(locations);
+      expect(locationRepo.findAllByProvider).toHaveBeenCalledWith('prov-a');
+    });
+
+    it('returns an empty array when the provider has no locations', async () => {
+      locationRepo.findAllByProvider.mockResolvedValue([]);
+
+      const result = await service.getLocations('prov-a');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // getLocation
   // ---------------------------------------------------------------------------
   describe('getLocation', () => {

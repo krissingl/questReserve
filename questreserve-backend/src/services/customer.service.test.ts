@@ -210,6 +210,29 @@ describe('CustomerService', () => {
   });
 
   // ---------------------------------------------------------------------------
+  // getBookingHistory
+  // ---------------------------------------------------------------------------
+  describe('getBookingHistory', () => {
+    it('delegates to bookingRepo.findAllByEndUser and returns the results', async () => {
+      const bookings = [makeBooking(), makeBooking({ id: 'booking-2' })];
+      bookingRepo.findAllByEndUser.mockResolvedValue(bookings);
+
+      const result = await service.getBookingHistory('user-1');
+
+      expect(result).toEqual(bookings);
+      expect(bookingRepo.findAllByEndUser).toHaveBeenCalledWith('user-1');
+    });
+
+    it('returns an empty array when the user has no bookings', async () => {
+      bookingRepo.findAllByEndUser.mockResolvedValue([]);
+
+      const result = await service.getBookingHistory('user-1');
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // cancelBooking
   // ---------------------------------------------------------------------------
   describe('cancelBooking', () => {
