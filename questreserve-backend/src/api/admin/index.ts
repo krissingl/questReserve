@@ -2,11 +2,13 @@ import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
 import { AdminService, ProviderNotFoundError } from '../../services/admin.service';
+import { ProviderRepository } from '../../repositories/provider.repository';
 import { ProviderStatus } from '../../types';
 
 const router = Router();
 
-const adminService = new AdminService(db);
+const providerRepo = new ProviderRepository(db);
+const adminService = new AdminService(db, providerRepo);
 
 const VALID_PROVIDER_STATUSES: ProviderStatus[] = ['ACTIVE', 'SUSPENDED'];
 

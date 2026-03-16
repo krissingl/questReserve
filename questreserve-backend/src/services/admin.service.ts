@@ -1,5 +1,6 @@
 import { Knex } from 'knex';
 import { AdminBookingView, Provider, ProviderStatus } from '../types';
+import { ProviderRepository } from '../repositories/provider.repository';
 
 type SafeProvider = Omit<Provider, 'password_hash'>;
 
@@ -10,31 +11,26 @@ export class ProviderNotFoundError extends Error {
   }
 }
 
-// Note: AdminService queries Knex directly rather than through a repository.
-// listProviders/getProvider operate on a single table and are candidates for a
-// ProviderRepository in a future refactor. The join-based getPlatformBookings
-// query spans multiple tables and is intentionally kept here as a service-level
-// read-only view. See code review SF-4.
 export class AdminService {
-  constructor(private readonly knex: Knex) {}
+  constructor(
+    private readonly knex: Knex,
+    private readonly providerRepo: ProviderRepository
+  ) {}
 
   async listProviders(): Promise<SafeProvider[]> {
-    const rows = await this.knex<Provider>('provider').select('*');
+    const rows = await this.providerRepo.findAll();
     return rows.map(({ password_hash: _ph, ...safe }) => safe);
   }
 
   async getProvider(providerId: string): Promise<SafeProvider> {
-    const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
+    const provider = await this.providerRepo.findById(providerId);
     if (!provider) throw new ProviderNotFoundError();
     const { password_hash: _ph, ...safe } = provider;
     return safe;
   }
 
   async setProviderStatus(providerId: string, status: ProviderStatus): Promise<SafeProvider> {
-    const [updated] = await this.knex<Provider>('provider')
-      .where({ id: providerId })
-      .update({ status, updated_at: new Date() })
-      .returning('*');
+    const updated = await this.providerRepo.updateStatus(providerId, status);
     if (!updated) throw new ProviderNotFoundError();
     const { password_hash: _ph, ...safe } = updated;
     return safe;
