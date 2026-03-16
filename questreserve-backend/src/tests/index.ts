@@ -85,8 +85,8 @@ export async function createTestSlot(
   overrides: Partial<Omit<TimeSlot, 'id' | 'created_at' | 'updated_at'>> = {}
 ): Promise<TimeSlot> {
   const id = uuidv4();
-  const start = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 1 week from now
-  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);   // 2 hours later
+  const start = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
   const data: Omit<TimeSlot, 'created_at' | 'updated_at'> = {
     id,
     booking_location_id: locationId,

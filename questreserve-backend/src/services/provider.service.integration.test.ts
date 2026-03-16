@@ -35,9 +35,6 @@ function makeService() {
 }
 
 describe('ProviderService — integration', () => {
-  // ---------------------------------------------------------------------------
-  // createLocation
-  // ---------------------------------------------------------------------------
   describe('createLocation', () => {
     it('creates and persists a location for the given provider', async () => {
       const provider = await createTestProvider(testKnex);
@@ -56,9 +53,6 @@ describe('ProviderService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getLocation — ownership enforcement
-  // ---------------------------------------------------------------------------
   describe('getLocation', () => {
     it('returns the location when the provider owns it', async () => {
       const provider = await createTestProvider(testKnex);
@@ -91,9 +85,6 @@ describe('ProviderService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // updateLocation
-  // ---------------------------------------------------------------------------
   describe('updateLocation', () => {
     it('updates a location and returns the new state', async () => {
       const provider = await createTestProvider(testKnex);
@@ -118,9 +109,6 @@ describe('ProviderService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // createSlot
-  // ---------------------------------------------------------------------------
   describe('createSlot', () => {
     it('creates a slot under an owned location', async () => {
       const provider = await createTestProvider(testKnex);
@@ -150,9 +138,6 @@ describe('ProviderService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getSlots — ownership enforcement
-  // ---------------------------------------------------------------------------
   describe('getSlots', () => {
     it('returns all slots for an owned location', async () => {
       const provider = await createTestProvider(testKnex);
@@ -177,9 +162,6 @@ describe('ProviderService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // updateSlot — ownership enforcement
-  // ---------------------------------------------------------------------------
   describe('updateSlot', () => {
     it('updates a slot when the provider owns the parent location', async () => {
       const provider = await createTestProvider(testKnex);
@@ -216,9 +198,6 @@ describe('ProviderService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // deleteSlot — ownership enforcement
-  // ---------------------------------------------------------------------------
   describe('deleteSlot', () => {
     it('deletes a slot when the provider owns the parent location', async () => {
       const provider = await createTestProvider(testKnex);
@@ -228,7 +207,6 @@ describe('ProviderService — integration', () => {
 
       await expect(service.deleteSlot(provider.id, slot.id)).resolves.toBeUndefined();
 
-      // Verify slot is gone
       const slots = await service.getSlots(provider.id, location.id);
       expect(slots.some((s) => s.id === slot.id)).toBe(false);
     });

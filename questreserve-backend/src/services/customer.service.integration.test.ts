@@ -33,9 +33,6 @@ function makeService() {
 }
 
 describe('CustomerService — integration', () => {
-  // ---------------------------------------------------------------------------
-  // createBooking
-  // ---------------------------------------------------------------------------
   describe('createBooking', () => {
     it('creates a booking and returns it with status BOOKED', async () => {
       const provider = await createTestProvider(testKnex);
@@ -69,17 +66,12 @@ describe('CustomerService — integration', () => {
       const userB = await createTestEndUser(testKnex);
       const service = makeService();
 
-      // First booking succeeds
       await service.createBooking(userA.id, slot.id);
 
-      // Second booking on the same slot must fail
       await expect(service.createBooking(userB.id, slot.id)).rejects.toThrow(SlotUnavailableError);
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getBookingHistory
-  // ---------------------------------------------------------------------------
   describe('getBookingHistory', () => {
     it('returns only bookings belonging to the requesting end user', async () => {
       const provider = await createTestProvider(testKnex);
@@ -100,9 +92,6 @@ describe('CustomerService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // cancelBooking
-  // ---------------------------------------------------------------------------
   describe('cancelBooking', () => {
     it('cancels a booking and returns it with status CANCELLED', async () => {
       const provider = await createTestProvider(testKnex);
@@ -164,7 +153,6 @@ describe('CustomerService — integration', () => {
       const booking = await service.createBooking(userA.id, slot.id);
       await service.cancelBooking(userA.id, booking.id);
 
-      // Slot should now be available again
       const newBooking = await service.createBooking(userB.id, slot.id);
 
       expect(newBooking.status).toBe('BOOKED');
@@ -172,9 +160,6 @@ describe('CustomerService — integration', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getAvailableSlots
-  // ---------------------------------------------------------------------------
   describe('getAvailableSlots', () => {
     it('excludes slots that have an active BOOKED booking', async () => {
       const provider = await createTestProvider(testKnex);

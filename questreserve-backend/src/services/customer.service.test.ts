@@ -11,7 +11,6 @@ import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
 import { Booking, BookingLocation, TimeSlot } from '../types';
 
-// Minimal factory helpers for typed stub data
 function makeLocation(overrides: Partial<BookingLocation> = {}): BookingLocation {
   return {
     id: 'loc-1',
@@ -99,9 +98,6 @@ describe('CustomerService', () => {
     service = new CustomerService(locationRepo, slotRepo, bookingRepo);
   });
 
-  // ---------------------------------------------------------------------------
-  // browseLocations
-  // ---------------------------------------------------------------------------
   describe('browseLocations', () => {
     it('returns all locations when no difficulty filter is applied', async () => {
       const locations = [makeLocation({ difficulty: 'EASY' }), makeLocation({ id: 'loc-2', difficulty: 'HARD' })];
@@ -123,9 +119,6 @@ describe('CustomerService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getAvailableSlots
-  // ---------------------------------------------------------------------------
   describe('getAvailableSlots', () => {
     it('returns only slots not present in booked bookings', async () => {
       const slot1 = makeSlot({ id: 'slot-1' });
@@ -174,9 +167,6 @@ describe('CustomerService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // createBooking
-  // ---------------------------------------------------------------------------
   describe('createBooking', () => {
     it('happy path returns a new Booking', async () => {
       const slot = makeSlot();
@@ -209,9 +199,6 @@ describe('CustomerService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getBookingHistory
-  // ---------------------------------------------------------------------------
   describe('getBookingHistory', () => {
     it('delegates to bookingRepo.findAllByEndUser and returns the results', async () => {
       const bookings = [makeBooking(), makeBooking({ id: 'booking-2' })];
@@ -232,9 +219,6 @@ describe('CustomerService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // cancelBooking
-  // ---------------------------------------------------------------------------
   describe('cancelBooking', () => {
     it('happy path returns the updated booking with status CANCELLED', async () => {
       const booking = makeBooking({ end_user_id: 'user-1', status: 'BOOKED' });

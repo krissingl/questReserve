@@ -9,7 +9,6 @@ import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingLocation, TimeSlot } from '../types';
 import { Knex } from 'knex';
 
-// Minimal stub factory helpers
 function makeLocation(overrides: Partial<BookingLocation> = {}): BookingLocation {
   return {
     id: 'loc-1',
@@ -55,7 +54,6 @@ function makeRepositories() {
     delete: jest.fn(),
   } as unknown as jest.Mocked<TimeSlotRepository>;
 
-  // knex is only used by getBookings, which is not under test here.
   const mockKnex = {} as Knex;
 
   return { locationRepo, slotRepo, mockKnex };
@@ -73,9 +71,6 @@ describe('ProviderService', () => {
     service = new ProviderService(locationRepo, slotRepo, repos.mockKnex);
   });
 
-  // ---------------------------------------------------------------------------
-  // createLocation
-  // ---------------------------------------------------------------------------
   describe('createLocation', () => {
     it('delegates to locationRepo.create and returns the result', async () => {
       const location = makeLocation();
@@ -98,9 +93,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getLocations
-  // ---------------------------------------------------------------------------
   describe('getLocations', () => {
     it('returns all locations for the provider', async () => {
       const locations = [makeLocation(), makeLocation({ id: 'loc-2' })];
@@ -121,9 +113,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getLocation
-  // ---------------------------------------------------------------------------
   describe('getLocation', () => {
     it('throws LocationNotFoundError when the location does not exist', async () => {
       locationRepo.findById.mockResolvedValue(null);
@@ -147,9 +136,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // updateLocation
-  // ---------------------------------------------------------------------------
   describe('updateLocation', () => {
     it('throws LocationNotFoundError via assertLocationOwnership when location does not exist', async () => {
       locationRepo.findById.mockResolvedValue(null);
@@ -179,9 +165,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // createSlot
-  // ---------------------------------------------------------------------------
   describe('createSlot', () => {
     it('throws when the ownership check fails (location not found)', async () => {
       locationRepo.findById.mockResolvedValue(null);
@@ -212,9 +195,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getSlots
-  // ---------------------------------------------------------------------------
   describe('getSlots', () => {
     it('throws when the ownership check gates the slot list query', async () => {
       locationRepo.findById.mockResolvedValue(makeLocation({ provider_id: 'prov-b' }));
@@ -234,9 +214,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // updateSlot
-  // ---------------------------------------------------------------------------
   describe('updateSlot', () => {
     it('throws SlotNotFoundError when the slot does not exist', async () => {
       slotRepo.findById.mockResolvedValue(null);
@@ -270,9 +247,6 @@ describe('ProviderService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // deleteSlot
-  // ---------------------------------------------------------------------------
   describe('deleteSlot', () => {
     it('throws on ownership failure', async () => {
       slotRepo.findById.mockResolvedValue(makeSlot({ booking_location_id: 'loc-1' }));

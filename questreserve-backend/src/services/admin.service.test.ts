@@ -3,7 +3,6 @@ import { ProviderRepository } from '../repositories/provider.repository';
 import { AdminBookingView, Provider } from '../types';
 import { Knex } from 'knex';
 
-// Minimal stub factory
 function makeProvider(overrides: Partial<Provider> = {}): Provider {
   return {
     id: 'prov-1',
@@ -31,10 +30,6 @@ function makeProviderRepo() {
   } as unknown as jest.Mocked<ProviderRepository>;
 }
 
-// Minimal Knex mock for getPlatformBookings
-// The method chains: knex('booking').join(...).join(...).join(...).select(...)
-// We need a builder that supports repeated .join() and .select() calls.
-// knex.raw() is also called for the provider_name concatenation.
 function makeKnexMock(rows: unknown[]) {
   const builder = {
     join: jest.fn().mockReturnThis(),
@@ -54,9 +49,6 @@ describe('AdminService', () => {
     providerRepo = makeProviderRepo();
   });
 
-  // ---------------------------------------------------------------------------
-  // listProviders
-  // ---------------------------------------------------------------------------
   describe('listProviders', () => {
     it('delegates to providerRepo.findAll and returns results with password_hash stripped', async () => {
       const providers = [makeProvider({ id: 'prov-1' }), makeProvider({ id: 'prov-2' })];
@@ -73,9 +65,6 @@ describe('AdminService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getProvider
-  // ---------------------------------------------------------------------------
   describe('getProvider', () => {
     it('throws ProviderNotFoundError when providerRepo.findById returns null', async () => {
       providerRepo.findById.mockResolvedValue(null);
@@ -97,9 +86,6 @@ describe('AdminService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // setProviderStatus
-  // ---------------------------------------------------------------------------
   describe('setProviderStatus', () => {
     it('throws ProviderNotFoundError when providerRepo.updateStatus returns null', async () => {
       providerRepo.updateStatus.mockResolvedValue(null);
@@ -121,9 +107,6 @@ describe('AdminService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // getPlatformBookings
-  // ---------------------------------------------------------------------------
   describe('getPlatformBookings', () => {
     it('returns the shaped rows as AdminBookingView[]', async () => {
       const mockRow: AdminBookingView = {

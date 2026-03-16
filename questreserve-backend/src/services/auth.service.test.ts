@@ -6,7 +6,6 @@ import {
 } from './auth.service';
 import { AdminUser, EndUser, Provider } from '../types';
 
-// Mock bcryptjs
 jest.mock('bcryptjs', () => ({
   hash: jest.fn().mockResolvedValue('hashed-password'),
   compare: jest.fn(),
@@ -14,22 +13,13 @@ jest.mock('bcryptjs', () => ({
 import bcrypt from 'bcryptjs';
 const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
-// Mock signToken from utils/jwt
 jest.mock('../utils/jwt', () => ({
   signToken: jest.fn().mockReturnValue('mock-jwt-token'),
 }));
 import { signToken } from '../utils/jwt';
 const mockSignToken = signToken as jest.MockedFunction<typeof signToken>;
 
-// ---------------------------------------------------------------------------
-// Knex query builder mock factory
-// ---------------------------------------------------------------------------
-// AuthService chains: this.knex<T>('table').where({}).first()
-// and:               this.knex<T>('table').insert({})
-// We need a mock that returns an object supporting these chained calls.
-
 function makeKnexMock() {
-  // Each call to knex('table') returns a builder with where/insert/first methods.
   const builder = {
     where: jest.fn().mockReturnThis(),
     first: jest.fn(),
@@ -40,7 +30,6 @@ function makeKnexMock() {
   return { knex, builder };
 }
 
-// Minimal stub data
 const endUser: EndUser = {
   id: 'user-1',
   first_name: 'Test',
@@ -84,13 +73,10 @@ describe('AuthService', () => {
     (mockBcrypt.hash as any).mockResolvedValue('hashed-password');
   });
 
-  // ---------------------------------------------------------------------------
-  // registerEndUser
-  // ---------------------------------------------------------------------------
   describe('registerEndUser', () => {
     it('throws DuplicateAccountError when a user with the same email already exists', async () => {
       const { knex, builder } = makeKnexMock();
-      builder.first.mockResolvedValue(endUser); // existing user found
+      builder.first.mockResolvedValue(endUser);
       const service = new AuthService(knex as unknown as import('knex').Knex);
 
       await expect(
@@ -100,7 +86,7 @@ describe('AuthService', () => {
 
     it('returns { token } on success', async () => {
       const { knex, builder } = makeKnexMock();
-      builder.first.mockResolvedValue(undefined); // no existing user
+      builder.first.mockResolvedValue(undefined);
       const service = new AuthService(knex as unknown as import('knex').Knex);
 
       const result = await service.registerEndUser({
@@ -114,9 +100,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // registerProvider
-  // ---------------------------------------------------------------------------
   describe('registerProvider', () => {
     it('throws DuplicateAccountError on duplicate email', async () => {
       const { knex, builder } = makeKnexMock();
@@ -144,9 +127,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // loginEndUser
-  // ---------------------------------------------------------------------------
   describe('loginEndUser', () => {
     it('throws InvalidCredentialsError when the email is not found', async () => {
       const { knex, builder } = makeKnexMock();
@@ -181,9 +161,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // loginProvider
-  // ---------------------------------------------------------------------------
   describe('loginProvider', () => {
     it('throws InvalidCredentialsError when the email is not found', async () => {
       const { knex, builder } = makeKnexMock();
@@ -230,9 +207,6 @@ describe('AuthService', () => {
     });
   });
 
-  // ---------------------------------------------------------------------------
-  // loginAdmin
-  // ---------------------------------------------------------------------------
   describe('loginAdmin', () => {
     it('throws InvalidCredentialsError when the email is not found', async () => {
       const { knex, builder } = makeKnexMock();
