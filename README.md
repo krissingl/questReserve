@@ -42,4 +42,4 @@ For implementation details, see the dedicated README files:
 - [`questreserve-backend/README.md`](questreserve-backend/README.md) — API design, data model, backend architecture
 - [`questreserve-frontend/README.md`](questreserve-frontend/README.md) — UI architecture, component structure, local dev
 
-*Built with care by a team that takes boring infrastructure seriously.*
+*Built with care by someone that takes boring infrastructure seriously.*
