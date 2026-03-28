@@ -1,6 +1,6 @@
 # QuestReserve — UI Strategy
 
-**Status:** Draft — in progress (Phase 7)
+**Status:** Approved
 **Last updated:** 2026-03-28
 **Source of truth for styling:** `docs/style-reference.md`
 
@@ -466,4 +466,67 @@ const rawPayload = response.data as any; // third-party SDK returns untyped shap
 
 ## Section 5 — Phase 8 Checklist
 
-_To be added — Ticket #59_
+Phase 8 (Frontend Scaffold) must implement every item on this checklist. The checklist is derived directly from the decisions recorded in this document. A Phase 8 ticket must not be closed unless the corresponding checklist item is satisfied.
+
+### 5.1 Project Setup
+
+- [ ] Initialise a Vite + React + TypeScript project in `questreserve-frontend/` (or the agreed monorepo location)
+- [ ] Set `"strict": true` in `tsconfig.json`
+- [ ] Install and configure Tailwind CSS with the shadcn/ui-compatible configuration
+- [ ] Run the shadcn/ui CLI to initialise the component system (`shadcn@latest init`) — this generates `components/ui/`, `lib/utils.ts`, and the default `globals.css`
+
+### 5.2 Apply Design Tokens
+
+- [ ] Replace the generated `globals.css` CSS custom properties with the full token set from Section 3 of this document
+- [ ] Verify the `--radius` variable is set to `0.5rem` (aligning with `--radius-md`)
+- [ ] Add Google Fonts imports (or local font files) for `Cinzel` and `Uncial Antiqua`; confirm `Inter` is loaded via the system font stack fallback or a bundled import
+- [ ] Confirm dark mode is active by default: `class="dark"` on `<html>` in `index.html`
+
+### 5.3 Folder Structure
+
+Create the following top-level directories under `src/`:
+
+- [ ] `api/` — with `client.ts` scaffold (Axios instance, request/response interceptors)
+- [ ] `components/` — shared components; initially empty except for shadcn/ui generated files in `components/ui/`
+- [ ] `contexts/` — with `AuthContext.tsx` implementing the shape from Section 4.4
+- [ ] `hooks/` — shared data-fetching hooks; initially empty
+- [ ] `layouts/` — with `CustomerLayout.tsx`, `ProviderLayout.tsx`, `AdminLayout.tsx` (stubs with route guard logic from Section 4.6)
+- [ ] `pages/` — top-level page components, initially with placeholder pages for each role
+- [ ] `routes/` — React Router route definitions
+- [ ] `utils/` — utility functions; initially empty
+
+### 5.4 Auth Context
+
+- [ ] Implement `AuthContext` with the exact shape from Section 4.4: `{ user, token, role, login, logout }`
+- [ ] Provide `AuthContext` at the root of the application, above the router
+- [ ] `login` calls `auth.api.ts` (stub acceptable in Phase 8 if auth endpoints are not yet available)
+- [ ] `logout` clears state and token, and redirects to `/login`
+
+### 5.5 Routing and Role-Scoped Layouts
+
+- [ ] Configure React Router v7 with nested routes: `/customer/*`, `/provider/*`, `/admin/*`
+- [ ] Each role-scoped layout applies the route guard pattern from Section 4.6: redirect to `/login` if unauthenticated; redirect to correct role root if wrong role
+- [ ] Public routes (`/login`, `/`) are accessible without authentication
+
+### 5.6 API Layer
+
+- [ ] `src/api/client.ts` creates an Axios instance with:
+  - `baseURL` from `import.meta.env.VITE_API_URL`
+  - Request interceptor injecting `Authorization: Bearer <token>`
+  - Response interceptor clearing auth state and redirecting on 401
+- [ ] At least one stub API module exists (e.g., `auth.api.ts`) to demonstrate the pattern
+- [ ] ESLint rule configured to flag direct `axios` or `fetch` imports outside `src/api/`
+
+### 5.7 TypeScript and Lint
+
+- [ ] ESLint configured with TypeScript-aware rules (`@typescript-eslint/recommended`)
+- [ ] `@typescript-eslint/no-explicit-any` rule enabled as `error`
+- [ ] Prettier configured and integrated with ESLint
+- [ ] All scaffold files pass lint and type-check with zero errors
+
+### 5.8 Smoke Test
+
+- [ ] Application boots in development (`npm run dev`) without errors
+- [ ] Navigating to `/customer` (unauthenticated) redirects to `/login`
+- [ ] Dark mode tokens are visually applied (Obsidian background, Arcane Violet primary colour visible)
+- [ ] At least one shadcn/ui component (e.g., `<Button>`) renders correctly with the custom theme tokens
