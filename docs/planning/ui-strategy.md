@@ -255,6 +255,7 @@ shadcn/ui reads `--radius` as its single base radius variable. Set `--radius: 0.
 
 | Token | Value | Usage |
 |---|---|---|
+| `--radius` | `0.5rem` | shadcn/ui base radius variable — set to align with `--radius-md` |
 | `--radius-default` | `0.375rem` | Inputs, buttons |
 | `--radius-md` | `0.5rem` | Cards, panels (shadcn/ui `--radius` base) |
 | `--radius-lg` | `0.75rem` | Modals, drawers |
@@ -406,7 +407,7 @@ Data-fetching logic is isolated in `src/hooks/` (or co-located under the relevan
 
 ```typescript
 // Example shape
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 function useBookings(filters: BookingFilters) {
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -485,7 +486,7 @@ Phase 8 (Frontend Scaffold) must implement every item on this checklist. The che
 
 - [ ] Replace the generated `globals.css` CSS custom properties with the full token set from Section 3 of this document
 - [ ] Verify the `--radius` variable is set to `0.5rem` (aligning with `--radius-md`)
-- [ ] Register `--surface` in `tailwind.config.ts` under `theme.extend.colors` so `bg-surface` and related utilities are available (e.g., `surface: "rgb(var(--surface) / <alpha-value>)")`)
+- [ ] Register `--surface` in `tailwind.config.ts` under `theme.extend.colors` so `bg-surface` and related utilities are available (e.g., `surface: "rgb(var(--surface) / <alpha-value>)"`)
 - [ ] Add Google Fonts imports (or local font files) for `Cinzel` and `Uncial Antiqua`; confirm `Inter` is loaded via the system font stack fallback or a bundled import
 - [ ] Confirm dark mode is active by default: `class="dark"` on `<html>` in `index.html`
 
