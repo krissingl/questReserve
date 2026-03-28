@@ -64,6 +64,7 @@ The following libraries were selected alongside shadcn/ui to complete the fronte
 
 | Library | Version | Purpose |
 |---|---|---|
+| React | 19 | UI rendering — component model, hooks, concurrent features |
 | React Router | v7 | Routing — nested routes, data loading, role-scoped layouts |
 | React Context | (built-in) | State management — Auth context + one context per role scope |
 | React Hook Form | latest stable | Form handling — uncontrolled performance |
@@ -110,7 +111,6 @@ shadcn/ui uses a specific set of semantic variable names that drive its componen
 
   /* ---- Muted ---- */
   --muted:             18 24 38;      /* Surface Dark   #121826 — muted backgrounds */
-  --muted-foreground:  167 179 194;   /* Mist Grey      #A7B3C2 */
 
   /* ---- Card ---- */
   --card:              18 24 38;      /* Surface Dark   #121826 */
@@ -148,6 +148,8 @@ shadcn/ui uses a specific set of semantic variable names that drive its componen
 ```
 
 > **Note on format:** shadcn/ui + Tailwind expect CSS colour variables as space-separated RGB channels (no `rgb()` wrapper), so Tailwind can apply opacity modifiers like `bg-primary/50`. The hex codes are shown as comments for reference only.
+
+> **Note on `--surface`:** The `--surface` token is a project-specific addition and is not part of shadcn/ui's default variable set. To use it as a Tailwind utility class (e.g., `bg-surface`), it must be registered in `tailwind.config.ts` under `theme.extend.colors`. See the Phase 8 checklist (Section 5.2) for the required step.
 
 ### 3.2 Colour Token Reference Table
 
@@ -241,6 +243,7 @@ Base unit: **4px**. Scale follows Tailwind's default 4px grid.
 
 ```css
 :root {
+  --radius:          0.5rem;     /* shadcn/ui base radius — aligns with --radius-md */
   --radius-default:  0.375rem;   /* 6px  — inputs, buttons */
   --radius-md:       0.5rem;     /* 8px  — cards, panels */
   --radius-lg:       0.75rem;    /* 12px — modals, drawers */
@@ -357,7 +360,7 @@ src/
 
 **`client.ts` responsibilities:**
 - Creates a single Axios instance with `baseURL` set from `import.meta.env.VITE_API_URL`
-- Request interceptor: reads `token` from `AuthContext` (or `localStorage` as fallback) and injects `Authorization: Bearer <token>` header
+- Request interceptor: reads `token` from `AuthContext` (or `localStorage` as fallback) and injects `Authorization: Bearer <token>` header. **Security note:** storing tokens in `localStorage` is vulnerable to XSS attacks; tokens should be stored in memory (React state) where possible, or in an `httpOnly` cookie. The `localStorage` fallback is an interim pattern — Phase 8 must not ship it as the permanent solution.
 - Response interceptor: catches 401 responses, clears auth state, and redirects to `/login`
 
 **Enforcement:** ESLint import rules must flag direct `axios` or `fetch` usage outside `src/api/`. This lint rule is a Phase 8 scaffold deliverable.
@@ -403,6 +406,8 @@ Data-fetching logic is isolated in `src/hooks/` (or co-located under the relevan
 
 ```typescript
 // Example shape
+import React, { useState, useEffect } from "react";
+
 function useBookings(filters: BookingFilters) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -434,7 +439,8 @@ Routes are protected at the layout level. The three role-scoped layouts act as g
 ```typescript
 // Example guard inside CustomerLayout.tsx
 const { token, role } = useAuth();
-if (!token)             return <Navigate to="/login" replace />;
+if (!token)              return <Navigate to="/login" replace />;
+if (role === null)       return <Navigate to="/login" replace />;
 if (role !== "customer") return <Navigate to={`/${role}`} replace />;
 ```
 
@@ -470,7 +476,7 @@ Phase 8 (Frontend Scaffold) must implement every item on this checklist. The che
 
 ### 5.1 Project Setup
 
-- [ ] Initialise a Vite + React + TypeScript project in `questreserve-frontend/` (or the agreed monorepo location)
+- [ ] Initialise a Vite + React + TypeScript project in `questreserve-frontend/`
 - [ ] Set `"strict": true` in `tsconfig.json`
 - [ ] Install and configure Tailwind CSS with the shadcn/ui-compatible configuration
 - [ ] Run the shadcn/ui CLI to initialise the component system (`shadcn@latest init`) — this generates `components/ui/`, `lib/utils.ts`, and the default `globals.css`
@@ -479,6 +485,7 @@ Phase 8 (Frontend Scaffold) must implement every item on this checklist. The che
 
 - [ ] Replace the generated `globals.css` CSS custom properties with the full token set from Section 3 of this document
 - [ ] Verify the `--radius` variable is set to `0.5rem` (aligning with `--radius-md`)
+- [ ] Register `--surface` in `tailwind.config.ts` under `theme.extend.colors` so `bg-surface` and related utilities are available (e.g., `surface: "rgb(var(--surface) / <alpha-value>)")`)
 - [ ] Add Google Fonts imports (or local font files) for `Cinzel` and `Uncial Antiqua`; confirm `Inter` is loaded via the system font stack fallback or a bundled import
 - [ ] Confirm dark mode is active by default: `class="dark"` on `<html>` in `index.html`
 
@@ -515,7 +522,7 @@ Create the following top-level directories under `src/`:
   - Request interceptor injecting `Authorization: Bearer <token>`
   - Response interceptor clearing auth state and redirecting on 401
 - [ ] At least one stub API module exists (e.g., `auth.api.ts`) to demonstrate the pattern
-- [ ] ESLint rule configured to flag direct `axios` or `fetch` imports outside `src/api/`
+- [ ] ESLint `no-restricted-imports` rule configured to flag direct `axios` or `fetch` imports outside `src/api/`
 
 ### 5.7 TypeScript and Lint
 
