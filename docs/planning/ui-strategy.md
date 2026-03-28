@@ -309,7 +309,158 @@ Tailwind's default breakpoints are used unchanged. Do not override in `tailwind.
 
 ## Section 4 — Frontend Conventions
 
-_To be added — Ticket #58_
+These conventions apply to all frontend phases (8–12). Any deviation requires an explicit ticket and a note in the relevant phase plan.
+
+### 4.1 File Naming
+
+| Item type | Convention | Example |
+|---|---|---|
+| React components | PascalCase | `BookingCard.tsx`, `ProviderLayout.tsx` |
+| Hooks | camelCase, prefixed `use` | `useBookings.ts`, `useAuth.ts` |
+| Utility functions | camelCase | `formatDate.ts`, `buildQueryString.ts` |
+| API modules | camelCase | `bookings.api.ts`, `auth.api.ts` |
+| Context files | PascalCase, suffixed `Context` | `AuthContext.tsx`, `CustomerContext.tsx` |
+| Route files | camelCase or PascalCase matching the route segment | `index.tsx`, `BookingDetail.tsx` |
+| Style files | kebab-case | `globals.css`, `booking-card.module.css` |
+
+### 4.2 Component Co-location
+
+```
+src/
+  components/          # Shared components — used by two or more pages or layouts
+  pages/
+    BookingDetail/
+      BookingDetail.tsx        # Page component
+      BookingStatusBadge.tsx   # Page-specific component — lives here, not in components/
+      useBookingDetail.ts      # Page-specific hook — lives here
+  layouts/
+    CustomerLayout.tsx
+    ProviderLayout.tsx
+    AdminLayout.tsx
+```
+
+**Rule:** A component used by only one page lives under `pages/<PageName>/`. A component used by two or more pages (or a layout) moves to `components/`. Do not pre-emptively move components to `components/` in anticipation of reuse.
+
+### 4.3 API Layer Pattern
+
+All backend calls are isolated in `src/api/`. Components and hooks **must not** import `axios` directly or call `fetch` directly.
+
+```
+src/
+  api/
+    client.ts          # Axios instance — interceptors, base URL, auth token injection
+    bookings.api.ts    # All /bookings endpoints
+    auth.api.ts        # All /auth endpoints
+    dungeons.api.ts    # All /dungeons endpoints
+    providers.api.ts   # All /providers endpoints
+```
+
+**`client.ts` responsibilities:**
+- Creates a single Axios instance with `baseURL` set from `import.meta.env.VITE_API_URL`
+- Request interceptor: reads `token` from `AuthContext` (or `localStorage` as fallback) and injects `Authorization: Bearer <token>` header
+- Response interceptor: catches 401 responses, clears auth state, and redirects to `/login`
+
+**Enforcement:** ESLint import rules must flag direct `axios` or `fetch` usage outside `src/api/`. This lint rule is a Phase 8 scaffold deliverable.
+
+### 4.4 Auth Context Shape
+
+The `AuthContext` is the single source of truth for authentication state across the application.
+
+```typescript
+// src/contexts/AuthContext.tsx
+
+interface AuthUser {
+  id: string;
+  email: string;
+  displayName: string;
+}
+
+type UserRole = "customer" | "provider" | "admin";
+
+interface AuthContextValue {
+  user:    AuthUser | null;
+  token:   string | null;
+  role:    UserRole | null;
+  login:   (email: string, password: string) => Promise<void>;
+  logout:  () => void;
+}
+```
+
+- `AuthContext` is provided at the root of the application (above the router).
+- Role-scoped layouts (`CustomerLayout`, `ProviderLayout`, `AdminLayout`) consume `AuthContext` to verify the current role.
+- `login` calls `auth.api.ts`, stores the token, and sets `user` and `role` on success.
+- `logout` clears `user`, `token`, and `role`, removes the token from storage, and redirects to `/login`.
+
+### 4.5 Hook Pattern
+
+Data-fetching logic is isolated in `src/hooks/` (or co-located under the relevant page — see Section 4.2).
+
+**Rules:**
+- Hooks own `loading`, `error`, and `data` state. Components receive these via the hook's return value.
+- Hooks call API functions from `src/api/` — never `axios` or `fetch` directly.
+- Hooks do not render JSX.
+- Hooks do not navigate (no `useNavigate` calls inside data-fetching hooks). Navigation side effects belong in the component.
+
+```typescript
+// Example shape
+function useBookings(filters: BookingFilters) {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState<string | null>(null);
+
+  useEffect(() => { /* fetch via bookings.api.ts */ }, [filters]);
+
+  return { bookings, loading, error };
+}
+```
+
+### 4.6 Route Protection Pattern
+
+Routes are protected at the layout level. The three role-scoped layouts act as guards.
+
+```
+/                   → public (marketing or redirect)
+/login              → public
+/customer/*         → CustomerLayout (requires role === "customer")
+/provider/*         → ProviderLayout (requires role === "provider")
+/admin/*            → AdminLayout   (requires role === "admin")
+```
+
+**Guard behaviour:**
+- If `token` is `null` (unauthenticated): redirect to the relevant login page (`/login`).
+- If `token` exists but `role` does not match the layout: redirect to the correct role's root (`/customer`, `/provider`, or `/admin`) or show a 403 page.
+- Redirects are implemented inside the layout component using `<Navigate>` from React Router — not inside individual page components.
+
+```typescript
+// Example guard inside CustomerLayout.tsx
+const { token, role } = useAuth();
+if (!token)             return <Navigate to="/login" replace />;
+if (role !== "customer") return <Navigate to={`/${role}`} replace />;
+```
+
+### 4.7 TypeScript Strictness Policy
+
+- `tsconfig.json` must include `"strict": true`. This enables `strictNullChecks`, `noImplicitAny`, and all other strict checks.
+- Usage of `any` is prohibited without an explicit disable comment that explains why `any` is necessary:
+
+```typescript
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rawPayload = response.data as any; // third-party SDK returns untyped shape
+```
+
+- `unknown` is preferred over `any` for error catch blocks and untyped external data.
+- Type assertions (`as SomeType`) must be used only when the shape is genuinely known at that point in the code. Do not use type assertions to silence compiler errors.
+
+### 4.8 Error Display Convention
+
+| Layout / Context | Error handling approach |
+|---|---|
+| Full-page routes (e.g., `/customer/bookings`) | React Error Boundary at the layout level catches unhandled errors and renders a full-page error UI |
+| Data-fetching within a page section | Inline error state returned from the hook, rendered inline in the component (e.g., an alert banner below the section heading) |
+| Forms | Field-level validation errors from React Hook Form + Zod, displayed inline below each field |
+| Global / network errors (401, 503) | Interceptor in `client.ts` handles these centrally — redirect or toast notification as appropriate |
+
+**Rule:** Do not use Error Boundaries inside individual form components or small UI widgets — reserve them for layout-level and page-level boundaries. Inline error states (loading/error from hooks) are the correct pattern for component-level failures.
 
 ---
 
