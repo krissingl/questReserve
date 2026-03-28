@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets\qrrlogo.gif" alt="QUEST RESERVE LOGO" width="800">
+  <img src="assets/qr_logos/logo-primary-white-gold.svg" alt="QuestReserve" width="320" />
 </p>
 
 ---
