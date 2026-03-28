@@ -77,7 +77,233 @@ No Redux or Zustand. Server state is handled at the API layer; a global state li
 
 ## Section 3 — Design Tokens
 
-_To be added — Ticket #57_
+All tokens are expressed as CSS custom properties. This is the format required by shadcn/ui + Tailwind CSS. The `:root` block below defines the dark theme values (dark mode is primary). A light theme override block is included for completeness but is not a Phase 8 deliverable.
+
+Token values are sourced directly from `docs/style-reference.md` and the client palette in `docs/planning/brand-assets-summary.md`.
+
+### 3.1 Colour Tokens
+
+shadcn/ui uses a specific set of semantic variable names that drive its component defaults. The mapping below aligns those names with the client palette.
+
+```css
+/* globals.css — dark mode (primary theme) */
+:root {
+  /* ---- Backgrounds ---- */
+  --background:        11 15 26;      /* Obsidian      #0B0F1A  — main app background */
+  --surface:           18 24 38;      /* Surface Dark  #121826  — cards, panels, elevated surfaces */
+
+  /* ---- Foreground / Text ---- */
+  --foreground:        255 255 255;   /* White                  — primary text on dark bg */
+  --muted-foreground:  167 179 194;   /* Mist Grey     #A7B3C2  — secondary text, placeholders */
+
+  /* ---- Brand / Primary ---- */
+  --primary:           91 42 134;     /* Arcane Violet  #5B2A86 */
+  --primary-foreground: 255 255 255;  /* White                  — text on primary bg */
+
+  /* ---- Accent ---- */
+  --accent:            212 175 55;    /* Spell Gold     #D4AF37 */
+  --accent-foreground: 11 15 26;      /* Obsidian               — text on accent bg */
+
+  /* ---- Secondary / Interactive ---- */
+  --secondary:         46 111 149;    /* Runic Blue     #2E6F95 */
+  --secondary-foreground: 255 255 255;
+
+  /* ---- Muted ---- */
+  --muted:             18 24 38;      /* Surface Dark   #121826 — muted backgrounds */
+  --muted-foreground:  167 179 194;   /* Mist Grey      #A7B3C2 */
+
+  /* ---- Card ---- */
+  --card:              18 24 38;      /* Surface Dark   #121826 */
+  --card-foreground:   255 255 255;
+
+  /* ---- Popover ---- */
+  --popover:           18 24 38;
+  --popover-foreground: 255 255 255;
+
+  /* ---- Border / Input / Ring ---- */
+  --border:            167 179 194;   /* Mist Grey      #A7B3C2 */
+  --input:             167 179 194;
+  --ring:              91 42 134;     /* Arcane Violet  #5B2A86 — focus rings */
+
+  /* ---- Semantic states ---- */
+  --destructive:       214 69 69;     /* Curse Red      #D64545 — error states */
+  --destructive-foreground: 255 255 255;
+  --warning:           162 62 72;     /* Ember Red      #A23E48 — warnings, danger */
+  --warning-foreground: 255 255 255;
+  --success:           59 165 93;     /* Enchanted Green #3BA55D */
+  --success-foreground: 255 255 255;
+}
+
+/* Light theme override — not a Phase 8 deliverable; reserved for future use */
+.light {
+  --background:        255 255 255;
+  --surface:           245 245 245;
+  --foreground:        11 15 26;
+  --muted-foreground:  100 116 139;
+  --primary:           91 42 134;
+  --primary-foreground: 255 255 255;
+  --accent:            212 175 55;
+  --accent-foreground: 11 15 26;
+}
+```
+
+> **Note on format:** shadcn/ui + Tailwind expect CSS colour variables as space-separated RGB channels (no `rgb()` wrapper), so Tailwind can apply opacity modifiers like `bg-primary/50`. The hex codes are shown as comments for reference only.
+
+### 3.2 Colour Token Reference Table
+
+| Token | RGB Channels | Hex | Semantic Role |
+|---|---|---|---|
+| `--background` | `11 15 26` | `#0B0F1A` | Main app background |
+| `--surface` / `--card` / `--muted` | `18 24 38` | `#121826` | Cards, panels, elevated surfaces |
+| `--foreground` | `255 255 255` | `#FFFFFF` | Primary text |
+| `--muted-foreground` | `167 179 194` | `#A7B3C2` | Secondary text, placeholders, borders |
+| `--primary` | `91 42 134` | `#5B2A86` | Primary brand — Arcane Violet |
+| `--primary-foreground` | `255 255 255` | `#FFFFFF` | Text on primary background |
+| `--accent` | `212 175 55` | `#D4AF37` | Accent highlights, glowing effects — Spell Gold |
+| `--accent-foreground` | `11 15 26` | `#0B0F1A` | Text on accent background |
+| `--secondary` | `46 111 149` | `#2E6F95` | Interactive elements, links — Runic Blue |
+| `--secondary-foreground` | `255 255 255` | `#FFFFFF` | Text on secondary background |
+| `--border` / `--input` | `167 179 194` | `#A7B3C2` | Borders, input outlines |
+| `--ring` | `91 42 134` | `#5B2A86` | Focus rings |
+| `--destructive` | `214 69 69` | `#D64545` | Error states — Curse Red |
+| `--warning` | `162 62 72` | `#A23E48` | Warnings, danger — Ember Red |
+| `--success` | `59 165 93` | `#3BA55D` | Success states — Enchanted Green |
+
+### 3.3 Typography Tokens
+
+```css
+/* globals.css — continued */
+:root {
+  /* ---- Font families ---- */
+  --font-body:     "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-heading:  "Cinzel", "Times New Roman", serif;
+  --font-accent:   "Uncial Antiqua";          /* logos and rare decorative headings only */
+
+  /* ---- Base font size scale (rem, 16px base) ---- */
+  --text-xs:    0.75rem;   /* 12px */
+  --text-sm:    0.875rem;  /* 14px */
+  --text-base:  1rem;      /* 16px */
+  --text-lg:    1.125rem;  /* 18px */
+  --text-xl:    1.25rem;   /* 20px */
+  --text-2xl:   1.5rem;    /* 24px */
+  --text-3xl:   1.875rem;  /* 30px */
+  --text-4xl:   2.25rem;   /* 36px */
+
+  /* ---- Line height scale ---- */
+  --leading-tight:   1.25;
+  --leading-snug:    1.375;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+
+  /* ---- Font weight variants ---- */
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+}
+```
+
+| Token | Value | Usage |
+|---|---|---|
+| `--font-body` | Inter / Segoe UI / system-ui | All body copy, labels, nav, form fields |
+| `--font-heading` | Cinzel / Times New Roman | Page titles, section headings, brand moments |
+| `--font-accent` | Uncial Antiqua | Logos and rare decorative headings only — never functional text |
+| `--text-base` | `1rem` / 16px | Default body size |
+| `--leading-normal` | `1.5` | Default line height for body copy |
+| `--weight-regular` | `400` | Body text |
+| `--weight-semibold` | `600` | Subheadings, labels, nav items |
+| `--weight-bold` | `700` | Headings, CTAs |
+
+### 3.4 Spacing Tokens
+
+Base unit: **4px**. Scale follows Tailwind's default 4px grid.
+
+```css
+:root {
+  --space-1:   0.25rem;   /* 4px  */
+  --space-2:   0.5rem;    /* 8px  */
+  --space-3:   0.75rem;   /* 12px */
+  --space-4:   1rem;      /* 16px */
+  --space-5:   1.25rem;   /* 20px */
+  --space-6:   1.5rem;    /* 24px */
+  --space-8:   2rem;      /* 32px */
+  --space-10:  2.5rem;    /* 40px */
+  --space-12:  3rem;      /* 48px */
+  --space-16:  4rem;      /* 64px */
+  --space-20:  5rem;      /* 80px */
+  --space-24:  6rem;      /* 96px */
+}
+```
+
+> **Implementation note:** In practice, Tailwind utility classes (`p-4`, `mt-6`, etc.) are used directly. The CSS custom properties above are the canonical reference. Do not override Tailwind's spacing scale in `tailwind.config.ts` — use these tokens to document intent only.
+
+### 3.5 Border Radius Tokens
+
+```css
+:root {
+  --radius-default:  0.375rem;   /* 6px  — inputs, buttons */
+  --radius-md:       0.5rem;     /* 8px  — cards, panels */
+  --radius-lg:       0.75rem;    /* 12px — modals, drawers */
+  --radius-pill:     9999px;     /* fully rounded — tags, badges */
+}
+```
+
+shadcn/ui reads `--radius` as its single base radius variable. Set `--radius: 0.5rem` in the theme to align with `--radius-md` as the default.
+
+| Token | Value | Usage |
+|---|---|---|
+| `--radius-default` | `0.375rem` | Inputs, buttons |
+| `--radius-md` | `0.5rem` | Cards, panels (shadcn/ui `--radius` base) |
+| `--radius-lg` | `0.75rem` | Modals, drawers |
+| `--radius-pill` | `9999px` | Tags, badges, fully rounded elements |
+
+### 3.6 Shadow Tokens
+
+```css
+:root {
+  --shadow-card:
+    0 1px 3px rgb(0 0 0 / 0.4),
+    0 1px 2px rgb(0 0 0 / 0.24);
+
+  --shadow-dropdown:
+    0 4px 6px rgb(0 0 0 / 0.4),
+    0 2px 4px rgb(0 0 0 / 0.3);
+
+  --shadow-modal:
+    0 20px 25px rgb(0 0 0 / 0.5),
+    0 10px 10px rgb(0 0 0 / 0.3);
+
+  /* Glow variant for interactive accent elements */
+  --shadow-glow-accent:
+    0 0 12px rgb(212 175 55 / 0.4);  /* Spell Gold glow */
+
+  --shadow-glow-primary:
+    0 0 12px rgb(91 42 134 / 0.5);   /* Arcane Violet glow */
+}
+```
+
+| Token | Usage |
+|---|---|
+| `--shadow-card` | Elevated cards and panels |
+| `--shadow-dropdown` | Dropdown menus, popovers |
+| `--shadow-modal` | Modal overlays, dialogs |
+| `--shadow-glow-accent` | Spell Gold glow on highlighted/active elements |
+| `--shadow-glow-primary` | Arcane Violet glow on focus or brand moments |
+
+### 3.7 Breakpoint Tokens
+
+These are Tailwind breakpoint thresholds. They are not CSS custom properties — they are configured in `tailwind.config.ts`.
+
+| Token | Breakpoint | Min Width |
+|---|---|---|
+| `mobile` | Default (no prefix) | 0px |
+| `sm` | Tablet portrait | 640px |
+| `md` | Tablet landscape | 768px |
+| `lg` | Desktop | 1024px |
+| `xl` | Wide desktop | 1280px |
+| `2xl` | Ultra-wide | 1536px |
+
+Tailwind's default breakpoints are used unchanged. Do not override in `tailwind.config.ts` unless a ticket explicitly requires it.
 
 ---
 
