@@ -1,12 +1,11 @@
 /**
- * auth.api.ts — stub
+ * auth.api.ts — authentication API module.
  *
- * Full implementation is in ticket #67. This stub exists so AuthContext
- * can import login() before the API client layer is complete.
- *
- * All backend calls must go through src/api/client.ts (Axios instance).
+ * All calls go through the shared Axios instance in client.ts.
  * This file must never import axios directly.
  */
+
+import { apiClient } from './client'
 
 export interface LoginResponse {
   token: string
@@ -19,13 +18,16 @@ export interface LoginResponse {
 }
 
 /**
- * Stub login function. Replaced in ticket #67 with a real implementation
- * that calls POST /auth/login via the Axios client.
+ * POST /auth/login
+ * Returns a JWT token, user profile, and role on successful authentication.
  */
 export async function login(
-  _email: string,
-  _password: string,
+  email: string,
+  password: string,
 ): Promise<LoginResponse> {
-  // Stub: always rejects to prevent accidental auth bypass during development
-  return Promise.reject(new Error('auth.api.ts: login not yet implemented'))
+  const response = await apiClient.post<LoginResponse>('/auth/login', {
+    email,
+    password,
+  })
+  return response.data
 }
