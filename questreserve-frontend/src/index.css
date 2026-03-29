@@ -1,14 +1,155 @@
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Uncial+Antiqua&display=swap");
+
 @import "tailwindcss";
 
+/*
+  Tailwind v4 theme extension.
+  Registers --surface as a custom color utility (bg-surface, text-surface, etc.)
+  using the CSS custom property defined in :root below.
+*/
+@theme {
+  --color-surface: rgb(18 24 38);
+}
+
 :root {
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* ---- Backgrounds ---- */
+  --background:        11 15 26;      /* Obsidian      #0B0F1A  — main app background */
+  --surface:           18 24 38;      /* Surface Dark  #121826  — cards, panels, elevated surfaces */
+
+  /* ---- Foreground / Text ---- */
+  --foreground:        255 255 255;   /* White                  — primary text on dark bg */
+  --muted-foreground:  167 179 194;   /* Mist Grey     #A7B3C2  — secondary text, placeholders */
+
+  /* ---- Brand / Primary ---- */
+  --primary:           91 42 134;     /* Arcane Violet  #5B2A86 */
+  --primary-foreground: 255 255 255;  /* White                  — text on primary bg */
+
+  /* ---- Accent ---- */
+  --accent:            212 175 55;    /* Spell Gold     #D4AF37 */
+  --accent-foreground: 11 15 26;      /* Obsidian               — text on accent bg */
+
+  /* ---- Secondary / Interactive ---- */
+  --secondary:         46 111 149;    /* Runic Blue     #2E6F95 */
+  --secondary-foreground: 255 255 255;
+
+  /* ---- Muted ---- */
+  --muted:             18 24 38;      /* Surface Dark   #121826 — muted backgrounds */
+
+  /* ---- Card ---- */
+  --card:              18 24 38;      /* Surface Dark   #121826 */
+  --card-foreground:   255 255 255;
+
+  /* ---- Popover ---- */
+  --popover:           18 24 38;
+  --popover-foreground: 255 255 255;
+
+  /* ---- Border / Input / Ring ---- */
+  --border:            167 179 194;   /* Mist Grey      #A7B3C2 */
+  --input:             167 179 194;
+  --ring:              91 42 134;     /* Arcane Violet  #5B2A86 — focus rings */
+
+  /* ---- Semantic states ---- */
+  --destructive:       214 69 69;     /* Curse Red      #D64545 — error states */
+  --destructive-foreground: 255 255 255;
+  --warning:           162 62 72;     /* Ember Red      #A23E48 — warnings, danger */
+  --warning-foreground: 255 255 255;
+  --success:           59 165 93;     /* Enchanted Green #3BA55D */
+  --success-foreground: 255 255 255;
+
+  /* ---- Typography ---- */
+  --font-body:     "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-heading:  "Cinzel", "Times New Roman", serif;
+  --font-accent:   "Uncial Antiqua";   /* logos and rare decorative headings only */
+
+  --text-xs:    0.75rem;   /* 12px */
+  --text-sm:    0.875rem;  /* 14px */
+  --text-base:  1rem;      /* 16px */
+  --text-lg:    1.125rem;  /* 18px */
+  --text-xl:    1.25rem;   /* 20px */
+  --text-2xl:   1.5rem;    /* 24px */
+  --text-3xl:   1.875rem;  /* 30px */
+  --text-4xl:   2.25rem;   /* 36px */
+
+  --leading-tight:   1.25;
+  --leading-snug:    1.375;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+
+  --weight-regular:   400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+
+  /* ---- Spacing ---- */
+  --space-1:   0.25rem;   /* 4px  */
+  --space-2:   0.5rem;    /* 8px  */
+  --space-3:   0.75rem;   /* 12px */
+  --space-4:   1rem;      /* 16px */
+  --space-5:   1.25rem;   /* 20px */
+  --space-6:   1.5rem;    /* 24px */
+  --space-8:   2rem;      /* 32px */
+  --space-10:  2.5rem;    /* 40px */
+  --space-12:  3rem;      /* 48px */
+  --space-16:  4rem;      /* 64px */
+  --space-20:  5rem;      /* 80px */
+  --space-24:  6rem;      /* 96px */
+
+  /* ---- Border Radius ---- */
+  --radius:          0.5rem;     /* shadcn/ui base radius — aligns with --radius-md */
+  --radius-default:  0.375rem;   /* 6px  — inputs, buttons */
+  --radius-md:       0.5rem;     /* 8px  — cards, panels */
+  --radius-lg:       0.75rem;    /* 12px — modals, drawers */
+  --radius-pill:     9999px;     /* fully rounded — tags, badges */
+
+  /* ---- Shadows ---- */
+  --shadow-card:
+    0 1px 3px rgb(0 0 0 / 0.4),
+    0 1px 2px rgb(0 0 0 / 0.24);
+
+  --shadow-dropdown:
+    0 4px 6px rgb(0 0 0 / 0.4),
+    0 2px 4px rgb(0 0 0 / 0.3);
+
+  --shadow-modal:
+    0 20px 25px rgb(0 0 0 / 0.5),
+    0 10px 10px rgb(0 0 0 / 0.3);
+
+  /* Glow variants for interactive accent elements */
+  --shadow-glow-accent:
+    0 0 12px rgb(212 175 55 / 0.4);   /* Spell Gold glow */
+
+  --shadow-glow-primary:
+    0 0 12px rgb(91 42 134 / 0.5);    /* Arcane Violet glow */
+}
+
+/* Light theme override — not a Phase 8 deliverable; reserved for future use */
+.light {
+  --background:        255 255 255;
+  --surface:           245 245 245;
+  --foreground:        11 15 26;
+  --muted-foreground:  100 116 139;
+  --primary:           91 42 134;
+  --primary-foreground: 255 255 255;
+  --accent:            212 175 55;
+  --accent-foreground: 11 15 26;
+}
+
+/* ---- Base styles ---- */
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: rgb(var(--background) / 1);
+  color: rgb(var(--foreground) / 1);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
