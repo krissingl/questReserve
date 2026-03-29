@@ -6,7 +6,7 @@
 
 ---
 
-## Ticket 1 of 9
+## Ticket 1 of 9 — GitHub #61
 
 **Title:** Initialise Vite + React + TypeScript project
 
@@ -22,7 +22,7 @@ Create the `questreserve-frontend/` directory at the monorepo root and initialis
 
 ---
 
-## Ticket 2 of 9
+## Ticket 2 of 9 — GitHub #62
 
 **Title:** Install and configure Tailwind CSS and shadcn/ui
 
@@ -41,7 +41,7 @@ Install Tailwind CSS and configure it for shadcn/ui compatibility. Run the shadc
 
 ---
 
-## Ticket 3 of 9
+## Ticket 3 of 9 — GitHub #63
 
 **Title:** Apply design tokens from the UI strategy document
 
@@ -60,7 +60,7 @@ Replace the default shadcn/ui `globals.css` with the full token set defined in `
 
 ---
 
-## Ticket 4 of 9
+## Ticket 4 of 9 — GitHub #64
 
 **Title:** Create the src folder structure
 
@@ -76,7 +76,7 @@ Create all spec-defined top-level directories under `src/`. This establishes the
 
 ---
 
-## Ticket 5 of 9
+## Ticket 5 of 9 — GitHub #65
 
 **Title:** Implement AuthContext
 
@@ -95,7 +95,7 @@ Create `src/contexts/AuthContext.tsx` with the exact interface shape from `docs/
 
 ---
 
-## Ticket 6 of 9
+## Ticket 6 of 9 — GitHub #66
 
 **Title:** Implement role-scoped layouts and React Router configuration
 
@@ -114,7 +114,7 @@ Create the three role-scoped layout components with route guard logic, configure
 
 ---
 
-## Ticket 7 of 9
+## Ticket 7 of 9 — GitHub #67
 
 **Title:** Implement the API client layer
 
@@ -132,7 +132,7 @@ Create the Axios-based API client and the `auth.api.ts` stub module. This establ
 
 ---
 
-## Ticket 8 of 9
+## Ticket 8 of 9 — GitHub #68
 
 **Title:** Configure ESLint, Prettier, and import lint rules
 
@@ -151,7 +151,7 @@ Set up TypeScript-aware linting and formatting, and enforce the API layer isolat
 
 ---
 
-## Ticket 9 of 9
+## Ticket 9 of 9 — GitHub #69
 
 **Title:** Smoke test the Phase 8 scaffold
 
