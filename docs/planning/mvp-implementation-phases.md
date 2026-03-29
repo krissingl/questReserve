@@ -49,7 +49,7 @@ Status : ✅ COMPLETE
 Gather client branding/style guide, produce a UI strategy document covering design system, component library choice, color/type tokens. Reference document for all subsequent frontend phases.
 
 ## Phase 8: Frontend — Scaffold
-Status : NOT STARTED
+Status : STARTED
 
 React app structure, routing, role-scoped layouts (`CustomerLayout`, `ProviderLayout`, `AdminLayout`), auth context, API client layer.
 
