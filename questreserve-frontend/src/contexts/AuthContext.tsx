@@ -86,6 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 // Convenience hook
 // ---------------------------------------------------------------------------
 
+// eslint-disable-next-line react-refresh/only-export-components -- context file exports provider, hook, and types together per ui-strategy.md Section 4.4
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext)
   if (context === null) {
