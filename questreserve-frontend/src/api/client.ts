@@ -16,6 +16,18 @@
 import axios from 'axios'
 
 // ---------------------------------------------------------------------------
+// Startup assertion — fail visibly if VITE_API_URL is not set
+// ---------------------------------------------------------------------------
+
+const apiUrl = import.meta.env.VITE_API_URL as string | undefined
+if (!apiUrl) {
+  throw new Error(
+    '[client.ts] VITE_API_URL is not defined. ' +
+      'Add VITE_API_URL to your .env file and restart the dev server.',
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Module-level token store
 // ---------------------------------------------------------------------------
 
@@ -34,7 +46,7 @@ export function setAuthToken(token: string | null): void {
 // ---------------------------------------------------------------------------
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL as string,
+  baseURL: apiUrl,
   headers: {
     'Content-Type': 'application/json',
   },

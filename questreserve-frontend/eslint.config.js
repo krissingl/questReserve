@@ -55,12 +55,24 @@ export default defineConfig([
   },
 
   // ---------------------------------------------------------------------------
-  // src/api/ override — axios is permitted inside the API layer
+  // src/api/ override — axios is permitted inside the API layer only.
+  // The node-fetch restriction and all other patterns still apply.
   // ---------------------------------------------------------------------------
   {
     files: ['src/api/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'node-fetch',
+              message:
+                'Direct fetch usage is not allowed outside src/api/. Use the apiClient from @/api/client instead.',
+            },
+          ],
+        },
+      ],
     },
   },
 ])
