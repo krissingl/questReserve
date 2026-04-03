@@ -6,7 +6,13 @@ import {
   useEffect,
   type ReactNode,
 } from 'react'
-import { login as apiLogin } from '@/api/auth.api'
+import {
+  loginEndUser,
+  loginProvider,
+  loginAdmin,
+  decodeToken,
+  tokenTypeToRole,
+} from '@/api/auth.api'
 import { setAuthToken } from '@/api/client'
 
 // ---------------------------------------------------------------------------
@@ -27,6 +33,7 @@ export interface AuthContextValue {
   role: UserRole | null
   isLoading: boolean
   login: (email: string, password: string, role: UserRole) => Promise<void>
+  loginWithToken: (token: string, user: AuthUser, role: UserRole) => void
   logout: () => void
 }
 
@@ -119,7 +126,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  // Hydration: restore persisted auth state via lazy initialiser so no
+  // Hydration: restore persisted auth state via lazy initialisers so no
   // useEffect is needed — avoids react-hooks/set-state-in-effect lint error.
   // isLoading starts true and is set false synchronously after the read.
   // Because loadAuth() is synchronous (localStorage is synchronous), this is
@@ -139,17 +146,57 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setAuthToken(token)
   }, [token])
 
+  /**
+   * loginWithToken — called by registration pages which receive a token
+   * directly from the register API response. Bypasses the credential round-trip.
+   */
+  const loginWithToken = useCallback(
+    (newToken: string, newUser: AuthUser, newRole: UserRole) => {
+      setToken(newToken)
+      setUser(newUser)
+      setRole(newRole)
+      saveAuth(newUser, newToken, newRole)
+    },
+    [],
+  )
+
+  /**
+   * login — standard credential login. Routes to the correct backend endpoint
+   * based on `loginRole`. Decodes the returned JWT to extract the user id;
+   * uses email as displayName since the backend login endpoints return only
+   * a token (no user profile).
+   */
   const login = useCallback(
-    // _loginRole is accepted here for API compatibility with layout guards and
-    // auth pages. Ticket #74 will replace this stub and route to the correct
-    // endpoint based on role.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async (email: string, password: string, _loginRole: UserRole) => {
-      const response = await apiLogin(email, password)
-      setToken(response.token)
-      setUser(response.user)
-      setRole(response.role)
-      saveAuth(response.user, response.token, response.role)
+    async (email: string, password: string, loginRole: UserRole) => {
+      let responseToken: string
+
+      if (loginRole === 'customer') {
+        const res = await loginEndUser(email, password)
+        responseToken = res.token
+      } else if (loginRole === 'provider') {
+        const res = await loginProvider(email, password)
+        responseToken = res.token
+      } else {
+        const res = await loginAdmin(email, password)
+        responseToken = res.token
+      }
+
+      const payload = decodeToken(responseToken)
+      if (!payload) throw new Error('Received an invalid token from the server')
+
+      const resolvedRole = tokenTypeToRole(payload.type)
+      const authUser: AuthUser = {
+        id: payload.sub,
+        email,
+        // Login endpoints do not return user profile; email is used as the
+        // display name. This will be updated when profile endpoints are added.
+        displayName: email,
+      }
+
+      setToken(responseToken)
+      setUser(authUser)
+      setRole(resolvedRole)
+      saveAuth(authUser, responseToken, resolvedRole)
     },
     [],
   )
@@ -167,7 +214,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, token, role, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, role, isLoading, login, loginWithToken, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )
