@@ -8,6 +8,7 @@ import {
   registerSchema,
   type RegisterFormValues,
 } from '@/utils/schemas/auth.schemas'
+import { extractApiError, splitDisplayName } from '@/utils/api-error'
 import { Button } from '@/components/ui/button'
 
 export function CustomerRegister() {
@@ -26,11 +27,7 @@ export function CustomerRegister() {
   const onSubmit = async (values: RegisterFormValues) => {
     setApiError(null)
     try {
-      // Split displayName into first_name / last_name for the backend.
-      // If the user enters a single word, use it as both first and last name.
-      const nameParts = values.displayName.trim().split(/\s+/)
-      const first_name = nameParts[0]
-      const last_name = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0]
+      const { first_name, last_name } = splitDisplayName(values.displayName)
 
       const { token } = await registerEndUser({
         first_name,
@@ -50,22 +47,7 @@ export function CustomerRegister() {
 
       navigate('/customer')
     } catch (err: unknown) {
-      if (
-        err !== null &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response !== null &&
-        typeof err.response === 'object' &&
-        'data' in err.response &&
-        err.response.data !== null &&
-        typeof err.response.data === 'object' &&
-        'error' in err.response.data &&
-        typeof (err.response.data as Record<string, unknown>).error === 'string'
-      ) {
-        setApiError((err.response.data as Record<string, string>).error)
-      } else {
-        setApiError('Registration failed. Please try again.')
-      }
+      setApiError(extractApiError(err, 'Registration failed. Please try again.'))
     }
   }
 
