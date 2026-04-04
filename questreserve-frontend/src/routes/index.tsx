@@ -21,7 +21,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: (
+      <AlreadyAuthRedirect>
+        <LoginPage />
+      </AlreadyAuthRedirect>
+    ),
   },
 
   // Auth pages — publicly accessible, redirect to role root if already authenticated
