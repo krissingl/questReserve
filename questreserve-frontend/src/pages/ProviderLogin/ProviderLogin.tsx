@@ -7,6 +7,7 @@ import {
   loginSchema,
   type LoginFormValues,
 } from '@/utils/schemas/auth.schemas'
+import { extractLoginError } from '@/utils/api-error'
 import { Button } from '@/components/ui/button'
 
 export function ProviderLogin() {
@@ -28,20 +29,7 @@ export function ProviderLogin() {
       await login(values.email, values.password, 'provider')
       navigate('/provider')
     } catch (err: unknown) {
-      const status =
-        err !== null &&
-        typeof err === 'object' &&
-        'response' in err &&
-        err.response !== null &&
-        typeof err.response === 'object' &&
-        'status' in err.response
-          ? (err.response as { status: unknown }).status
-          : null
-      setApiError(
-        status === 401
-          ? 'Invalid email or password.'
-          : 'Something went wrong. Please try again later.',
-      )
+      setApiError(extractLoginError(err))
     }
   }
 
