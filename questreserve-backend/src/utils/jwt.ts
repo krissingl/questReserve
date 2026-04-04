@@ -20,7 +20,7 @@ function isTokenPayload(decoded: unknown): decoded is TokenPayload {
 }
 
 export function signToken(payload: TokenPayload): string {
-  const expiry = Number(process.env.JWT_EXPIRY_SECONDS) || 86400; // 86400s = 24h
+  const expiry = Number(process.env.JWT_EXPIRY_SECONDS) || 86400;
   return jwt.sign(payload, getSecret(), { expiresIn: expiry });
 }
 

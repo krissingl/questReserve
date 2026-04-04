@@ -6,12 +6,14 @@ import {
   useEffect,
   type ReactNode,
 } from 'react'
-import { login as apiLogin } from '@/api/auth.api'
+import {
+  loginEndUser,
+  loginProvider,
+  loginAdmin,
+  decodeToken,
+  tokenTypeToRole,
+} from '@/api/auth.api'
 import { setAuthToken } from '@/api/client'
-
-// ---------------------------------------------------------------------------
-// Types — exact shape from ui-strategy.md Section 4.4
-// ---------------------------------------------------------------------------
 
 export interface AuthUser {
   id: string
@@ -25,68 +27,160 @@ export interface AuthContextValue {
   user: AuthUser | null
   token: string | null
   role: UserRole | null
-  login: (email: string, password: string) => Promise<void>
+  isLoading: boolean
+  login: (email: string, password: string, role: UserRole) => Promise<void>
+  loginWithToken: (token: string, user: AuthUser, role: UserRole) => void
   logout: () => void
 }
 
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
+const STORAGE_KEY = 'qr_auth'
+
+interface PersistedAuth {
+  user: AuthUser
+  token: string
+  role: UserRole
+}
+
+function isUserRole(value: unknown): value is UserRole {
+  return value === 'customer' || value === 'provider' || value === 'admin'
+}
+
+function isPersistedAuth(value: unknown): value is PersistedAuth {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Record<string, unknown>
+  if (typeof v.token !== 'string' || !isUserRole(v.role)) return false
+  if (typeof v.user !== 'object' || v.user === null) return false
+  const u = v.user as Record<string, unknown>
+  return (
+    typeof u.id === 'string' &&
+    typeof u.email === 'string' &&
+    typeof u.displayName === 'string'
+  )
+}
+
+function isTokenExpired(token: string): boolean {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return true
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(parts[1].length / 4) * 4, '=')
+    const payload = JSON.parse(atob(base64)) as Record<string, unknown>
+    if (typeof payload.exp !== 'number') return false
+    return Date.now() / 1000 > payload.exp
+  } catch {
+    return true
+  }
+}
+
+function saveAuth(user: AuthUser, token: string, role: UserRole): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token, role }))
+  } catch {
+  }
+}
+
+function clearAuth(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+  }
+}
+
+function loadAuth(): PersistedAuth | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const parsed: unknown = JSON.parse(raw)
+    if (!isPersistedAuth(parsed)) return null
+    if (isTokenExpired(parsed.token)) {
+      clearAuth()
+      return null
+    }
+    return parsed
+  } catch {
+    return null
+  }
+}
 
 const AuthContext = createContext<AuthContextValue | null>(null)
-
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 interface AuthProviderProps {
   children: ReactNode
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  // Token is stored in React state (in-memory). localStorage is not used
-  // as the permanent storage mechanism — see ui-strategy.md Section 4.3.
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [token, setToken] = useState<string | null>(null)
-  const [role, setRole] = useState<UserRole | null>(null)
+  const initial = loadAuth()
+  const [user, setUser] = useState<AuthUser | null>(initial?.user ?? null)
+  const [token, setToken] = useState<string | null>(initial?.token ?? null)
+  const [role, setRole] = useState<UserRole | null>(initial?.role ?? null)
 
-  // Keep the Axios client's module-level token in sync with React state.
-  // This is required so request interceptors in client.ts can inject the
-  // Authorization header without importing AuthContext directly.
+  const [isLoading] = useState<boolean>(false)
+
   useEffect(() => {
     setAuthToken(token)
   }, [token])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await apiLogin(email, password)
-    setToken(response.token)
-    setUser(response.user)
-    setRole(response.role)
-  }, [])
+  const loginWithToken = useCallback(
+    (newToken: string, newUser: AuthUser, newRole: UserRole) => {
+      setToken(newToken)
+      setUser(newUser)
+      setRole(newRole)
+      saveAuth(newUser, newToken, newRole)
+    },
+    [],
+  )
+
+  const login = useCallback(
+    async (email: string, password: string, loginRole: UserRole) => {
+      let responseToken: string
+
+      if (loginRole === 'customer') {
+        const res = await loginEndUser(email, password)
+        responseToken = res.token
+      } else if (loginRole === 'provider') {
+        const res = await loginProvider(email, password)
+        responseToken = res.token
+      } else {
+        const res = await loginAdmin(email, password)
+        responseToken = res.token
+      }
+
+      setAuthToken(responseToken)
+
+      const payload = decodeToken(responseToken)
+      if (!payload) throw new Error('Received an invalid token from the server')
+
+      const resolvedRole = tokenTypeToRole(payload.type)
+      const authUser: AuthUser = {
+        id: payload.sub,
+        email,
+        displayName: email,
+      }
+
+      setToken(responseToken)
+      setUser(authUser)
+      setRole(resolvedRole)
+      saveAuth(authUser, responseToken, resolvedRole)
+    },
+    [],
+  )
 
   const logout = useCallback(() => {
     setUser(null)
     setToken(null)
     setRole(null)
-    // setAuthToken(null) is called automatically via the useEffect above.
-    // AuthContext is above the router so useNavigate is not available here.
-    // window.location.href causes a full navigation to /login and clears any
-    // in-memory state that survived the component unmount.
+    clearAuth()
     window.location.href = '/login'
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, token, role, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, role, isLoading, login, loginWithToken, logout }}
+    >
       {children}
     </AuthContext.Provider>
   )
 }
 
-// ---------------------------------------------------------------------------
-// Convenience hook
-// ---------------------------------------------------------------------------
-
-// eslint-disable-next-line react-refresh/only-export-components -- context file exports provider, hook, and types together per ui-strategy.md Section 4.4
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext)
   if (context === null) {

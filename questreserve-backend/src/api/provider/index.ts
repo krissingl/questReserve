@@ -42,8 +42,6 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
 
 router.use(authenticate, requireRole('provider'));
 
-// --- Location routes ---
-
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['name', 'difficulty', 'cancellation_policy']);
   if (validationError) { res.status(400).json({ error: validationError }); return; }
@@ -114,8 +112,6 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
   }
 });
 
-// --- Booking view (read-only) ---
-
 router.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const bookings = await providerService.getBookings(getUser(req).sub);
@@ -124,8 +120,6 @@ router.get('/bookings', async (req: Request, res: Response, next: NextFunction) 
     handleProviderError(err, res, next);
   }
 });
-
-// --- Slot routes ---
 
 router.post('/locations/:locationId/slots', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['start_time', 'end_time']);

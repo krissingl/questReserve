@@ -55,8 +55,6 @@ export class ProviderService {
     private readonly knex: Knex
   ) {}
 
-  // --- BookingLocation ---
-
   async createLocation(providerId: string, data: CreateLocationInput): Promise<BookingLocation> {
     return this.locationRepo.create({
       provider_id: providerId,
@@ -85,8 +83,6 @@ export class ProviderService {
     if (!updated) throw new LocationNotFoundError();
     return updated;
   }
-
-  // --- TimeSlot ---
 
   async createSlot(
     providerId: string,
@@ -122,8 +118,6 @@ export class ProviderService {
     await this.slotRepo.delete(slotId);
   }
 
-  // --- Bookings (read-only view) ---
-
   async getBookings(providerId: string): Promise<ProviderBookingView[]> {
     const rows = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
@@ -143,8 +137,6 @@ export class ProviderService {
       );
     return rows as ProviderBookingView[];
   }
-
-  // --- Private helpers ---
 
   private async assertLocationOwnership(
     providerId: string,

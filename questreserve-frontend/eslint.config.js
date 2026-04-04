@@ -8,10 +8,6 @@ import prettierConfig from 'eslint-config-prettier'
 
 export default defineConfig([
   globalIgnores(['dist']),
-
-  // ---------------------------------------------------------------------------
-  // Main config — applies to all TS/TSX files
-  // ---------------------------------------------------------------------------
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -26,12 +22,7 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
-      // Prohibit any usage — use unknown instead for error catches and untyped data
       '@typescript-eslint/no-explicit-any': 'error',
-
-      // Enforce API layer isolation:
-      // Direct axios or fetch usage is only permitted in src/api/.
-      // All other files must use functions from the domain API modules (auth.api.ts, etc.).
       'no-restricted-imports': [
         'error',
         {
@@ -53,11 +44,6 @@ export default defineConfig([
       ],
     },
   },
-
-  // ---------------------------------------------------------------------------
-  // src/api/ override — axios is permitted inside the API layer only.
-  // The node-fetch restriction and all other patterns still apply.
-  // ---------------------------------------------------------------------------
   {
     files: ['src/api/**/*.{ts,tsx}'],
     rules: {

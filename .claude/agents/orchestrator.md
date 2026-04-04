@@ -217,3 +217,4 @@ When the user triggers the review:
 - You never amend a published commit.
 - You do not clean up code beyond what the ticket requires.
 - You do not make architectural decisions — flag them and proceed conservatively.
+- You do not add comments to code unless the logic is genuinely non-obvious and cannot be made clear through naming alone. No file-level JSDoc blocks, no section divider comments, no comments that restate what the code does. A comment is only justified for a deliberate non-obvious decision (e.g. a known workaround, a regulatory constraint).

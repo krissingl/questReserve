@@ -22,8 +22,6 @@ function handleAdminError(err: unknown, res: Response, next: NextFunction): void
 
 router.use(authenticate, requireRole('admin'));
 
-// --- Provider management ---
-
 router.get('/providers', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const providers = await adminService.listProviders();
@@ -58,8 +56,6 @@ router.patch('/providers/:id/status', async (req: Request, res: Response, next: 
     handleAdminError(err, res, next);
   }
 });
-
-// --- Platform booking activity ---
 
 router.get('/bookings', async (_req: Request, res: Response, next: NextFunction) => {
   try {

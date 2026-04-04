@@ -1,0 +1,248 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useAuth } from '@/contexts/AuthContext'
+import { registerProvider, decodeToken, tokenTypeToRole } from '@/api/auth.api'
+import {
+  providerRegisterSchema,
+  type ProviderRegisterFormValues,
+} from '@/utils/schemas/auth.schemas'
+import { extractApiError } from '@/utils/api-error'
+import { splitDisplayName } from '@/utils/form-helpers'
+import { Button } from '@/components/ui/button'
+
+export function ProviderRegister() {
+  const { loginWithToken } = useAuth()
+  const navigate = useNavigate()
+  const [apiError, setApiError] = useState<string | null>(null)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<ProviderRegisterFormValues>({
+    resolver: zodResolver(providerRegisterSchema),
+  })
+
+  const onSubmit = async (values: ProviderRegisterFormValues) => {
+    setApiError(null)
+    try {
+      const { first_name, last_name } = splitDisplayName(values.displayName)
+
+      const { token } = await registerProvider({
+        first_name,
+        last_name,
+        email: values.email,
+        password: values.password,
+        organization_name: values.organizationName || undefined,
+      })
+
+      const payload = decodeToken(token)
+      if (!payload) throw new Error('Invalid token received from server')
+
+      loginWithToken(
+        token,
+        { id: payload.sub, email: values.email, displayName: values.displayName },
+        tokenTypeToRole(payload.type),
+      )
+
+      navigate('/provider')
+    } catch (err: unknown) {
+      setApiError(extractApiError(err, 'Registration failed. Please try again.'))
+    }
+  }
+
+  return (
+    <main
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{ backgroundColor: 'rgb(var(--background))' }}
+    >
+      <div
+        className="w-full max-w-sm rounded-lg p-8"
+        style={{
+          backgroundColor: 'rgb(var(--surface))',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
+        <h1
+          className="mb-2 text-center text-2xl font-bold"
+          style={{
+            fontFamily: 'var(--font-heading)',
+            color: 'rgb(var(--foreground))',
+          }}
+        >
+          Become a Provider
+        </h1>
+        <p
+          className="mb-6 text-center text-sm"
+          style={{ color: 'rgb(var(--muted-foreground))' }}
+        >
+          Create your dungeon owner account
+        </p>
+
+        {apiError && (
+          <div
+            className="mb-4 rounded-md px-4 py-3 text-sm"
+            role="alert"
+            style={{
+              backgroundColor: 'rgb(var(--destructive) / 0.15)',
+              color: 'rgb(var(--destructive-foreground))',
+              border: '1px solid rgb(var(--destructive) / 0.4)',
+            }}
+          >
+            {apiError}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="mb-4">
+            <label
+              htmlFor="displayName"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Full Name
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              autoComplete="name"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.displayName
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('displayName')}
+            />
+            {errors.displayName && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.displayName.message}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="organizationName"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Organization Name{' '}
+              <span
+                className="text-xs font-normal"
+                style={{ color: 'rgb(var(--muted-foreground))' }}
+              >
+                (optional)
+              </span>
+            </label>
+            <input
+              id="organizationName"
+              type="text"
+              autoComplete="organization"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: 'rgb(var(--border))',
+              }}
+              {...register('organizationName')}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.email
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.password
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('password')}
+            />
+            {errors.password && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating account…' : 'Create Account'}
+          </Button>
+        </form>
+
+        <p
+          className="mt-4 text-center text-sm"
+          style={{ color: 'rgb(var(--muted-foreground))' }}
+        >
+          Already have an account?{' '}
+          <Link
+            to="/provider/login"
+            className="font-medium underline-offset-4 hover:underline"
+            style={{ color: 'rgb(var(--accent))' }}
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </main>
+  )
+}

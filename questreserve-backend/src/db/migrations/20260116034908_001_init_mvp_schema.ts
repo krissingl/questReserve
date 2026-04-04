@@ -2,7 +2,6 @@ import { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
 
-  // ADMIN USERS
   await knex.schema.createTable("admin_user", (table) => {
     table.uuid("id").primary();
     table.string("first_name").notNullable();
@@ -14,7 +13,6 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
-  // PROVIDERS
   await knex.schema.createTable("provider", (table) => {
     table.uuid("id").primary();
     table.string("first_name").notNullable();
@@ -27,7 +25,6 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
-  // END USERS
   await knex.schema.createTable("end_user", (table) => {
     table.uuid("id").primary();
     table.string("first_name").notNullable();
@@ -39,7 +36,6 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("updated_at").defaultTo(knex.fn.now());
   });
 
-  // BOOKING LOCATIONS
   await knex.schema.createTable("booking_location", (table) => {
     table.uuid("id").primary();
     table.uuid("provider_id").references("id").inTable("provider").onDelete("CASCADE");
@@ -52,7 +48,6 @@ export async function up(knex: Knex): Promise<void> {
     table.index(["provider_id"]);
   });
 
-  // TIME SLOTS
   await knex.schema.createTable("time_slot", (table) => {
     table.uuid("id").primary();
     table.uuid("booking_location_id").references("id").inTable("booking_location").onDelete("CASCADE");
@@ -63,7 +58,6 @@ export async function up(knex: Knex): Promise<void> {
     table.index(["booking_location_id"]);
   });
 
-  // BOOKINGS
   await knex.schema.createTable("booking", (table) => {
     table.uuid("id").primary();
     table.uuid("time_slot_id").references("id").inTable("time_slot").onDelete("CASCADE");
