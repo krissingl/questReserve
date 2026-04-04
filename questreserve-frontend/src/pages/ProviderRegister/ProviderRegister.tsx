@@ -8,7 +8,8 @@ import {
   providerRegisterSchema,
   type ProviderRegisterFormValues,
 } from '@/utils/schemas/auth.schemas'
-import { extractApiError, splitDisplayName } from '@/utils/api-error'
+import { extractApiError } from '@/utils/api-error'
+import { splitDisplayName } from '@/utils/form-helpers'
 import { Button } from '@/components/ui/button'
 
 export function ProviderRegister() {
