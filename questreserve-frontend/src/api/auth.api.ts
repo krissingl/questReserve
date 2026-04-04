@@ -128,7 +128,8 @@ export function decodeToken(token: string): JwtPayload | null {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return null
-    const payload: unknown = JSON.parse(atob(parts[1]))
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(parts[1].length / 4) * 4, '=')
+    const payload: unknown = JSON.parse(atob(base64))
     return isJwtPayload(payload) ? payload : null
   } catch {
     return null

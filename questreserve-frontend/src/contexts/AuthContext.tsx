@@ -71,7 +71,8 @@ function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return true
-    const payload = JSON.parse(atob(parts[1])) as Record<string, unknown>
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(parts[1].length / 4) * 4, '=')
+    const payload = JSON.parse(atob(base64)) as Record<string, unknown>
     if (typeof payload.exp !== 'number') return false // no exp — treat as valid
     return Date.now() / 1000 > payload.exp
   } catch {
@@ -126,14 +127,13 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  // Hydration: restore persisted auth state via lazy initialisers so no
-  // useEffect is needed — avoids react-hooks/set-state-in-effect lint error.
-  // isLoading starts true and is set false synchronously after the read.
+  // Hydration: call loadAuth() once and pass results directly to useState.
   // Because loadAuth() is synchronous (localStorage is synchronous), this is
   // safe: the initial render already has the correct values.
-  const [user, setUser] = useState<AuthUser | null>(() => loadAuth()?.user ?? null)
-  const [token, setToken] = useState<string | null>(() => loadAuth()?.token ?? null)
-  const [role, setRole] = useState<UserRole | null>(() => loadAuth()?.role ?? null)
+  const initial = loadAuth()
+  const [user, setUser] = useState<AuthUser | null>(initial?.user ?? null)
+  const [token, setToken] = useState<string | null>(initial?.token ?? null)
+  const [role, setRole] = useState<UserRole | null>(initial?.role ?? null)
 
   // isLoading is always false on mount because the lazy initialisers run
   // synchronously before the first render. It exists in the interface so that
@@ -180,6 +180,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const res = await loginAdmin(email, password)
         responseToken = res.token
       }
+
+      setAuthToken(responseToken)
 
       const payload = decodeToken(responseToken)
       if (!payload) throw new Error('Received an invalid token from the server')
