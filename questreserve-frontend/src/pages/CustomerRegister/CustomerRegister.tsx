@@ -1,0 +1,236 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useAuth } from '@/contexts/AuthContext'
+import { registerEndUser, decodeToken, tokenTypeToRole } from '@/api/auth.api'
+import {
+  registerSchema,
+  type RegisterFormValues,
+} from '@/utils/schemas/auth.schemas'
+import { Button } from '@/components/ui/button'
+
+export function CustomerRegister() {
+  const { loginWithToken } = useAuth()
+  const navigate = useNavigate()
+  const [apiError, setApiError] = useState<string | null>(null)
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+  })
+
+  const onSubmit = async (values: RegisterFormValues) => {
+    setApiError(null)
+    try {
+      // Split displayName into first_name / last_name for the backend.
+      // If the user enters a single word, use it as both first and last name.
+      const nameParts = values.displayName.trim().split(/\s+/)
+      const first_name = nameParts[0]
+      const last_name = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0]
+
+      const { token } = await registerEndUser({
+        first_name,
+        last_name,
+        email: values.email,
+        password: values.password,
+      })
+
+      const payload = decodeToken(token)
+      if (!payload) throw new Error('Invalid token received from server')
+
+      loginWithToken(
+        token,
+        { id: payload.sub, email: values.email, displayName: values.displayName },
+        tokenTypeToRole(payload.type),
+      )
+
+      navigate('/customer')
+    } catch (err: unknown) {
+      if (
+        err !== null &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response !== null &&
+        typeof err.response === 'object' &&
+        'data' in err.response &&
+        err.response.data !== null &&
+        typeof err.response.data === 'object' &&
+        'error' in err.response.data &&
+        typeof (err.response.data as Record<string, unknown>).error === 'string'
+      ) {
+        setApiError((err.response.data as Record<string, string>).error)
+      } else {
+        setApiError('Registration failed. Please try again.')
+      }
+    }
+  }
+
+  return (
+    <main
+      className="flex min-h-screen items-center justify-center px-4"
+      style={{ backgroundColor: 'rgb(var(--background))' }}
+    >
+      <div
+        className="w-full max-w-sm rounded-lg p-8"
+        style={{
+          backgroundColor: 'rgb(var(--surface))',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
+        <h1
+          className="mb-2 text-center text-2xl font-bold"
+          style={{
+            fontFamily: 'var(--font-heading)',
+            color: 'rgb(var(--foreground))',
+          }}
+        >
+          Create Account
+        </h1>
+        <p
+          className="mb-6 text-center text-sm"
+          style={{ color: 'rgb(var(--muted-foreground))' }}
+        >
+          Join the adventure
+        </p>
+
+        {apiError && (
+          <div
+            className="mb-4 rounded-md px-4 py-3 text-sm"
+            role="alert"
+            style={{
+              backgroundColor: 'rgb(var(--destructive) / 0.15)',
+              color: 'rgb(var(--destructive-foreground))',
+              border: '1px solid rgb(var(--destructive) / 0.4)',
+            }}
+          >
+            {apiError}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="mb-4">
+            <label
+              htmlFor="displayName"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Display Name
+            </label>
+            <input
+              id="displayName"
+              type="text"
+              autoComplete="name"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.displayName
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('displayName')}
+            />
+            {errors.displayName && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.displayName.message}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.email
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <label
+              htmlFor="password"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="new-password"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.password
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('password')}
+            />
+            {errors.password && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating account…' : 'Create Account'}
+          </Button>
+        </form>
+
+        <p
+          className="mt-4 text-center text-sm"
+          style={{ color: 'rgb(var(--muted-foreground))' }}
+        >
+          Already have an account?{' '}
+          <Link
+            to="/customer/login"
+            className="font-medium underline-offset-4 hover:underline"
+            style={{ color: 'rgb(var(--accent))' }}
+          >
+            Sign in
+          </Link>
+        </p>
+      </div>
+    </main>
+  )
+}
