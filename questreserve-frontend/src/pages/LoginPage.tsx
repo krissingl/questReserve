@@ -1,10 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
-/**
- * LoginPage — login landing page at /login.
- * Presents navigation to Customer and Provider login.
- */
 export function LoginPage() {
   return (
     <main

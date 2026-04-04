@@ -15,10 +15,6 @@ import {
 } from '@/api/auth.api'
 import { setAuthToken } from '@/api/client'
 
-// ---------------------------------------------------------------------------
-// Types — exact shape from ui-strategy.md Section 4.4
-// ---------------------------------------------------------------------------
-
 export interface AuthUser {
   id: string
   email: string
@@ -36,10 +32,6 @@ export interface AuthContextValue {
   loginWithToken: (token: string, user: AuthUser, role: UserRole) => void
   logout: () => void
 }
-
-// ---------------------------------------------------------------------------
-// localStorage persistence helpers
-// ---------------------------------------------------------------------------
 
 const STORAGE_KEY = 'qr_auth'
 
@@ -66,14 +58,13 @@ function isPersistedAuth(value: unknown): value is PersistedAuth {
   )
 }
 
-/** Returns true if the JWT's exp claim is in the past. */
 function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.')
     if (parts.length !== 3) return true
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(parts[1].length / 4) * 4, '=')
     const payload = JSON.parse(atob(base64)) as Record<string, unknown>
-    if (typeof payload.exp !== 'number') return false // no exp — treat as valid
+    if (typeof payload.exp !== 'number') return false
     return Date.now() / 1000 > payload.exp
   } catch {
     return true
@@ -84,7 +75,6 @@ function saveAuth(user: AuthUser, token: string, role: UserRole): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token, role }))
   } catch {
-    // localStorage quota or security errors are non-fatal
   }
 }
 
@@ -92,7 +82,6 @@ function clearAuth(): void {
   try {
     localStorage.removeItem(STORAGE_KEY)
   } catch {
-    // non-fatal
   }
 }
 
@@ -112,41 +101,24 @@ function loadAuth(): PersistedAuth | null {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Context
-// ---------------------------------------------------------------------------
-
 const AuthContext = createContext<AuthContextValue | null>(null)
-
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 interface AuthProviderProps {
   children: ReactNode
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  // Hydration: call loadAuth() once and pass results directly to useState.
-  // Because loadAuth() is synchronous (localStorage is synchronous), this is
-  // safe: the initial render already has the correct values.
   const initial = loadAuth()
   const [user, setUser] = useState<AuthUser | null>(initial?.user ?? null)
   const [token, setToken] = useState<string | null>(initial?.token ?? null)
   const [role, setRole] = useState<UserRole | null>(initial?.role ?? null)
 
-  // isLoading is always false — kept as a forward-compatible slot for future async hydration (e.g. server-side token refresh).
   const [isLoading] = useState<boolean>(false)
 
-  // Keep the Axios client's module-level token in sync with React state.
   useEffect(() => {
     setAuthToken(token)
   }, [token])
 
-  /**
-   * loginWithToken — called by registration pages which receive a token
-   * directly from the register API response. Bypasses the credential round-trip.
-   */
   const loginWithToken = useCallback(
     (newToken: string, newUser: AuthUser, newRole: UserRole) => {
       setToken(newToken)
@@ -157,12 +129,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [],
   )
 
-  /**
-   * login — standard credential login. Routes to the correct backend endpoint
-   * based on `loginRole`. Decodes the returned JWT to extract the user id;
-   * uses email as displayName since the backend login endpoints return only
-   * a token (no user profile).
-   */
   const login = useCallback(
     async (email: string, password: string, loginRole: UserRole) => {
       let responseToken: string
@@ -187,8 +153,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const authUser: AuthUser = {
         id: payload.sub,
         email,
-        // Login endpoints do not return user profile; email is used as the
-        // display name. This will be updated when profile endpoints are added.
         displayName: email,
       }
 
@@ -205,10 +169,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setToken(null)
     setRole(null)
     clearAuth()
-    // setAuthToken(null) is called automatically via the useEffect above.
-    // AuthContext is above the router so useNavigate is not available here.
-    // window.location.href causes a full navigation to /login and clears any
-    // in-memory state that survived the component unmount.
     window.location.href = '/login'
   }, [])
 
@@ -221,11 +181,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Convenience hook
-// ---------------------------------------------------------------------------
-
-// eslint-disable-next-line react-refresh/only-export-components -- context file exports provider, hook, and types together per ui-strategy.md Section 4.4
 export function useAuth(): AuthContextValue {
   const context = useContext(AuthContext)
   if (context === null) {

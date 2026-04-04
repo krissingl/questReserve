@@ -1,14 +1,3 @@
-/**
- * auth.schemas.ts — Zod validation schemas for auth forms.
- *
- * loginSchema is used by CustomerLogin and ProviderLogin.
- * registerSchema is used by CustomerRegister.
- * providerRegisterSchema is used by ProviderRegister.
- *
- * Co-located in src/utils/schemas/ because schemas are shared across
- * multiple pages (per ui-strategy.md Section 4.2).
- */
-
 import { z } from 'zod'
 
 export const loginSchema = z.object({

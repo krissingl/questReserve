@@ -1,28 +1,9 @@
-/**
- * auth.api.ts — authentication API module.
- *
- * All calls go through the shared Axios instance in client.ts.
- * This file must never import axios directly.
- */
-
 import { apiClient } from './client'
 import type { UserRole } from '@/contexts/AuthContext'
 
-// ---------------------------------------------------------------------------
-// Response types
-// ---------------------------------------------------------------------------
-
-/**
- * The backend auth endpoints return only a token.
- * Role and user identity are encoded in the JWT payload.
- */
 export interface AuthTokenResponse {
   token: string
 }
-
-// ---------------------------------------------------------------------------
-// EndUser
-// ---------------------------------------------------------------------------
 
 export interface RegisterEndUserInput {
   first_name: string
@@ -51,10 +32,6 @@ export async function loginEndUser(
   )
   return response.data
 }
-
-// ---------------------------------------------------------------------------
-// Provider
-// ---------------------------------------------------------------------------
 
 export interface RegisterProviderInput {
   first_name: string
@@ -85,10 +62,6 @@ export async function loginProvider(
   return response.data
 }
 
-// ---------------------------------------------------------------------------
-// Admin
-// ---------------------------------------------------------------------------
-
 export async function loginAdmin(
   email: string,
   password: string,
@@ -99,11 +72,6 @@ export async function loginAdmin(
   )
   return response.data
 }
-
-// ---------------------------------------------------------------------------
-// JWT decode helper — extracts sub and type from the token payload.
-// Does not verify the signature (server-side verification is authoritative).
-// ---------------------------------------------------------------------------
 
 interface JwtPayload {
   sub: string
@@ -120,10 +88,6 @@ function isJwtPayload(value: unknown): value is JwtPayload {
   )
 }
 
-/**
- * Decodes (without verifying) a JWT and returns its payload.
- * Returns null if the token is malformed.
- */
 export function decodeToken(token: string): JwtPayload | null {
   try {
     const parts = token.split('.')
@@ -136,9 +100,6 @@ export function decodeToken(token: string): JwtPayload | null {
   }
 }
 
-/**
- * Maps the JWT token type to the frontend UserRole.
- */
 export function tokenTypeToRole(type: JwtPayload['type']): UserRole {
   if (type === 'end_user') return 'customer'
   if (type === 'provider') return 'provider'

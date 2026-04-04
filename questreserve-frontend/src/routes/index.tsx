@@ -14,7 +14,6 @@ import { ProviderLogin } from '@/pages/ProviderLogin/ProviderLogin'
 import { ProviderRegister } from '@/pages/ProviderRegister/ProviderRegister'
 
 export const router = createBrowserRouter([
-  // Public routes
   {
     path: '/',
     element: <HomePage />,
@@ -27,8 +26,6 @@ export const router = createBrowserRouter([
       </AlreadyAuthRedirect>
     ),
   },
-
-  // Auth pages — publicly accessible, redirect to role root if already authenticated
   {
     path: '/customer/login',
     element: (
@@ -61,8 +58,6 @@ export const router = createBrowserRouter([
       </AlreadyAuthRedirect>
     ),
   },
-
-  // Customer routes — guarded by CustomerLayout
   {
     path: '/customer',
     element: <CustomerLayout />,
@@ -73,8 +68,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-  // Provider routes — guarded by ProviderLayout
   {
     path: '/provider',
     element: <ProviderLayout />,
@@ -85,8 +78,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-
-  // Admin routes — guarded by AdminLayout
   {
     path: '/admin',
     element: <AdminLayout />,

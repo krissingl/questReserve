@@ -1,7 +1,3 @@
-/**
- * ProviderHome — placeholder for the provider dashboard.
- * Populated in Phase 9.
- */
 export function ProviderHome() {
   return (
     <main className="p-8">

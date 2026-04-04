@@ -1,7 +1,3 @@
-/**
- * AdminHome — placeholder for the admin dashboard.
- * Populated in Phase 9.
- */
 export function AdminHome() {
   return (
     <main className="p-8">

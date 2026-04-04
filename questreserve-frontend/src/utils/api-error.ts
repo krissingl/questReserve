@@ -1,7 +1,3 @@
-/**
- * Extracts a human-readable error string from an unknown Axios error.
- * Returns the backend's `error` field if present, otherwise the fallback.
- */
 export function extractApiError(err: unknown, fallback: string): string {
   if (
     err !== null &&
@@ -20,11 +16,6 @@ export function extractApiError(err: unknown, fallback: string): string {
   return fallback
 }
 
-/**
- * Extracts a human-readable error string from a login attempt.
- * Returns a 401-specific message for credential errors and a generic
- * network/server message for everything else (network failures, 5xx, etc.).
- */
 export function extractLoginError(err: unknown): string {
   if (
     err !== null &&

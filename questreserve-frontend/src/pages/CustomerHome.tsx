@@ -1,7 +1,3 @@
-/**
- * CustomerHome — placeholder for the customer dashboard.
- * Populated in Phase 9.
- */
 export function CustomerHome() {
   return (
     <main className="p-8">

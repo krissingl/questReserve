@@ -1,10 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 
-/**
- * HomePage — public landing page at /.
- * Populated in Phase 9.
- */
 export function HomePage() {
   return (
     <main
