@@ -48,8 +48,6 @@ function handleCustomerError(err: unknown, res: Response, next: NextFunction): v
   }
 }
 
-// --- Public routes ---
-
 publicRouter.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const { difficulty } = req.query;
   if (difficulty !== undefined) {
@@ -91,8 +89,6 @@ publicRouter.get('/locations/:id/slots', async (req: Request, res: Response, nex
     handleCustomerError(err, res, next);
   }
 });
-
-// --- Protected routes (end_user only) ---
 
 protectedRouter.use(authenticate, requireRole('end_user'));
 
