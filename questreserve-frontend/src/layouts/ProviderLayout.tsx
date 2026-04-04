@@ -12,7 +12,7 @@ export function ProviderLayout() {
 
   if (isLoading) return null
 
-  if (!token || role === null) return <Navigate to="/login" replace />
+  if (!token || !role) return <Navigate to="/login" replace />
   if (role !== 'provider') return <Navigate to={`/${role}`} replace />
 
   return <Outlet />
