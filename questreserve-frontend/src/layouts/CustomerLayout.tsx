@@ -12,8 +12,7 @@ export function CustomerLayout() {
 
   if (isLoading) return null
 
-  if (!token) return <Navigate to="/login" replace />
-  if (role === null) return <Navigate to="/login" replace />
+  if (!token || role === null) return <Navigate to="/login" replace />
   if (role !== 'customer') return <Navigate to={`/${role}`} replace />
 
   return <Outlet />

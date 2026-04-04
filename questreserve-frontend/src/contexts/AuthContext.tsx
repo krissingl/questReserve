@@ -135,10 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(initial?.token ?? null)
   const [role, setRole] = useState<UserRole | null>(initial?.role ?? null)
 
-  // isLoading is always false on mount because the lazy initialisers run
-  // synchronously before the first render. It exists in the interface so that
-  // layout guards can suspend redirect logic — this is correct: on mount
-  // `isLoading` is false and values are already populated.
+  // isLoading is always false — kept as a forward-compatible slot for future async hydration (e.g. server-side token refresh).
   const [isLoading] = useState<boolean>(false)
 
   // Keep the Axios client's module-level token in sync with React state.
