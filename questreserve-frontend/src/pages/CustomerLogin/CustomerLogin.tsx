@@ -27,8 +27,21 @@ export function CustomerLogin() {
     try {
       await login(values.email, values.password, 'customer')
       navigate('/customer')
-    } catch {
-      setApiError('Invalid email or password. Please try again.')
+    } catch (err: unknown) {
+      const status =
+        err !== null &&
+        typeof err === 'object' &&
+        'response' in err &&
+        err.response !== null &&
+        typeof err.response === 'object' &&
+        'status' in err.response
+          ? (err.response as { status: unknown }).status
+          : null
+      setApiError(
+        status === 401
+          ? 'Invalid email or password.'
+          : 'Something went wrong. Please try again later.',
+      )
     }
   }
 
