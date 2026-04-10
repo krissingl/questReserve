@@ -4,7 +4,7 @@
 
 ---
 
-**QuestReserve** is a custom booking and reservation platform built for [WizardsTowerCorp](https://wizardstowercorp.com) - a company managing a network of dungeon raid experiences for adventure parties of all kinds.
+**QuestReserve** is a custom booking and reservation platform built for WizardsTowerCorp- a company managing a network of dungeon raid experiences for adventure parties of all kinds.
 
 We designed and delivered QuestReserve end-to-end: from data architecture and business logic to a polished, role-aware web interface. The result is a platform that handles the full booking lifecycle, keeps each stakeholder in their lane, and runs reliably without friction.
 
