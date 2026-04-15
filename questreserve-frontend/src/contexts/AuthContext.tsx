@@ -31,6 +31,7 @@ export interface AuthContextValue {
   login: (email: string, password: string, role: UserRole) => Promise<void>
   loginWithToken: (token: string, user: AuthUser, role: UserRole) => void
   logout: () => void
+  clearSession: () => void
 }
 
 const STORAGE_KEY = 'qr_auth'
@@ -164,6 +165,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [],
   )
 
+  const clearSession = useCallback(() => {
+    setUser(null)
+    setToken(null)
+    setRole(null)
+    clearAuth()
+    setAuthToken(null)
+  }, [])
+
   const logout = useCallback(() => {
     setUser(null)
     setToken(null)
@@ -174,7 +183,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, role, isLoading, login, loginWithToken, logout }}
+      value={{ user, token, role, isLoading, login, loginWithToken, logout, clearSession }}
     >
       {children}
     </AuthContext.Provider>

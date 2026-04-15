@@ -28,20 +28,15 @@ You operate in exactly one of three modes per session. Identify the mode from th
 
 ---
 
-## DATA SOURCES — READ IN THIS ORDER
+## DATA SOURCES BY MODE
 
-Always read in priority order. Stop once you have sufficient context for the current mode.
+**ROADMAP mode:** Read `spec/PROJECT_SPEC.md`, `docs/planning/mvp-implementation-phases.md`.
 
-1. **Always read first:**
-   - `spec/PROJECT_SPEC.md` — authoritative source on domain model, user stories, and constraints
-   - Any existing roadmap document relevant to the initiative (e.g., `docs/planning/mvp-implementation-phases.md`)
+**PHASE PLAN mode:** Read `spec/PROJECT_SPEC.md` and the relevant roadmap document.
 
-2. **Read if relevant:**
-   - The specific phase plan (TICKET PLAN mode only): `docs/planning/phasePlans/phase-N-*.md`
-   - One existing ticket plan for style reference (TICKET PLAN mode only)
-   - One existing roadmap for style reference (ROADMAP mode only): `docs/planning/mvp-implementation-phases.md`
+**TICKET PLAN mode:** Read the phase plan at `docs/planning/phasePlans/phase-N-*.md` and one existing ticket plan for format reference. Read nothing else — the phase plan is the sole source of truth for ticket content.
 
-3. **Never assume.** If information is missing from these sources, ask the user before drafting.
+**Never assume.** If information is missing from these sources, ask the user before drafting.
 
 ---
 

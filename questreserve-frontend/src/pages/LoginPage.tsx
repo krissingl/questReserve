@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { CrossRoleLink } from '@/components/CrossRoleLink'
 import { Button } from '@/components/ui/button'
 
 export function LoginPage() {
@@ -41,10 +41,10 @@ export function LoginPage() {
 
         <div className="flex flex-col gap-3">
           <Button asChild className="w-full" size="lg">
-            <Link to="/customer/login">Log in as Customer</Link>
+            <CrossRoleLink to="/customer/login">Customer Login</CrossRoleLink>
           </Button>
           <Button asChild variant="outline" className="w-full" size="lg">
-            <Link to="/provider/login">Log in as Provider</Link>
+            <CrossRoleLink to="/provider/login">Provider Login</CrossRoleLink>
           </Button>
         </div>
 
@@ -56,21 +56,21 @@ export function LoginPage() {
           }}
         >
           New here?{' '}
-          <Link
+          <CrossRoleLink
             to="/customer/register"
             className="underline-offset-4 hover:underline"
             style={{ color: 'rgb(var(--accent))' }}
           >
             Register as a customer
-          </Link>{' '}
+          </CrossRoleLink>{' '}
           or{' '}
-          <Link
+          <CrossRoleLink
             to="/provider/register"
             className="underline-offset-4 hover:underline"
             style={{ color: 'rgb(var(--accent))' }}
           >
-            become a provider
-          </Link>
+            Become a provider
+          </CrossRoleLink>
         </div>
       </div>
     </main>

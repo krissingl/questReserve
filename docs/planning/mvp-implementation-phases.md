@@ -59,9 +59,39 @@ Status : ✅ COMPLETE
 Login/register pages for each user type.
 
 ## Phase 10: Frontend — Customer Portal
-Status : NOT STARTED
+Status : ✅ COMPLETE
 
 Browse, book, manage bookings.
+
+## Phase 10.1: Frontend — Booking Flow
+Status : NOT STARTED
+
+The core customer booking journey, deferred from Phase 10. Full scope:
+
+- TimeSlot availability listing on the Location Detail page
+- Booking creation flow — customer selects a time slot and confirms a reservation
+- Guest path — a guest clicking "Reserve" is redirected to customer login with their intended location and time slot preserved; after login they are returned to the reservation flow
+- Authenticated customer path — proceeds through reservation to an "Under Construction" payment page (payment is Post-MVP)
+- Booking cancellation action on the My Bookings page (also deferred from Phase 10)
+
+## Phase 10.2: Frontend — Guest Access
+Status : NOT STARTED
+
+Unauthenticated location browsing. Allow guests to browse and view booking locations without signing in. Requires dedicated routes, a guest layout, and any supporting backend endpoint changes to expose location data publicly.
+
+## Phase 10.3: Frontend — Location Filtering
+Status : NOT STARTED
+
+Full filtering implementation for the browse locations view, covering both guest and authenticated customer flows. Includes filter UI controls (difficulty, rules, and other relevant fields) and any supporting backend query changes needed to power them.
+
+## Phase 10.4: Frontend — Location Images & Browse UI Redesign
+Status : NOT STARTED
+
+Two tightly coupled deliverables treated as one phase:
+
+**Location Images** — Promote from Stretch Goal into MVP. Backend: provider image upload and storage strategy. Frontend: image gallery display on location detail and browse views. Seed: capture open-source images for existing seed locations.
+
+**Browse UI Redesign** — Redesign the browse locations view from a grid of cards to a split-panel layout: list of locations on the left, expanded preview of the focused location on the right. The UI redesign is not meaningful without richer location data; the image gallery provides that context.
 
 ## Phase 11: Frontend — Provider Dashboard
 Status : NOT STARTED
@@ -89,7 +119,11 @@ Once a payment model is introduced, implement a provider-facing reporting endpoi
 
 ### Save Images
 
-All users should be able to add a profile picture and save it to their account. Providers should be able to add images to their booking locations for advertising and clarification reasons.
+All users should be able to add a profile picture and save it to their account. Provider location images have been promoted to MVP scope (see Phase 10.3).
+
+### Forgot Password / Password Reset
+
+A "Forgot Password?" flow on the CustomerLogin and ProviderLogin pages. MVP scope: user enters their email and receives a reset link. Requires a backend password reset endpoint and email delivery infrastructure (SMTP, SendGrid, or equivalent). Deferred until email infrastructure is scoped and available.
 
 ### Booking Reviews
 
