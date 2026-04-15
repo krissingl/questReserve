@@ -121,6 +121,10 @@ Once a payment model is introduced, implement a provider-facing reporting endpoi
 
 All users should be able to add a profile picture and save it to their account. Provider location images have been promoted to MVP scope (see Phase 10.3).
 
+### Forgot Password / Password Reset
+
+A "Forgot Password?" flow on the CustomerLogin and ProviderLogin pages. MVP scope: user enters their email and receives a reset link. Requires a backend password reset endpoint and email delivery infrastructure (SMTP, SendGrid, or equivalent). Deferred until email infrastructure is scoped and available.
+
 ### Booking Reviews
 
 EndUsers should be able to leave reviews after booking a location and experience. Explore internal system for Providers to review EndUsers also - did they follow rules, were they honest about party size, ect.
