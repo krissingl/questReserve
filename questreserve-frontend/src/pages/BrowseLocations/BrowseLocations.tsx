@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useBookingLocations } from '@/hooks/useBookingLocations'
+import type { Difficulty } from '@/types/domain'
 
-const DIFFICULTY_COLOURS: Record<string, string> = {
+const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
   EASY: 'rgb(var(--success, 34 197 94))',
   MEDIUM: 'rgb(var(--warning, 234 179 8))',
   HARD: 'rgb(var(--destructive))',
@@ -41,6 +42,10 @@ export function BrowseLocations() {
         Browse Locations
       </h1>
 
+      {locations && locations.length === 0 && (
+        <p style={{ color: 'rgb(var(--muted-foreground))' }}>No locations found.</p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {locations?.map((location) => (
           <Link
@@ -65,7 +70,7 @@ export function BrowseLocations() {
             <span
               className="mb-3 inline-block rounded px-2 py-0.5 text-xs font-medium"
               style={{
-                backgroundColor: DIFFICULTY_COLOURS[location.difficulty] ?? 'rgb(var(--primary))',
+                backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
                 color: 'rgb(var(--primary-foreground, 255 255 255))',
               }}
             >

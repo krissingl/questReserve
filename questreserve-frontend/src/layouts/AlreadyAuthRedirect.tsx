@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import type { UserRole } from '@/contexts/AuthContext'
 
 interface AlreadyAuthRedirectProps {
   children: ReactNode
-  pageRole?: 'customer' | 'provider' | 'admin'
+  pageRole?: UserRole
 }
 
 export function AlreadyAuthRedirect({ children, pageRole }: AlreadyAuthRedirectProps) {

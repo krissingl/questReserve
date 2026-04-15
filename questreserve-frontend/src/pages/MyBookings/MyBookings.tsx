@@ -1,8 +1,14 @@
 import { useMyBookings } from '@/hooks/useMyBookings'
+import type { BookingStatus } from '@/types/domain'
 
-const STATUS_COLOURS: Record<string, string> = {
+const STATUS_TEXT: Record<BookingStatus, string> = {
   BOOKED: 'rgb(34 197 94)',
   CANCELLED: 'rgb(var(--muted-foreground))',
+}
+
+const STATUS_BG: Record<BookingStatus, string> = {
+  BOOKED: 'rgb(34 197 94 / 0.15)',
+  CANCELLED: 'rgb(var(--muted) / 0.3)',
 }
 
 export function MyBookings() {
@@ -77,10 +83,8 @@ export function MyBookings() {
                 <span
                   className="rounded px-2 py-0.5 text-xs font-semibold"
                   style={{
-                    backgroundColor: booking.status === 'BOOKED'
-                      ? 'rgb(34 197 94 / 0.15)'
-                      : 'rgb(var(--muted) / 0.3)',
-                    color: STATUS_COLOURS[booking.status] ?? 'inherit',
+                    backgroundColor: STATUS_BG[booking.status],
+                    color: STATUS_TEXT[booking.status],
                   }}
                 >
                   {booking.status}
