@@ -29,7 +29,7 @@ export const router = createBrowserRouter([
   {
     path: '/customer/login',
     element: (
-      <AlreadyAuthRedirect>
+      <AlreadyAuthRedirect pageRole="customer">
         <CustomerLogin />
       </AlreadyAuthRedirect>
     ),
@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
   {
     path: '/customer/register',
     element: (
-      <AlreadyAuthRedirect>
+      <AlreadyAuthRedirect pageRole="customer">
         <CustomerRegister />
       </AlreadyAuthRedirect>
     ),
@@ -45,7 +45,7 @@ export const router = createBrowserRouter([
   {
     path: '/provider/login',
     element: (
-      <AlreadyAuthRedirect>
+      <AlreadyAuthRedirect pageRole="provider">
         <ProviderLogin />
       </AlreadyAuthRedirect>
     ),
@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
   {
     path: '/provider/register',
     element: (
-      <AlreadyAuthRedirect>
+      <AlreadyAuthRedirect pageRole="provider">
         <ProviderRegister />
       </AlreadyAuthRedirect>
     ),
