@@ -10,7 +10,7 @@ export async function getBookingLocations(filters?: { difficulty?: string }): Pr
   return response.data
 }
 
-export async function getBookingLocationById(id: number): Promise<BookingLocation> {
+export async function getBookingLocationById(id: string): Promise<BookingLocation> {
   const response = await apiClient.get<BookingLocation>(`/customer/locations/${id}`)
   return response.data
 }

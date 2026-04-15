@@ -8,7 +8,7 @@ interface UseBookingLocationResult {
   error: Error | null
 }
 
-export function useBookingLocation(id: number): UseBookingLocationResult {
+export function useBookingLocation(id: string): UseBookingLocationResult {
   const [data, setData] = useState<BookingLocation | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
