@@ -69,7 +69,7 @@ export function LoginPage() {
             className="underline-offset-4 hover:underline"
             style={{ color: 'rgb(var(--accent))' }}
           >
-            become a provider
+            Become a provider
           </CrossRoleLink>
         </div>
       </div>
