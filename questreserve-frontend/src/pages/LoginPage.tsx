@@ -41,10 +41,10 @@ export function LoginPage() {
 
         <div className="flex flex-col gap-3">
           <Button asChild className="w-full" size="lg">
-            <CrossRoleLink to="/customer/login">Log in as Customer</CrossRoleLink>
+            <CrossRoleLink to="/customer/login">Customer Login</CrossRoleLink>
           </Button>
           <Button asChild variant="outline" className="w-full" size="lg">
-            <CrossRoleLink to="/provider/login">Log in as Provider</CrossRoleLink>
+            <CrossRoleLink to="/provider/login">Provider Login</CrossRoleLink>
           </Button>
         </div>
 
