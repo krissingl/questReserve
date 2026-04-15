@@ -168,17 +168,18 @@ _Created: YYYY-MM-DD | Status: DRAFT_
 
 **Ticket Plan Template:**
 ```markdown
-# Ticket Plan: Phase N — <Name>
+# Ticket Plan: <Plan Name>
 
 **Purpose:** <One-line summary of what this phase delivers.>
 **Total tickets:** N
-**Status: DRAFT**
+**Prefix:** <e.g. P10:, AGENT:, BUG: — applied to every ticket title in this plan>
+**Status: LOCKED**
 
 ---
 
 ## Ticket 1 of N
 
-**Title:** <Imperative verb + object — e.g. "Implement BookingLocation repository">
+**Title:** <PREFIX:Imperative verb + object — e.g. "P10:Implement BookingLocation repository">
 
 **Description:**
 <1–3 sentences. What this ticket delivers and why it matters. No filler.>
@@ -199,10 +200,11 @@ _Created: YYYY-MM-DD | Status: DRAFT_
 
 **Ticket rules:**
 - Titles use imperative form: "Implement X", "Add Y", "Define Z". Never "X implementation" or "Adding Y".
-- Titles do NOT include the phase prefix (e.g., `P8:`). The github-ticket-manager applies prefixes when creating issues.
+- Titles MUST include the phase prefix at the start — e.g. `P10:Remove default Vite favicon`. The prefix is taken from the plan header's `**Prefix:**` field and applied to every ticket title verbatim. Do not omit it.
 - Acceptance criteria must be testable by someone who didn't write the code. Avoid criteria like "code is clean".
 - Dependencies: reference GitHub issue numbers only if the upstream ticket already exists. Otherwise, rely on ticket order to imply sequence.
 - Do not add labels, assignees, milestones, or any field not shown in the template.
+- The plan must be written with `Status: LOCKED` — there is no DRAFT status for ticket plans.
 
 ---
 

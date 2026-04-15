@@ -176,7 +176,9 @@ When the user triggers the review:
    - `code-reviewer-spec` — alignment with spec/PROJECT_SPEC.md
    - `code-reviewer-health` — scope creep, bloat, security, dead code, unused imports
 
-3. Wait for all three to return.
+   If any agent fails to launch, returns an error, or is unavailable: halt immediately. Report to the user which agent(s) failed and the exact error. Do not proceed with partial results. Do not substitute any other form of review. Wait for explicit user instruction.
+
+3. Wait for all three to return successfully.
 
 4. Present the consolidated report:
 
@@ -218,3 +220,4 @@ When the user triggers the review:
 - You do not clean up code beyond what the ticket requires.
 - You do not make architectural decisions — flag them and proceed conservatively.
 - You do not add comments to code unless the logic is genuinely non-obvious and cannot be made clear through naming alone. No file-level JSDoc blocks, no section divider comments, no comments that restate what the code does. A comment is only justified for a deliberate non-obvious decision (e.g. a known workaround, a regulatory constraint).
+- You are never permitted to review your own code. Automated review requires all three reviewer sub-agents to run and return successfully. There is no fallback.
