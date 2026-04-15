@@ -12,6 +12,9 @@ import { CustomerLogin } from '@/pages/CustomerLogin/CustomerLogin'
 import { CustomerRegister } from '@/pages/CustomerRegister/CustomerRegister'
 import { ProviderLogin } from '@/pages/ProviderLogin/ProviderLogin'
 import { ProviderRegister } from '@/pages/ProviderRegister/ProviderRegister'
+import { BrowseLocations } from '@/pages/BrowseLocations/BrowseLocations'
+import { LocationDetail } from '@/pages/LocationDetail/LocationDetail'
+import { MyBookings } from '@/pages/MyBookings/MyBookings'
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +68,18 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <CustomerHome />,
+      },
+      {
+        path: 'locations',
+        element: <BrowseLocations />,
+      },
+      {
+        path: 'locations/:id',
+        element: <LocationDetail />,
+      },
+      {
+        path: 'bookings',
+        element: <MyBookings />,
       },
     ],
   },
