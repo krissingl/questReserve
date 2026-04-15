@@ -16,6 +16,7 @@ export function CustomerRegister() {
   const { loginWithToken } = useAuth()
   const navigate = useNavigate()
   const [apiError, setApiError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -159,7 +160,7 @@ export function CustomerRegister() {
             )}
           </div>
 
-          <div className="mb-6">
+          <div className="mb-4">
             <label
               htmlFor="password"
               className="mb-1 block text-sm font-medium"
@@ -167,26 +168,69 @@ export function CustomerRegister() {
             >
               Password
             </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: 'rgb(var(--background))',
-                color: 'rgb(var(--foreground))',
-                borderColor: errors.password
-                  ? 'rgb(var(--destructive))'
-                  : 'rgb(var(--border))',
-              }}
-              {...register('password')}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                className="w-full rounded-md border px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2"
+                style={{
+                  backgroundColor: 'rgb(var(--background))',
+                  color: 'rgb(var(--foreground))',
+                  borderColor: errors.password
+                    ? 'rgb(var(--destructive))'
+                    : 'rgb(var(--border))',
+                }}
+                {...register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-sm"
+                style={{ color: 'rgb(var(--muted-foreground))' }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
             {errors.password && (
               <p
                 className="mt-1 text-xs"
                 style={{ color: 'rgb(var(--destructive))' }}
               >
                 {errors.password.message}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-6">
+            <label
+              htmlFor="confirmPassword"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: 'rgb(var(--foreground))' }}
+            >
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'rgb(var(--background))',
+                color: 'rgb(var(--foreground))',
+                borderColor: errors.confirmPassword
+                  ? 'rgb(var(--destructive))'
+                  : 'rgb(var(--border))',
+              }}
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p
+                className="mt-1 text-xs"
+                style={{ color: 'rgb(var(--destructive))' }}
+              >
+                {errors.confirmPassword.message}
               </p>
             )}
           </div>
