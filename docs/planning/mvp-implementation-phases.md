@@ -63,17 +63,28 @@ Status : ✅ COMPLETE
 
 Browse, book, manage bookings.
 
-## Phase 10.1: Frontend — Guest Access
+## Phase 10.1: Frontend — Booking Flow
+Status : NOT STARTED
+
+The core customer booking journey, deferred from Phase 10. Full scope:
+
+- TimeSlot availability listing on the Location Detail page
+- Booking creation flow — customer selects a time slot and confirms a reservation
+- Guest path — a guest clicking "Reserve" is redirected to customer login with their intended location and time slot preserved; after login they are returned to the reservation flow
+- Authenticated customer path — proceeds through reservation to an "Under Construction" payment page (payment is Post-MVP)
+- Booking cancellation action on the My Bookings page (also deferred from Phase 10)
+
+## Phase 10.2: Frontend — Guest Access
 Status : NOT STARTED
 
 Unauthenticated location browsing. Allow guests to browse and view booking locations without signing in. Requires dedicated routes, a guest layout, and any supporting backend endpoint changes to expose location data publicly.
 
-## Phase 10.2: Frontend — Location Filtering
+## Phase 10.3: Frontend — Location Filtering
 Status : NOT STARTED
 
 Full filtering implementation for the browse locations view, covering both guest and authenticated customer flows. Includes filter UI controls (difficulty, rules, and other relevant fields) and any supporting backend query changes needed to power them.
 
-## Phase 10.3: Frontend — Location Images & Browse UI Redesign
+## Phase 10.4: Frontend — Location Images & Browse UI Redesign
 Status : NOT STARTED
 
 Two tightly coupled deliverables treated as one phase:
