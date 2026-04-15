@@ -168,36 +168,45 @@ While the user reviews:
 
 When the user triggers the review:
 
-1. Collect from `sessions/state.json`: phase number, ticket list (numbers + titles + acceptance criteria), all files changed.
+1. Collect the review context package from your own session memory and `sessions/state.json`:
+   - Phase number
+   - Every ticket: number, title, full acceptance criteria
+   - Every file changed (from `files_changed` in state)
+   - Every flagged decision made during implementation
+   - The actual diffs for all changed files (run `git diff main...HEAD -- <files>` to retrieve them)
 
-2. Launch all three reviewer agents simultaneously using the Agent tool. Pass each the same context: phase, tickets, and files.
+2. Launch all three reviewer agents **simultaneously** using the Agent tool. Pass each agent the full review context package assembled in step 1 — tickets, files changed, diffs, and flagged decisions.
 
    - `code-reviewer-quality` — code correctness, TypeScript, best practices, readability
    - `code-reviewer-spec` — alignment with spec/PROJECT_SPEC.md
    - `code-reviewer-health` — scope creep, bloat, security, dead code, unused imports
 
-   If any agent fails to launch, returns an error, or is unavailable: halt immediately. Report to the user which agent(s) failed and the exact error. Do not proceed with partial results. Do not substitute any other form of review. Wait for explicit user instruction.
+   **Before writing a single word of any report section, verify you have received a non-empty return value from the Agent tool call to that reviewer. If you have not made the Agent tool call, you cannot write the report. If the Agent tool call returned empty, an error, or an unusable response, that is a failure — do not fill the gap yourself.**
 
-3. Wait for all three to return successfully.
+   If any agent fails to launch, returns an empty response, returns an error, or returns an unusable response: halt immediately. Report to the user exactly which agent failed and exactly what it returned. Do not proceed with partial results. Do not write any review content yourself as a substitute. Do not infer, summarize, or fill in findings. Wait for explicit user instruction.
 
-4. Present the consolidated report:
+3. Wait for all three Agent tool calls to return successfully with non-empty content.
+
+4. Present the consolidated report by copying the sub-agent return values directly:
 
    ```
    ## Automated Review — Phase N
 
    ### Code Quality
-   <report>
+   <copied verbatim from code-reviewer-quality return value>
 
    ---
 
    ### Spec Alignment
-   <report>
+   <copied verbatim from code-reviewer-spec return value>
 
    ---
 
    ### Health & DevOps
-   <report>
+   <copied verbatim from code-reviewer-health return value>
    ```
+
+   You are a pipe, not an author. You do not write, reword, summarize, interpret, or supplement any review content. The sub-agent return values are the report. If a section is missing because an agent failed, that section does not exist — you halt, you do not fill it.
 
 5. For each finding, ask the user how to dispose of it:
    - Fix -> implement, commit (fix: <description> | <files>), note
@@ -220,4 +229,4 @@ When the user triggers the review:
 - You do not clean up code beyond what the ticket requires.
 - You do not make architectural decisions — flag them and proceed conservatively.
 - You do not add comments to code unless the logic is genuinely non-obvious and cannot be made clear through naming alone. No file-level JSDoc blocks, no section divider comments, no comments that restate what the code does. A comment is only justified for a deliberate non-obvious decision (e.g. a known workaround, a regulatory constraint).
-- You are never permitted to review your own code. Automated review requires all three reviewer sub-agents to run and return successfully. There is no fallback.
+- You are never permitted to review your own code. You are never permitted to write any review content yourself under any circumstances — not as a fallback, not to fill a gap, not to supplement a partial result. The only valid review content is the verbatim return value of a successful Agent tool call to the designated reviewer. If that return value does not exist, the review does not exist. Halt and report.
