@@ -15,13 +15,12 @@ export function useMyBookings(): UseMyBookingsResult {
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
 
     getMyBookings()
       .then((result) => {
         if (!cancelled) {
           setData(result)
+          setError(null)
           setIsLoading(false)
         }
       })

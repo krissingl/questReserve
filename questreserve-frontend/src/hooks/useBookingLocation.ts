@@ -15,13 +15,12 @@ export function useBookingLocation(id: string): UseBookingLocationResult {
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
 
     getBookingLocationById(id)
       .then((result) => {
         if (!cancelled) {
           setData(result)
+          setError(null)
           setIsLoading(false)
         }
       })

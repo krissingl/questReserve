@@ -17,13 +17,12 @@ export function useBookingLocations(filters?: { difficulty?: string }): UseBooki
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
 
     getBookingLocations(difficulty ? { difficulty } : undefined)
       .then((result) => {
         if (!cancelled) {
           setData(result)
+          setError(null)
           setIsLoading(false)
         }
       })
