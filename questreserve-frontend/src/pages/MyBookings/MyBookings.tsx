@@ -1,14 +1,47 @@
+import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
-import type { BookingStatus } from '@/types/domain'
+import type { EnrichedBooking } from '@/types/domain'
 
-const STATUS_TEXT: Record<BookingStatus, string> = {
-  BOOKED: 'rgb(34 197 94)',
-  CANCELLED: 'rgb(var(--muted-foreground))',
+function isExpired(booking: EnrichedBooking): boolean {
+  return booking.status === 'BOOKED' && new Date(booking.slot_start_time) < new Date()
 }
 
-const STATUS_BG: Record<BookingStatus, string> = {
-  BOOKED: 'rgb(34 197 94 / 0.15)',
-  CANCELLED: 'rgb(var(--muted) / 0.3)',
+function formatSlotTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
+
+function StatusBadge({ booking }: { booking: EnrichedBooking }) {
+  if (isExpired(booking)) {
+    return (
+      <span
+        className="rounded px-2 py-0.5 text-xs font-semibold"
+        style={{
+          backgroundColor: 'rgb(var(--muted) / 0.3)',
+          color: 'rgb(var(--muted-foreground))',
+        }}
+      >
+        EXPIRED
+      </span>
+    )
+  }
+
+  const colorMap = {
+    BOOKED: { bg: 'rgb(34 197 94 / 0.15)', text: 'rgb(34 197 94)' },
+    CANCELLED: { bg: 'rgb(var(--muted) / 0.3)', text: 'rgb(var(--muted-foreground))' },
+  }
+  const colors = colorMap[booking.status]
+
+  return (
+    <span
+      className="rounded px-2 py-0.5 text-xs font-semibold"
+      style={{ backgroundColor: colors.bg, color: colors.text }}
+    >
+      {booking.status}
+    </span>
+  )
 }
 
 export function MyBookings() {
@@ -65,30 +98,18 @@ export function MyBookings() {
               }}
             >
               <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p
-                    className="mb-1 text-sm font-medium"
-                    style={{ color: 'rgb(var(--muted-foreground))' }}
-                  >
-                    Booking ID
-                  </p>
-                  <p
-                    className="font-mono text-xs"
-                    style={{ color: 'rgb(var(--foreground))' }}
-                  >
-                    {booking.id}
-                  </p>
-                </div>
-
-                <span
-                  className="rounded px-2 py-0.5 text-xs font-semibold"
+                <Link
+                  to={`/customer/locations/${booking.booking_location_id}`}
+                  className="text-lg font-semibold hover:underline"
                   style={{
-                    backgroundColor: STATUS_BG[booking.status],
-                    color: STATUS_TEXT[booking.status],
+                    fontFamily: 'var(--font-heading)',
+                    color: 'rgb(var(--foreground))',
                   }}
                 >
-                  {booking.status}
-                </span>
+                  {booking.location_name}
+                </Link>
+
+                <StatusBadge booking={booking} />
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
@@ -97,13 +118,22 @@ export function MyBookings() {
                     className="mb-0.5 font-medium"
                     style={{ color: 'rgb(var(--muted-foreground))' }}
                   >
-                    Time Slot
+                    Starts
                   </p>
+                  <p style={{ color: 'rgb(var(--foreground))' }}>
+                    {formatSlotTime(booking.slot_start_time)}
+                  </p>
+                </div>
+
+                <div>
                   <p
-                    className="font-mono text-xs"
-                    style={{ color: 'rgb(var(--foreground))' }}
+                    className="mb-0.5 font-medium"
+                    style={{ color: 'rgb(var(--muted-foreground))' }}
                   >
-                    {booking.time_slot_id}
+                    Ends
+                  </p>
+                  <p style={{ color: 'rgb(var(--foreground))' }}>
+                    {formatSlotTime(booking.slot_end_time)}
                   </p>
                 </div>
 
