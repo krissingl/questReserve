@@ -47,16 +47,6 @@ export function CustomerLayout() {
             Locations
           </NavLink>
 
-          <NavLink
-            to="/customer/bookings"
-            className="rounded px-3 py-2 text-sm font-medium transition-colors"
-            style={({ isActive }) => ({
-              color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
-              backgroundColor: isActive ? 'rgb(var(--accent) / 0.1)' : 'transparent',
-            })}
-          >
-            My Bookings
-          </NavLink>
         </div>
 
         <div className="mt-auto flex flex-col gap-1">
