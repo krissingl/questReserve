@@ -15,6 +15,7 @@ import { ProviderRegister } from '@/pages/ProviderRegister/ProviderRegister'
 import { BrowseLocations } from '@/pages/BrowseLocations/BrowseLocations'
 import { LocationDetail } from '@/pages/LocationDetail/LocationDetail'
 import { MyBookings } from '@/pages/MyBookings/MyBookings'
+import { CustomerSettings } from '@/pages/CustomerSettings/CustomerSettings'
 
 export const router = createBrowserRouter([
   {
@@ -80,6 +81,10 @@ export const router = createBrowserRouter([
       {
         path: 'bookings',
         element: <MyBookings />,
+      },
+      {
+        path: 'settings',
+        element: <CustomerSettings />,
       },
     ],
   },

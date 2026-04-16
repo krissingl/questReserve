@@ -49,7 +49,18 @@ export function CustomerLayout() {
           </NavLink>
         </div>
 
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-1">
+          <NavLink
+            to="/customer/settings"
+            className="rounded px-3 py-2 text-sm font-medium transition-colors"
+            style={({ isActive }) => ({
+              color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
+              backgroundColor: isActive ? 'rgb(var(--accent) / 0.1)' : 'transparent',
+            })}
+          >
+            Settings
+          </NavLink>
+
           <button
             type="button"
             onClick={logout}
