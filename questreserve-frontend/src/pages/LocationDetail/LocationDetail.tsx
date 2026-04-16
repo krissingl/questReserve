@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
 import { useCreateBooking } from '@/hooks/useCreateBooking'
@@ -17,6 +17,7 @@ function formatSlotTime(iso: string): string {
 export function LocationDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { token } = useAuth()
 
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
@@ -25,6 +26,15 @@ export function LocationDetail() {
 
   const [pendingSlot, setPendingSlot] = useState<TimeSlot | null>(null)
   const [conflictError, setConflictError] = useState<string | null>(null)
+
+  const slotParam = searchParams.get('slot')
+  useEffect(() => {
+    if (!token || !slotParam || !slots || pendingSlot) return
+    const match = slots.find((s) => s.id === slotParam)
+    if (match) {
+      setPendingSlot(match)
+    }
+  }, [token, slotParam, slots, pendingSlot])
 
   const handleReserveClick = (slot: TimeSlot) => {
     if (!token) {
