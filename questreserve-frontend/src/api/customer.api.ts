@@ -25,6 +25,10 @@ export async function getAvailableSlots(locationId: string): Promise<TimeSlot[]>
   return response.data
 }
 
+export async function cancelBooking(bookingId: string): Promise<void> {
+  await apiClient.delete(`/customer/bookings/${bookingId}`)
+}
+
 export async function getMyBookings(): Promise<EnrichedBooking[]> {
   const response = await apiClient.get<EnrichedBooking[]>('/customer/bookings')
   return response.data
