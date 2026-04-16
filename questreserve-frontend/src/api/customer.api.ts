@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { BookingLocation, EnrichedBooking } from '@/types/domain'
+import type { BookingLocation, EnrichedBooking, TimeSlot } from '@/types/domain'
 
 export async function getBookingLocations(filters?: { difficulty?: string }): Promise<BookingLocation[]> {
   const params: Record<string, string> = {}
@@ -12,6 +12,11 @@ export async function getBookingLocations(filters?: { difficulty?: string }): Pr
 
 export async function getBookingLocationById(id: string): Promise<BookingLocation> {
   const response = await apiClient.get<BookingLocation>(`/customer/locations/${id}`)
+  return response.data
+}
+
+export async function getAvailableSlots(locationId: string): Promise<TimeSlot[]> {
+  const response = await apiClient.get<TimeSlot[]>(`/customer/locations/${locationId}/slots`)
   return response.data
 }
 

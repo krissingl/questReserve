@@ -1,6 +1,15 @@
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'LEGENDARY'
 export type BookingStatus = 'BOOKED' | 'CANCELLED'
 
+export interface TimeSlot {
+  id: string
+  booking_location_id: string
+  start_time: string
+  end_time: string
+  created_at: string
+  updated_at: string
+}
+
 export interface BookingLocation {
   id: string
   provider_id: string

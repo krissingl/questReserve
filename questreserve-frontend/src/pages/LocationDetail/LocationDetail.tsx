@@ -1,9 +1,18 @@
 import { Link, useParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
+import { useAvailableSlots } from '@/hooks/useAvailableSlots'
+
+function formatSlotTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
 
 export function LocationDetail() {
   const { id } = useParams<{ id: string }>()
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
+  const { data: slots, isLoading: slotsLoading, error: slotsError } = useAvailableSlots(id ?? '')
 
   if (isLoading) {
     return (
@@ -92,6 +101,74 @@ export function LocationDetail() {
             {location.cancellation_policy}
           </p>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <h2
+          className="mb-4 text-xl font-bold"
+          style={{ fontFamily: 'var(--font-heading)', color: 'rgb(var(--foreground))' }}
+        >
+          Available Times
+        </h2>
+
+        {slotsLoading && (
+          <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
+            Loading available slots…
+          </p>
+        )}
+
+        {!slotsLoading && slotsError && (
+          <p className="text-sm" style={{ color: 'rgb(var(--destructive))' }}>
+            Failed to load available times. Please try again.
+          </p>
+        )}
+
+        {!slotsLoading && !slotsError && slots && slots.length === 0 && (
+          <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
+            No available time slots at this time.
+          </p>
+        )}
+
+        {!slotsLoading && !slotsError && slots && slots.length > 0 && (
+          <div className="flex flex-col gap-3">
+            {slots.map((slot) => (
+              <div
+                key={slot.id}
+                className="flex items-center justify-between rounded-lg p-4"
+                style={{
+                  backgroundColor: 'rgb(var(--card))',
+                  boxShadow: 'var(--shadow-card)',
+                }}
+              >
+                <div className="text-sm">
+                  <span style={{ color: 'rgb(var(--foreground))' }}>
+                    {formatSlotTime(slot.start_time)}
+                  </span>
+                  <span
+                    className="mx-2"
+                    style={{ color: 'rgb(var(--muted-foreground))' }}
+                  >
+                    &ndash;
+                  </span>
+                  <span style={{ color: 'rgb(var(--foreground))' }}>
+                    {formatSlotTime(slot.end_time)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="rounded px-4 py-1.5 text-sm font-medium"
+                  style={{
+                    backgroundColor: 'rgb(var(--primary))',
+                    color: 'rgb(var(--primary-foreground, 255 255 255))',
+                  }}
+                >
+                  Reserve
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </main>
   )
