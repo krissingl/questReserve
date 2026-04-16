@@ -1,13 +1,57 @@
 import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
+import type { EnrichedBooking } from '@/types/domain'
+
+function formatSlotTime(iso: string): string {
+  return new Date(iso).toLocaleString(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  })
+}
+
+function StatusBadge({ booking }: { booking: EnrichedBooking }) {
+  const isExpired = booking.status === 'BOOKED' && new Date(booking.slot_start_time) < new Date()
+
+  if (isExpired) {
+    return (
+      <span
+        className="rounded px-2 py-0.5 text-xs font-semibold"
+        style={{
+          backgroundColor: 'rgb(212 140 0 / 0.18)',
+          color: 'rgb(212 140 0)',
+        }}
+      >
+        EXPIRED
+      </span>
+    )
+  }
+
+  const colorMap: Record<string, { bg: string; text: string }> = {
+    BOOKED:    { bg: 'rgb(59 165 93 / 0.18)', text: 'rgb(59 165 93)' },
+    CANCELLED: { bg: 'rgb(167 179 194 / 0.15)', text: 'rgb(167 179 194)' },
+  }
+  const colors = colorMap[booking.status] ?? colorMap['CANCELLED']
+
+  return (
+    <span
+      className="rounded px-2 py-0.5 text-xs font-semibold"
+      style={{ backgroundColor: colors.bg, color: colors.text }}
+    >
+      {booking.status}
+    </span>
+  )
+}
 
 export function CustomerHome() {
   const { data: bookings, isLoading } = useMyBookings()
 
-  const recentBookings = bookings
-    ? [...bookings].sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      ).slice(0, 2)
+  const now = new Date()
+
+  const upcomingBookings = bookings
+    ? [...bookings]
+        .filter((b) => new Date(b.slot_start_time) > now)
+        .sort((a, b) => new Date(a.slot_start_time).getTime() - new Date(b.slot_start_time).getTime())
+        .slice(0, 2)
     : []
 
   return (
@@ -21,7 +65,7 @@ export function CustomerHome() {
           className="mb-3 text-lg font-semibold"
           style={{ fontFamily: 'var(--font-heading)', color: 'rgb(var(--foreground))' }}
         >
-          Recent Bookings
+          Upcoming Reservations
         </h2>
 
         {isLoading && (
@@ -30,48 +74,49 @@ export function CustomerHome() {
           </p>
         )}
 
-        {!isLoading && recentBookings.length === 0 && (
+        {!isLoading && upcomingBookings.length === 0 && (
           <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
-            You have no bookings yet.{' '}
-            <Link
-              to="/customer/locations"
-              style={{ color: 'rgb(var(--accent))' }}
-            >
-              Browse locations
-            </Link>{' '}
-            to get started.
+            You don't have any upcoming reservations.{' '}
+            <Link to="/customer/bookings" style={{ color: 'rgb(var(--accent))' }}>
+              My Bookings
+            </Link>
           </p>
         )}
 
-        {!isLoading && recentBookings.length > 0 && (
+        {!isLoading && upcomingBookings.length > 0 && (
           <ul className="space-y-3">
-            {recentBookings.map((booking) => (
+            {upcomingBookings.map((booking) => (
               <li
                 key={booking.id}
                 className="rounded-lg p-4 text-sm"
                 style={{
-                  backgroundColor: 'rgb(var(--card))',
+                  backgroundColor: 'rgb(28 36 56)',
                   boxShadow: 'var(--shadow-card)',
                 }}
               >
-                <span
-                  className="font-medium"
-                  style={{ color: 'rgb(var(--foreground))' }}
-                >
-                  Booking #{booking.id.slice(0, 8)}
-                </span>
-                <span
-                  className="ml-3"
-                  style={{ color: 'rgb(var(--muted-foreground))' }}
-                >
-                  {booking.status}
-                </span>
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className="font-semibold"
+                    style={{
+                      fontFamily: 'var(--font-heading)',
+                      color: 'rgb(var(--foreground))',
+                    }}
+                  >
+                    {booking.location_name}
+                  </span>
+                  <StatusBadge booking={booking} />
+                </div>
+                <div className="mt-2 text-xs" style={{ color: 'rgb(var(--muted-foreground))' }}>
+                  <span>{formatSlotTime(booking.slot_start_time)}</span>
+                  <span className="mx-1">&ndash;</span>
+                  <span>{formatSlotTime(booking.slot_end_time)}</span>
+                </div>
               </li>
             ))}
           </ul>
         )}
 
-        {!isLoading && bookings && bookings.length > 0 && (
+        {!isLoading && (
           <p className="mt-3 text-sm">
             <Link to="/customer/bookings" style={{ color: 'rgb(var(--accent))' }}>
               View all bookings
