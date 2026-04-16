@@ -25,6 +25,18 @@ export function CustomerLayout() {
 
         <div className="flex flex-col gap-1">
           <NavLink
+            to="/customer"
+            end
+            className="rounded px-3 py-2 text-sm font-medium transition-colors"
+            style={({ isActive }) => ({
+              color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
+              backgroundColor: isActive ? 'rgb(var(--accent) / 0.1)' : 'transparent',
+            })}
+          >
+            Dashboard
+          </NavLink>
+
+          <NavLink
             to="/customer/locations"
             className="rounded px-3 py-2 text-sm font-medium transition-colors"
             style={({ isActive }) => ({
