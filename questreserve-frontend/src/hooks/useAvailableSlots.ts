@@ -10,30 +10,29 @@ interface UseAvailableSlotsResult {
 
 export function useAvailableSlots(locationId: string): UseAvailableSlotsResult {
   const [data, setData] = useState<TimeSlot[] | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
+  const [fetchState, setFetchState] = useState<{
+    isLoading: boolean
+    error: Error | null
+  }>({ isLoading: !!locationId, error: null })
 
   useEffect(() => {
-    if (!locationId) {
-      setIsLoading(false)
-      return
-    }
+    if (!locationId) return
 
     let cancelled = false
-    setIsLoading(true)
-    setError(null)
 
     getAvailableSlots(locationId)
       .then((result) => {
         if (!cancelled) {
           setData(result)
-          setIsLoading(false)
+          setFetchState({ isLoading: false, error: null })
         }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err : new Error('Failed to fetch slots'))
-          setIsLoading(false)
+          setFetchState({
+            isLoading: false,
+            error: err instanceof Error ? err : new Error('Failed to fetch slots'),
+          })
         }
       })
 
@@ -42,5 +41,5 @@ export function useAvailableSlots(locationId: string): UseAvailableSlotsResult {
     }
   }, [locationId])
 
-  return { data, isLoading, error }
+  return { data, isLoading: fetchState.isLoading, error: fetchState.error }
 }

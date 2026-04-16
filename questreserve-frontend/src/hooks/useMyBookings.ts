@@ -17,7 +17,6 @@ export function useMyBookings(): UseMyBookingsResult {
 
   useEffect(() => {
     let cancelled = false
-    setIsLoading(true)
 
     getMyBookings()
       .then((result) => {
@@ -40,6 +39,7 @@ export function useMyBookings(): UseMyBookingsResult {
   }, [fetchCount])
 
   const refetch = useCallback(() => {
+    setIsLoading(true)
     setFetchCount((c) => c + 1)
   }, [])
 

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
@@ -14,6 +13,20 @@ function formatSlotTime(iso: string): string {
   })
 }
 
+function getResponseStatus(err: unknown): number | null {
+  if (
+    err != null &&
+    typeof err === 'object' &&
+    'response' in err &&
+    err.response != null &&
+    typeof err.response === 'object' &&
+    'status' in err.response
+  ) {
+    return (err.response as { status: number }).status
+  }
+  return null
+}
+
 export function LocationDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -24,17 +37,16 @@ export function LocationDetail() {
   const { data: slots, isLoading: slotsLoading, error: slotsError } = useAvailableSlots(id ?? '')
   const { createBooking, isLoading: bookingLoading } = useCreateBooking()
 
-  const [pendingSlot, setPendingSlot] = useState<TimeSlot | null>(null)
+  const slotParam = searchParams.get('slot')
+
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<string | null>(null)
 
-  const slotParam = searchParams.get('slot')
-  useEffect(() => {
-    if (!token || !slotParam || !slots || pendingSlot) return
-    const match = slots.find((s) => s.id === slotParam)
-    if (match) {
-      setPendingSlot(match)
-    }
-  }, [token, slotParam, slots, pendingSlot])
+  const pendingSlotId: string | null =
+    selectedSlotId ?? (token && slotParam && !slotsLoading ? slotParam : null)
+
+  const pendingSlot: TimeSlot | null =
+    pendingSlotId && slots ? (slots.find((s) => s.id === pendingSlotId) ?? null) : null
 
   const handleReserveClick = (slot: TimeSlot) => {
     if (!token) {
@@ -42,7 +54,7 @@ export function LocationDetail() {
       navigate(`/customer/login?redirect=${encodeURIComponent(redirect)}&slot=${slot.id}`)
       return
     }
-    setPendingSlot(slot)
+    setSelectedSlotId(slot.id)
     setConflictError(null)
   }
 
@@ -58,15 +70,15 @@ export function LocationDetail() {
         },
       })
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 409) {
+      if (getResponseStatus(err) === 409) {
         setConflictError('This time slot is no longer available. Please choose another.')
       }
-      setPendingSlot(null)
+      setSelectedSlotId(null)
     }
   }
 
   const handleCancelConfirm = () => {
-    setPendingSlot(null)
+    setSelectedSlotId(null)
     setConflictError(null)
   }
 
@@ -168,7 +180,10 @@ export function LocationDetail() {
         </h2>
 
         {conflictError && (
-          <p className="mb-4 rounded p-3 text-sm" style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}>
+          <p
+            className="mb-4 rounded p-3 text-sm"
+            style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}
+          >
             {conflictError}
           </p>
         )}
