@@ -74,7 +74,7 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
     <div
       className="rounded-lg p-6"
       style={{
-        backgroundColor: 'rgb(var(--surface))',
+        backgroundColor: 'rgb(var(--card))',
         boxShadow: 'var(--shadow-card)',
       }}
     >

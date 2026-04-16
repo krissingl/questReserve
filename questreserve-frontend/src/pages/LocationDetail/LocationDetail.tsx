@@ -125,7 +125,7 @@ export function LocationDetail() {
       <div
         className="mt-4 rounded-lg p-8"
         style={{
-          backgroundColor: 'rgb(var(--surface))',
+          backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
         }}
       >

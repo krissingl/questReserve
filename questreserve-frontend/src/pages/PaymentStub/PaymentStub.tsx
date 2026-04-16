@@ -48,7 +48,7 @@ export function PaymentStub() {
         {locationName && (
           <div
             className="mb-4 rounded p-4 text-left text-sm"
-            style={{ backgroundColor: 'rgb(var(--surface))' }}
+            style={{ backgroundColor: 'rgb(var(--card))' }}
           >
             <p className="mb-1 font-semibold" style={{ color: 'rgb(var(--foreground))' }}>
               {locationName}

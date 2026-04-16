@@ -49,7 +49,7 @@ export function CustomerLogin() {
       <div
         className="w-full max-w-sm rounded-lg p-8"
         style={{
-          backgroundColor: 'rgb(var(--surface))',
+          backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
         }}
       >
