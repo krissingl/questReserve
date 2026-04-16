@@ -69,6 +69,19 @@ export interface Booking {
   updated_at: Date;
 }
 
+export interface EnrichedBooking {
+  id: string;
+  time_slot_id: string;
+  end_user_id: string;
+  status: BookingStatus;
+  created_at: Date;
+  updated_at: Date;
+  location_name: string;
+  booking_location_id: string;
+  slot_start_time: Date;
+  slot_end_time: Date;
+}
+
 export interface ProviderBookingView {
   id: string;
   time_slot_id: string;

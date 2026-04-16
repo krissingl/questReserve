@@ -1,7 +1,7 @@
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
-import { Booking, BookingLocation, Difficulty, TimeSlot } from '../types';
+import { Booking, BookingLocation, Difficulty, EnrichedBooking, TimeSlot } from '../types';
 
 export class SlotNotFoundError extends Error {
   constructor() {
@@ -97,8 +97,8 @@ export class CustomerService {
     });
   }
 
-  async getBookingHistory(endUserId: string): Promise<Booking[]> {
-    return this.bookingRepo.findAllByEndUser(endUserId);
+  async getBookingHistory(endUserId: string): Promise<EnrichedBooking[]> {
+    return this.bookingRepo.findAllByEndUserEnriched(endUserId);
   }
 
   async cancelBooking(endUserId: string, bookingId: string): Promise<Booking> {

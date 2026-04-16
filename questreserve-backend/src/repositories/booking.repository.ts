@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseRepository } from '../infrastructure';
-import { Booking } from '../types';
+import { Booking, EnrichedBooking } from '../types';
 
 export class BookingRepository extends BaseRepository<Booking> {
   constructor(knex: Knex) {
@@ -21,6 +21,25 @@ export class BookingRepository extends BaseRepository<Booking> {
     return this.knex<Booking>('booking')
       .where({ end_user_id: endUserId })
       .select('*');
+  }
+
+  async findAllByEndUserEnriched(endUserId: string): Promise<EnrichedBooking[]> {
+    return this.knex('booking')
+      .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
+      .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+      .where({ 'booking.end_user_id': endUserId })
+      .select(
+        'booking.id',
+        'booking.time_slot_id',
+        'booking.end_user_id',
+        'booking.status',
+        'booking.created_at',
+        'booking.updated_at',
+        'booking_location.name as location_name',
+        'booking_location.id as booking_location_id',
+        'time_slot.start_time as slot_start_time',
+        'time_slot.end_time as slot_end_time',
+      );
   }
 
   async findByTimeSlot(timeSlotId: string): Promise<Booking | null> {
