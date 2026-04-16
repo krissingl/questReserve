@@ -8,14 +8,11 @@ const FIXED_ADMIN_ID = "11111111-1111-1111-1111-111111111111";
 const FIXED_PROVIDER_ID = "22222222-2222-2222-2222-222222222222";
 const FIXED_END_USER_ID = "33333333-3333-3333-3333-333333333333";
 
-function futureDate(weeksFromNow: number, dayOffset: number, hour: number): Date {
-  const now = new Date();
-  const msPerDay = 24 * 60 * 60 * 1000;
-  const startOfWeek = new Date(now.getTime() + weeksFromNow * 7 * msPerDay);
-  startOfWeek.setHours(0, 0, 0, 0);
-  const day = new Date(startOfWeek.getTime() + dayOffset * msPerDay);
-  day.setHours(hour, 0, 0, 0);
-  return day;
+/** Returns a fixed absolute date for seed stability. */
+function fixedDate(year: number, month: number, day: number, hour: number): Date {
+  // month is 1-based
+  const d = new Date(year, month - 1, day, hour, 0, 0, 0);
+  return d;
 }
 
 export async function seed(knex: Knex): Promise<void> {
@@ -315,34 +312,68 @@ export async function seed(knex: Knex): Promise<void> {
     ];
     await trx("booking_location").insert(locations);
 
-    const slots = [
-      { id: "510c0001-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: futureDate(1, 1, 18), end_time: futureDate(1, 1, 20), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0002-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: futureDate(1, 4, 20), end_time: futureDate(1, 4, 22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0003-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: futureDate(2, 6, 14), end_time: futureDate(2, 6, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0004-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: futureDate(1, 5, 21), end_time: futureDate(1, 5, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0005-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: futureDate(3, 0, 19), end_time: futureDate(3, 0, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0006-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: futureDate(1, 2, 10), end_time: futureDate(1, 2, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0007-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: futureDate(2, 0, 15), end_time: futureDate(2, 0, 17), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0008-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: futureDate(4, 3, 11), end_time: futureDate(4, 3, 13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0009-0000-0000-0000-000000000000", booking_location_id: "10c00004-0000-0000-0000-000000000000", start_time: futureDate(1, 3, 17), end_time: futureDate(1, 3, 19), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0010-0000-0000-0000-000000000000", booking_location_id: "10c00004-0000-0000-0000-000000000000", start_time: futureDate(3, 2, 13), end_time: futureDate(3, 2, 15), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0011-0000-0000-0000-000000000000", booking_location_id: "10c00005-0000-0000-0000-000000000000", start_time: futureDate(2, 4, 19), end_time: futureDate(2, 4, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0012-0000-0000-0000-000000000000", booking_location_id: "10c00005-0000-0000-0000-000000000000", start_time: futureDate(5, 1, 20), end_time: futureDate(5, 1, 22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0013-0000-0000-0000-000000000000", booking_location_id: "10c00006-0000-0000-0000-000000000000", start_time: futureDate(2, 1, 14), end_time: futureDate(2, 1, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0014-0000-0000-0000-000000000000", booking_location_id: "10c00006-0000-0000-0000-000000000000", start_time: futureDate(4, 5, 10), end_time: futureDate(4, 5, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0015-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: futureDate(1, 0, 16), end_time: futureDate(1, 0, 18), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0016-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: futureDate(3, 5, 12), end_time: futureDate(3, 5, 14), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-
-      { id: "510c0017-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: futureDate(1, 6, 10), end_time: futureDate(1, 6, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0018-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: futureDate(2, 2, 14), end_time: futureDate(2, 2, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
-      { id: "510c0019-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: futureDate(4, 0, 11), end_time: futureDate(4, 0, 13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+    // Past slots (2026-01 to 2026-02) — kept for expired/past-excursion testing
+    const pastSlots = [
+      { id: "510c0001-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: fixedDate(2026, 1, 10, 18), end_time: fixedDate(2026, 1, 10, 20), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0004-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: fixedDate(2026, 2, 7,  21), end_time: fixedDate(2026, 2, 7,  23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0007-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: fixedDate(2026, 2, 14, 15), end_time: fixedDate(2026, 2, 14, 17), created_at: trx.fn.now(), updated_at: trx.fn.now() },
     ];
+
+    // Future slots spread across Apr–Dec 2027
+    const futureSlots = [
+      // Castle Ravenloft — Great Hall (loc 1)
+      { id: "510c0002-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 18, 20), end_time: fixedDate(2027, 4, 18, 22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0003-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 10, 14), end_time: fixedDate(2027, 5, 10, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0021-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 4,  10), end_time: fixedDate(2027, 7, 4,  12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0022-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 19, 18), end_time: fixedDate(2027, 9, 19, 20), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0023-0000-0000-0000-000000000000", booking_location_id: "10c00001-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 27, 20), end_time: fixedDate(2027, 11, 27, 22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Castle Ravenloft — Crypts (loc 2)
+      { id: "510c0005-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 13, 19), end_time: fixedDate(2027, 6, 13, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0024-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 22, 21), end_time: fixedDate(2027, 8, 22, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0025-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 30, 20), end_time: fixedDate(2027, 10, 30, 22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0026-0000-0000-0000-000000000000", booking_location_id: "10c00002-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 5, 19), end_time: fixedDate(2027, 12, 5, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Village of Barovia — Midnight Market (loc 3)
+      { id: "510c0006-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 25, 10), end_time: fixedDate(2027, 4, 25, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0008-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 5,  11), end_time: fixedDate(2027, 6, 5,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0027-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 14, 10), end_time: fixedDate(2027, 8, 14, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0028-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 2, 14), end_time: fixedDate(2027, 10, 2, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0029-0000-0000-0000-000000000000", booking_location_id: "10c00003-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 12, 11), end_time: fixedDate(2027, 12, 12, 13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Undermountain — Sargauth Level (loc 4)
+      { id: "510c0009-0000-0000-0000-000000000000", booking_location_id: "10c00004-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 8,  17), end_time: fixedDate(2027, 5, 8,  19), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0010-0000-0000-0000-000000000000", booking_location_id: "10c00004-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 17, 13), end_time: fixedDate(2027, 7, 17, 15), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0030-0000-0000-0000-000000000000", booking_location_id: "10c00004-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 11, 10), end_time: fixedDate(2027, 9, 11, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0031-0000-0000-0000-000000000000", booking_location_id: "10c00004-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 13, 17), end_time: fixedDate(2027, 11, 13, 19), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Undermountain — Caverns of the Xanathar (loc 5)
+      { id: "510c0011-0000-0000-0000-000000000000", booking_location_id: "10c00005-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 22, 19), end_time: fixedDate(2027, 5, 22, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0012-0000-0000-0000-000000000000", booking_location_id: "10c00005-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 6,  20), end_time: fixedDate(2027, 8, 6,  22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0032-0000-0000-0000-000000000000", booking_location_id: "10c00005-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 18, 19), end_time: fixedDate(2027, 10, 18, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0033-0000-0000-0000-000000000000", booking_location_id: "10c00005-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 19, 20), end_time: fixedDate(2027, 12, 19, 22), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // The Lonely Mountain — Treasure Vault (loc 6)
+      { id: "510c0013-0000-0000-0000-000000000000", booking_location_id: "10c00006-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 30, 14), end_time: fixedDate(2027, 4, 30, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0014-0000-0000-0000-000000000000", booking_location_id: "10c00006-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 24, 10), end_time: fixedDate(2027, 7, 24, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0034-0000-0000-0000-000000000000", booking_location_id: "10c00006-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 26, 14), end_time: fixedDate(2027, 9, 26, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0035-0000-0000-0000-000000000000", booking_location_id: "10c00006-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 20, 10), end_time: fixedDate(2027, 11, 20, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // The Whispered Tomb — Archive of Secrets (loc 7)
+      { id: "510c0015-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 3,  16), end_time: fixedDate(2027, 5, 3,  18), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0016-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 31, 12), end_time: fixedDate(2027, 7, 31, 14), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0036-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 12, 16), end_time: fixedDate(2027, 9, 12, 18), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0037-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 6, 10), end_time: fixedDate(2027, 11, 6, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // The Obsidian Citadel — Apprentice Wing (loc 8)
+      { id: "510c0017-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 19, 10), end_time: fixedDate(2027, 4, 19, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0018-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 28, 14), end_time: fixedDate(2027, 6, 28, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0019-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 9,  11), end_time: fixedDate(2027, 8, 9,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0038-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 16, 10), end_time: fixedDate(2027, 10, 16, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0039-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 7,  14), end_time: fixedDate(2027, 12, 7,  16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+    ];
+
+    const slots = [...pastSlots, ...futureSlots];
     await trx("time_slot").insert(slots);
 
     const bookings = [
