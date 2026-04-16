@@ -34,7 +34,10 @@ export function LocationDetail() {
   const { token } = useAuth()
 
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
-  const { data: slots, isLoading: slotsLoading, error: slotsError } = useAvailableSlots(id ?? '')
+  const { data: rawSlots, isLoading: slotsLoading, error: slotsError } = useAvailableSlots(id ?? '')
+  const slots = rawSlots
+    ? rawSlots.filter((s) => new Date(s.start_time) > new Date())
+    : rawSlots
   const { createBooking, isLoading: bookingLoading } = useCreateBooking()
 
   const slotParam = searchParams.get('slot')
