@@ -17,8 +17,8 @@ function StatusBadge({ booking }: { booking: EnrichedBooking }) {
       <span
         className="rounded px-2 py-0.5 text-xs font-semibold"
         style={{
-          backgroundColor: 'rgb(212 140 0 / 0.18)',
-          color: 'rgb(212 140 0)',
+          backgroundColor: 'rgb(var(--warning) / 0.18)',
+          color: 'rgb(var(--warning))',
         }}
       >
         EXPIRED
@@ -27,8 +27,8 @@ function StatusBadge({ booking }: { booking: EnrichedBooking }) {
   }
 
   const colorMap: Record<string, { bg: string; text: string }> = {
-    BOOKED:    { bg: 'rgb(59 165 93 / 0.18)', text: 'rgb(59 165 93)' },
-    CANCELLED: { bg: 'rgb(167 179 194 / 0.15)', text: 'rgb(167 179 194)' },
+    BOOKED:    { bg: 'rgb(var(--success) / 0.18)', text: 'rgb(var(--success))' },
+    CANCELLED: { bg: 'rgb(var(--muted-foreground) / 0.15)', text: 'rgb(var(--muted-foreground))' },
   }
   const colors = colorMap[booking.status] ?? colorMap['CANCELLED']
 
@@ -90,7 +90,7 @@ export function CustomerHome() {
                 key={booking.id}
                 className="rounded-lg p-4 text-sm"
                 style={{
-                  backgroundColor: 'rgb(28 36 56)',
+                  backgroundColor: 'rgb(var(--card))',
                   boxShadow: 'var(--shadow-card)',
                 }}
               >
