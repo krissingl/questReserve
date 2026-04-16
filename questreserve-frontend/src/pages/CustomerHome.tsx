@@ -49,7 +49,7 @@ export function CustomerHome() {
 
   const upcomingBookings = bookings
     ? [...bookings]
-        .filter((b) => new Date(b.slot_start_time) > now)
+        .filter((b) => b.status !== 'CANCELLED' && new Date(b.slot_start_time) > now)
         .sort((a, b) => new Date(a.slot_start_time).getTime() - new Date(b.slot_start_time).getTime())
         .slice(0, 2)
     : []
