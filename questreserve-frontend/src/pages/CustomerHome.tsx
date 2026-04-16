@@ -86,31 +86,33 @@ export function CustomerHome() {
         {!isLoading && upcomingBookings.length > 0 && (
           <ul className="space-y-3">
             {upcomingBookings.map((booking) => (
-              <li
-                key={booking.id}
-                className="rounded-lg p-4 text-sm"
-                style={{
-                  backgroundColor: 'rgb(var(--card))',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className="font-semibold"
-                    style={{
-                      fontFamily: 'var(--font-heading)',
-                      color: 'rgb(var(--foreground))',
-                    }}
-                  >
-                    {booking.location_name}
-                  </span>
-                  <StatusBadge booking={booking} />
-                </div>
-                <div className="mt-2 text-xs" style={{ color: 'rgb(var(--muted-foreground))' }}>
-                  <span>{formatSlotTime(booking.slot_start_time)}</span>
-                  <span className="mx-1">&ndash;</span>
-                  <span>{formatSlotTime(booking.slot_end_time)}</span>
-                </div>
+              <li key={booking.id}>
+                <Link
+                  to={`/customer/locations/${booking.booking_location_id}`}
+                  className="block rounded-lg p-4 text-sm transition-opacity hover:opacity-80"
+                  style={{
+                    backgroundColor: 'rgb(var(--card))',
+                    boxShadow: 'var(--shadow-card)',
+                  }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span
+                      className="font-semibold"
+                      style={{
+                        fontFamily: 'var(--font-heading)',
+                        color: 'rgb(var(--foreground))',
+                      }}
+                    >
+                      {booking.location_name}
+                    </span>
+                    <StatusBadge booking={booking} />
+                  </div>
+                  <div className="mt-2 text-xs" style={{ color: 'rgb(var(--muted-foreground))' }}>
+                    <span>{formatSlotTime(booking.slot_start_time)}</span>
+                    <span className="mx-1">&ndash;</span>
+                    <span>{formatSlotTime(booking.slot_end_time)}</span>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>

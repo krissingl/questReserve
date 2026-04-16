@@ -218,6 +218,22 @@ export function MyBookings() {
 
   const isEmpty = !bookings || bookings.length === 0
 
+  function sortGroup(booking: EnrichedBooking): number {
+    if (booking.status === 'BOOKED' && !isExpired(booking)) return 0 // upcoming
+    if (isExpired(booking)) return 1                                   // expired
+    return 2                                                           // cancelled
+  }
+
+  const sortedBookings = bookings
+    ? [...bookings].sort((a, b) => {
+        const groupDiff = sortGroup(a) - sortGroup(b)
+        if (groupDiff !== 0) return groupDiff
+        // within upcoming: soonest first; within expired/cancelled: most recent first
+        const dir = sortGroup(a) === 0 ? 1 : -1
+        return dir * (new Date(a.slot_start_time).getTime() - new Date(b.slot_start_time).getTime())
+      })
+    : []
+
   return (
     <main className="p-8">
       <h1
@@ -233,7 +249,7 @@ export function MyBookings() {
         </p>
       ) : (
         <div className="flex flex-col gap-4">
-          {bookings.map((booking) => (
+          {sortedBookings.map((booking) => (
             <BookingCard key={booking.id} booking={booking} onCancelled={refetch} />
           ))}
         </div>
