@@ -1,6 +1,11 @@
-import { Link, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import axios from 'axios'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
+import { useCreateBooking } from '@/hooks/useCreateBooking'
+import { useAuth } from '@/contexts/AuthContext'
+import type { TimeSlot } from '@/types/domain'
 
 function formatSlotTime(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -11,8 +16,49 @@ function formatSlotTime(iso: string): string {
 
 export function LocationDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { token } = useAuth()
+
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
   const { data: slots, isLoading: slotsLoading, error: slotsError } = useAvailableSlots(id ?? '')
+  const { createBooking, isLoading: bookingLoading } = useCreateBooking()
+
+  const [pendingSlot, setPendingSlot] = useState<TimeSlot | null>(null)
+  const [conflictError, setConflictError] = useState<string | null>(null)
+
+  const handleReserveClick = (slot: TimeSlot) => {
+    if (!token) {
+      const redirect = `/customer/locations/${id}`
+      navigate(`/customer/login?redirect=${encodeURIComponent(redirect)}&slot=${slot.id}`)
+      return
+    }
+    setPendingSlot(slot)
+    setConflictError(null)
+  }
+
+  const handleConfirm = async () => {
+    if (!pendingSlot || !location) return
+    try {
+      await createBooking(pendingSlot.id)
+      navigate('/customer/payment', {
+        state: {
+          locationName: location.name,
+          slotStart: pendingSlot.start_time,
+          slotEnd: pendingSlot.end_time,
+        },
+      })
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setConflictError('This time slot is no longer available. Please choose another.')
+      }
+      setPendingSlot(null)
+    }
+  }
+
+  const handleCancelConfirm = () => {
+    setPendingSlot(null)
+    setConflictError(null)
+  }
 
   if (isLoading) {
     return (
@@ -111,6 +157,12 @@ export function LocationDetail() {
           Available Times
         </h2>
 
+        {conflictError && (
+          <p className="mb-4 rounded p-3 text-sm" style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}>
+            {conflictError}
+          </p>
+        )}
+
         {slotsLoading && (
           <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
             Loading available slots…
@@ -131,42 +183,90 @@ export function LocationDetail() {
 
         {!slotsLoading && !slotsError && slots && slots.length > 0 && (
           <div className="flex flex-col gap-3">
-            {slots.map((slot) => (
-              <div
-                key={slot.id}
-                className="flex items-center justify-between rounded-lg p-4"
-                style={{
-                  backgroundColor: 'rgb(var(--card))',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                <div className="text-sm">
-                  <span style={{ color: 'rgb(var(--foreground))' }}>
-                    {formatSlotTime(slot.start_time)}
-                  </span>
-                  <span
-                    className="mx-2"
-                    style={{ color: 'rgb(var(--muted-foreground))' }}
-                  >
-                    &ndash;
-                  </span>
-                  <span style={{ color: 'rgb(var(--foreground))' }}>
-                    {formatSlotTime(slot.end_time)}
-                  </span>
-                </div>
+            {slots.map((slot) => {
+              const isPending = pendingSlot?.id === slot.id
 
-                <button
-                  type="button"
-                  className="rounded px-4 py-1.5 text-sm font-medium"
+              return (
+                <div
+                  key={slot.id}
+                  className="rounded-lg p-4"
                   style={{
-                    backgroundColor: 'rgb(var(--primary))',
-                    color: 'rgb(var(--primary-foreground, 255 255 255))',
+                    backgroundColor: 'rgb(var(--card))',
+                    boxShadow: 'var(--shadow-card)',
                   }}
                 >
-                  Reserve
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">
+                      <span style={{ color: 'rgb(var(--foreground))' }}>
+                        {formatSlotTime(slot.start_time)}
+                      </span>
+                      <span
+                        className="mx-2"
+                        style={{ color: 'rgb(var(--muted-foreground))' }}
+                      >
+                        &ndash;
+                      </span>
+                      <span style={{ color: 'rgb(var(--foreground))' }}>
+                        {formatSlotTime(slot.end_time)}
+                      </span>
+                    </div>
+
+                    {!isPending && (
+                      <button
+                        type="button"
+                        onClick={() => handleReserveClick(slot)}
+                        className="rounded px-4 py-1.5 text-sm font-medium"
+                        style={{
+                          backgroundColor: 'rgb(var(--primary))',
+                          color: 'rgb(var(--primary-foreground, 255 255 255))',
+                        }}
+                      >
+                        Reserve
+                      </button>
+                    )}
+                  </div>
+
+                  {isPending && (
+                    <div
+                      className="mt-3 rounded p-3 text-sm"
+                      style={{ backgroundColor: 'rgb(var(--primary) / 0.08)' }}
+                    >
+                      <p className="mb-2 font-medium" style={{ color: 'rgb(var(--foreground))' }}>
+                        Confirm reservation for{' '}
+                        <span style={{ color: 'rgb(var(--accent))' }}>
+                          {formatSlotTime(slot.start_time)} &ndash; {formatSlotTime(slot.end_time)}
+                        </span>
+                        ?
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={handleConfirm}
+                          disabled={bookingLoading}
+                          className="rounded px-4 py-1.5 text-sm font-medium"
+                          style={{
+                            backgroundColor: 'rgb(var(--accent))',
+                            color: 'rgb(var(--accent-foreground))',
+                            opacity: bookingLoading ? 0.6 : 1,
+                          }}
+                        >
+                          {bookingLoading ? 'Booking…' : 'Confirm'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleCancelConfirm}
+                          disabled={bookingLoading}
+                          className="rounded px-4 py-1.5 text-sm font-medium"
+                          style={{ color: 'rgb(var(--muted-foreground))' }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
