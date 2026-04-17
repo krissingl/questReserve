@@ -64,7 +64,7 @@ Status : ✅ COMPLETE
 Browse, book, manage bookings.
 
 ## Phase 10.1: Frontend — Booking Flow
-Status : NOT STARTED
+Status : ✅ COMPLETE
 
 The core customer booking journey, deferred from Phase 10. Full scope:
 
