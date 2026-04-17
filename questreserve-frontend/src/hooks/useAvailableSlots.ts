@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getAvailableSlots } from '@/api/customer.api'
 import type { TimeSlot } from '@/types/domain'
 
@@ -6,6 +6,7 @@ interface UseAvailableSlotsResult {
   data: TimeSlot[] | null
   isLoading: boolean
   error: Error | null
+  refetch: () => void
 }
 
 export function useAvailableSlots(locationId: string): UseAvailableSlotsResult {
@@ -14,6 +15,7 @@ export function useAvailableSlots(locationId: string): UseAvailableSlotsResult {
     isLoading: boolean
     error: Error | null
   }>({ isLoading: !!locationId, error: null })
+  const [fetchCount, setFetchCount] = useState(0)
 
   useEffect(() => {
     if (!locationId) return
@@ -39,7 +41,12 @@ export function useAvailableSlots(locationId: string): UseAvailableSlotsResult {
     return () => {
       cancelled = true
     }
-  }, [locationId])
+  }, [locationId, fetchCount])
 
-  return { data, isLoading: fetchState.isLoading, error: fetchState.error }
+  const refetch = useCallback(() => {
+    setFetchState((prev) => ({ ...prev, isLoading: true }))
+    setFetchCount((c) => c + 1)
+  }, [])
+
+  return { data, isLoading: fetchState.isLoading, error: fetchState.error, refetch }
 }

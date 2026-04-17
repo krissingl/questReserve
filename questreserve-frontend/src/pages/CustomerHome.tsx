@@ -1,46 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
-import type { EnrichedBooking } from '@/types/domain'
-
-function formatSlotTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
-function StatusBadge({ booking }: { booking: EnrichedBooking }) {
-  const isExpired = booking.status === 'BOOKED' && new Date(booking.slot_start_time) < new Date()
-
-  if (isExpired) {
-    return (
-      <span
-        className="rounded px-2 py-0.5 text-xs font-semibold"
-        style={{
-          backgroundColor: 'rgb(var(--warning) / 0.18)',
-          color: 'rgb(var(--warning))',
-        }}
-      >
-        EXPIRED
-      </span>
-    )
-  }
-
-  const colorMap: Record<string, { bg: string; text: string }> = {
-    BOOKED:    { bg: 'rgb(var(--success) / 0.18)', text: 'rgb(var(--success))' },
-    CANCELLED: { bg: 'rgb(var(--muted-foreground) / 0.15)', text: 'rgb(var(--muted-foreground))' },
-  }
-  const colors = colorMap[booking.status] ?? colorMap['CANCELLED']
-
-  return (
-    <span
-      className="rounded px-2 py-0.5 text-xs font-semibold"
-      style={{ backgroundColor: colors.bg, color: colors.text }}
-    >
-      {booking.status}
-    </span>
-  )
-}
+import { StatusBadge } from '@/components/StatusBadge'
+import { formatSlotTime } from '@/utils/formatSlotTime'
 
 export function CustomerHome() {
   const { data: bookings, isLoading } = useMyBookings()

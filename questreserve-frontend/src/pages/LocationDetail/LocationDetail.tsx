@@ -4,14 +4,8 @@ import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
 import { useCreateBooking } from '@/hooks/useCreateBooking'
 import { useAuth } from '@/contexts/AuthContext'
+import { formatSlotTime } from '@/utils/formatSlotTime'
 import type { TimeSlot } from '@/types/domain'
-
-function formatSlotTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
 
 function getResponseStatus(err: unknown): number | null {
   if (
@@ -44,6 +38,7 @@ export function LocationDetail() {
 
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<string | null>(null)
+  const [bookingError, setBookingError] = useState<string | null>(null)
 
   const pendingSlotId: string | null =
     selectedSlotId ?? (token && slotParam && !slotsLoading ? slotParam : null)
@@ -75,6 +70,8 @@ export function LocationDetail() {
     } catch (err) {
       if (getResponseStatus(err) === 409) {
         setConflictError('This time slot is no longer available. Please choose another.')
+      } else {
+        setBookingError('Something went wrong. Please try again.')
       }
       setSelectedSlotId(null)
     }
@@ -83,6 +80,7 @@ export function LocationDetail() {
   const handleCancelConfirm = () => {
     setSelectedSlotId(null)
     setConflictError(null)
+    setBookingError(null)
   }
 
   if (isLoading) {
@@ -188,6 +186,15 @@ export function LocationDetail() {
             style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}
           >
             {conflictError}
+          </p>
+        )}
+
+        {bookingError && (
+          <p
+            className="mb-4 rounded p-3 text-sm"
+            style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}
+          >
+            {bookingError}
           </p>
         )}
 

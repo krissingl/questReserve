@@ -32,9 +32,9 @@ In `src/pages/CustomerHome.tsx`, replace the static "Your bookings will appear h
 **Acceptance Criteria:**
 - [ ] The static stub paragraph is removed from `CustomerHome.tsx`
 - [ ] `useMyBookings` is imported and called in `CustomerHome`
-- [ ] Up to two most recent bookings (by `created_at`) are rendered in the summary
+- [ ] Up to two next upcoming bookings are rendered in the summary (non-cancelled, future `slot_start_time`, sorted soonest-first)
 - [ ] A loading state is shown while `isLoading` is `true`
-- [ ] An empty state is shown when the user has no bookings
+- [ ] An empty state is shown when the user has no upcoming bookings
 - [ ] `npm run lint` and `npm run build` pass with zero errors
 
 ---

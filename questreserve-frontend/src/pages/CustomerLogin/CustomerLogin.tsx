@@ -30,7 +30,7 @@ export function CustomerLogin() {
       await login(values.email, values.password, 'customer')
       const redirect = searchParams.get('redirect')
       const slot = searchParams.get('slot')
-      if (redirect) {
+      if (redirect && redirect.startsWith('/')) {
         const destination = slot ? `${redirect}?slot=${slot}` : redirect
         navigate(destination)
       } else {

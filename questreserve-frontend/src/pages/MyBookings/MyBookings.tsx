@@ -2,56 +2,19 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
 import { useCancelBooking } from '@/hooks/useCancelBooking'
-import type { EnrichedBooking } from '@/types/domain'
+import { StatusBadge } from '@/components/StatusBadge'
+import { isExpired, isCancellable } from '@/utils/bookingUtils'
+import { formatSlotTime } from '@/utils/formatSlotTime'
+import type { Booking } from '@/types/domain'
 
-function isExpired(booking: EnrichedBooking): boolean {
-  return booking.status === 'BOOKED' && new Date(booking.slot_start_time) < new Date()
-}
-
-function isCancellable(booking: EnrichedBooking): boolean {
-  return booking.status === 'BOOKED' && !isExpired(booking)
-}
-
-function formatSlotTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
-function StatusBadge({ booking }: { booking: EnrichedBooking }) {
-  if (isExpired(booking)) {
-    return (
-      <span
-        className="rounded px-2 py-0.5 text-xs font-semibold"
-        style={{
-          backgroundColor: 'rgb(var(--warning) / 0.18)',
-          color: 'rgb(var(--warning))',
-        }}
-      >
-        EXPIRED
-      </span>
-    )
-  }
-
-  const colorMap: Record<string, { bg: string; text: string }> = {
-    BOOKED:    { bg: 'rgb(var(--success) / 0.18)', text: 'rgb(var(--success))' },
-    CANCELLED: { bg: 'rgb(var(--muted-foreground) / 0.15)', text: 'rgb(var(--muted-foreground))' },
-  }
-  const colors = colorMap[booking.status] ?? colorMap['CANCELLED']
-
-  return (
-    <span
-      className="rounded px-2 py-0.5 text-xs font-semibold"
-      style={{ backgroundColor: colors.bg, color: colors.text }}
-    >
-      {booking.status}
-    </span>
-  )
+function sortGroup(booking: Booking): number {
+  if (booking.status === 'BOOKED' && !isExpired(booking)) return 0
+  if (isExpired(booking)) return 1
+  return 2
 }
 
 interface BookingCardProps {
-  booking: EnrichedBooking
+  booking: Booking
   onCancelled: () => void
 }
 
@@ -218,17 +181,10 @@ export function MyBookings() {
 
   const isEmpty = !bookings || bookings.length === 0
 
-  function sortGroup(booking: EnrichedBooking): number {
-    if (booking.status === 'BOOKED' && !isExpired(booking)) return 0 // upcoming
-    if (isExpired(booking)) return 1                                   // expired
-    return 2                                                           // cancelled
-  }
-
   const sortedBookings = bookings
     ? [...bookings].sort((a, b) => {
         const groupDiff = sortGroup(a) - sortGroup(b)
         if (groupDiff !== 0) return groupDiff
-        // within upcoming: soonest first; within expired/cancelled: most recent first
         const dir = sortGroup(a) === 0 ? 1 : -1
         return dir * (new Date(a.slot_start_time).getTime() - new Date(b.slot_start_time).getTime())
       })

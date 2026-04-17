@@ -28,9 +28,6 @@ export interface Booking {
   status: BookingStatus
   created_at: string
   updated_at: string
-}
-
-export interface EnrichedBooking extends Booking {
   location_name: string
   booking_location_id: string
   slot_start_time: string

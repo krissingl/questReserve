@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getMyBookings } from '@/api/customer.api'
-import type { EnrichedBooking } from '@/types/domain'
+import type { Booking } from '@/types/domain'
 
 interface UseMyBookingsResult {
-  data: EnrichedBooking[] | null
+  data: Booking[] | null
   isLoading: boolean
   error: Error | null
   refetch: () => void
 }
 
 export function useMyBookings(): UseMyBookingsResult {
-  const [data, setData] = useState<EnrichedBooking[] | null>(null)
+  const [data, setData] = useState<Booking[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [fetchCount, setFetchCount] = useState(0)

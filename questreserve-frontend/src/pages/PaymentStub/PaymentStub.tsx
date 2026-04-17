@@ -1,4 +1,5 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
+import { formatSlotTime } from '@/utils/formatSlotTime'
 
 interface PaymentRouteState {
   locationName?: string
@@ -6,17 +7,14 @@ interface PaymentRouteState {
   slotEnd?: string
 }
 
-function formatSlotTime(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
-}
-
 export function PaymentStub() {
   const { state } = useLocation()
   const routeState = (state as PaymentRouteState | null) ?? {}
   const { locationName, slotStart, slotEnd } = routeState
+
+  if (!locationName) {
+    return <Navigate to="/customer/bookings" replace />
+  }
 
   return (
     <main className="p-8">
@@ -45,21 +43,19 @@ export function PaymentStub() {
           Your reservation has been submitted successfully.
         </p>
 
-        {locationName && (
-          <div
-            className="mb-4 rounded p-4 text-left text-sm"
-            style={{ backgroundColor: 'rgb(var(--card))' }}
-          >
-            <p className="mb-1 font-semibold" style={{ color: 'rgb(var(--foreground))' }}>
-              {locationName}
+        <div
+          className="mb-4 rounded p-4 text-left text-sm"
+          style={{ backgroundColor: 'rgb(var(--card))' }}
+        >
+          <p className="mb-1 font-semibold" style={{ color: 'rgb(var(--foreground))' }}>
+            {locationName}
+          </p>
+          {slotStart && slotEnd && (
+            <p style={{ color: 'rgb(var(--muted-foreground))' }}>
+              {formatSlotTime(slotStart)} &ndash; {formatSlotTime(slotEnd)}
             </p>
-            {slotStart && slotEnd && (
-              <p style={{ color: 'rgb(var(--muted-foreground))' }}>
-                {formatSlotTime(slotStart)} &ndash; {formatSlotTime(slotEnd)}
-              </p>
-            )}
-          </div>
-        )}
+          )}
+        </div>
 
         <div
           className="mb-6 rounded p-4 text-sm"

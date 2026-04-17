@@ -12,7 +12,7 @@ import {
   BookingOwnershipError,
   BookingAlreadyCancelledError,
 } from '../../services/customer.service';
-import { Difficulty, EnrichedBooking } from '../../types';
+import { Booking, Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
@@ -106,7 +106,7 @@ protectedRouter.post('/bookings', async (req: Request, res: Response, next: Next
 
 protectedRouter.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const bookings: EnrichedBooking[] = await customerService.getBookingHistory(getUser(req).sub);
+    const bookings: Booking[] = await customerService.getBookingHistory(getUser(req).sub);
     res.json(bookings);
   } catch (err) {
     handleCustomerError(err, res, next);
