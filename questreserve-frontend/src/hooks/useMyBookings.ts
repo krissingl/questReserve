@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { getMyBookings } from '@/api/customer.api'
 import type { Booking } from '@/types/domain'
 
@@ -6,12 +6,14 @@ interface UseMyBookingsResult {
   data: Booking[] | null
   isLoading: boolean
   error: Error | null
+  refetch: () => void
 }
 
 export function useMyBookings(): UseMyBookingsResult {
   const [data, setData] = useState<Booking[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const [fetchCount, setFetchCount] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -34,7 +36,12 @@ export function useMyBookings(): UseMyBookingsResult {
     return () => {
       cancelled = true
     }
+  }, [fetchCount])
+
+  const refetch = useCallback(() => {
+    setIsLoading(true)
+    setFetchCount((c) => c + 1)
   }, [])
 
-  return { data, isLoading, error }
+  return { data, isLoading, error, refetch }
 }

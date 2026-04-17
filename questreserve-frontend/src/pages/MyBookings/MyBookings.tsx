@@ -1,18 +1,159 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
-import type { BookingStatus } from '@/types/domain'
+import { useCancelBooking } from '@/hooks/useCancelBooking'
+import { StatusBadge } from '@/components/StatusBadge'
+import { isExpired, isCancellable } from '@/utils/bookingUtils'
+import { formatSlotTime } from '@/utils/formatSlotTime'
+import type { Booking } from '@/types/domain'
 
-const STATUS_TEXT: Record<BookingStatus, string> = {
-  BOOKED: 'rgb(34 197 94)',
-  CANCELLED: 'rgb(var(--muted-foreground))',
+function sortGroup(booking: Booking): number {
+  if (booking.status === 'BOOKED' && !isExpired(booking)) return 0
+  if (isExpired(booking)) return 1
+  return 2
 }
 
-const STATUS_BG: Record<BookingStatus, string> = {
-  BOOKED: 'rgb(34 197 94 / 0.15)',
-  CANCELLED: 'rgb(var(--muted) / 0.3)',
+interface BookingCardProps {
+  booking: Booking
+  onCancelled: () => void
+}
+
+function BookingCard({ booking, onCancelled }: BookingCardProps) {
+  const { cancelBooking, isLoading: cancelling } = useCancelBooking()
+  const [confirming, setConfirming] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
+
+  const handleConfirmCancel = async () => {
+    try {
+      await cancelBooking(booking.id)
+      onCancelled()
+    } catch {
+      setCancelError('Failed to cancel booking. Please try again.')
+      setConfirming(false)
+    }
+  }
+
+  return (
+    <div
+      className="rounded-lg p-6"
+      style={{
+        backgroundColor: 'rgb(var(--card))',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          to={`/customer/locations/${booking.booking_location_id}`}
+          className="text-lg font-semibold hover:underline"
+          style={{
+            fontFamily: 'var(--font-heading)',
+            color: 'rgb(var(--foreground))',
+          }}
+        >
+          {booking.location_name}
+        </Link>
+
+        <StatusBadge booking={booking} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <p
+            className="mb-0.5 font-medium"
+            style={{ color: 'rgb(var(--muted-foreground))' }}
+          >
+            Starts
+          </p>
+          <p style={{ color: 'rgb(var(--foreground))' }}>
+            {formatSlotTime(booking.slot_start_time)}
+          </p>
+        </div>
+
+        <div>
+          <p
+            className="mb-0.5 font-medium"
+            style={{ color: 'rgb(var(--muted-foreground))' }}
+          >
+            Ends
+          </p>
+          <p style={{ color: 'rgb(var(--foreground))' }}>
+            {formatSlotTime(booking.slot_end_time)}
+          </p>
+        </div>
+
+        <div>
+          <p
+            className="mb-0.5 font-medium"
+            style={{ color: 'rgb(var(--muted-foreground))' }}
+          >
+            Booked On
+          </p>
+          <p style={{ color: 'rgb(var(--foreground))' }}>
+            {new Date(booking.created_at).toLocaleDateString()}
+          </p>
+        </div>
+      </div>
+
+      {cancelError && (
+        <p className="mt-3 text-sm" style={{ color: 'rgb(var(--destructive))' }}>
+          {cancelError}
+        </p>
+      )}
+
+      {isCancellable(booking) && !confirming && (
+        <button
+          type="button"
+          onClick={() => { setConfirming(true); setCancelError(null) }}
+          className="mt-4 rounded px-3 py-1.5 text-sm font-medium"
+          style={{
+            backgroundColor: 'rgb(var(--destructive) / 0.1)',
+            color: 'rgb(var(--destructive))',
+          }}
+        >
+          Cancel Booking
+        </button>
+      )}
+
+      {isCancellable(booking) && confirming && (
+        <div
+          className="mt-4 rounded p-3 text-sm"
+          style={{ backgroundColor: 'rgb(var(--destructive) / 0.06)' }}
+        >
+          <p className="mb-2" style={{ color: 'rgb(var(--foreground))' }}>
+            Are you sure you want to cancel this reservation?
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleConfirmCancel}
+              disabled={cancelling}
+              className="rounded px-4 py-1.5 text-sm font-medium"
+              style={{
+                backgroundColor: 'rgb(var(--destructive))',
+                color: 'rgb(var(--destructive-foreground))',
+                opacity: cancelling ? 0.6 : 1,
+              }}
+            >
+              {cancelling ? 'Cancelling…' : 'Yes, Cancel'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              disabled={cancelling}
+              className="rounded px-4 py-1.5 text-sm font-medium"
+              style={{ color: 'rgb(var(--muted-foreground))' }}
+            >
+              Keep
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function MyBookings() {
-  const { data: bookings, isLoading, error } = useMyBookings()
+  const { data: bookings, isLoading, error, refetch } = useMyBookings()
 
   if (isLoading) {
     return (
@@ -40,6 +181,15 @@ export function MyBookings() {
 
   const isEmpty = !bookings || bookings.length === 0
 
+  const sortedBookings = bookings
+    ? [...bookings].sort((a, b) => {
+        const groupDiff = sortGroup(a) - sortGroup(b)
+        if (groupDiff !== 0) return groupDiff
+        const dir = sortGroup(a) === 0 ? 1 : -1
+        return dir * (new Date(a.slot_start_time).getTime() - new Date(b.slot_start_time).getTime())
+      })
+    : []
+
   return (
     <main className="p-8">
       <h1
@@ -55,71 +205,8 @@ export function MyBookings() {
         </p>
       ) : (
         <div className="flex flex-col gap-4">
-          {bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="rounded-lg p-6"
-              style={{
-                backgroundColor: 'rgb(var(--surface))',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p
-                    className="mb-1 text-sm font-medium"
-                    style={{ color: 'rgb(var(--muted-foreground))' }}
-                  >
-                    Booking ID
-                  </p>
-                  <p
-                    className="font-mono text-xs"
-                    style={{ color: 'rgb(var(--foreground))' }}
-                  >
-                    {booking.id}
-                  </p>
-                </div>
-
-                <span
-                  className="rounded px-2 py-0.5 text-xs font-semibold"
-                  style={{
-                    backgroundColor: STATUS_BG[booking.status],
-                    color: STATUS_TEXT[booking.status],
-                  }}
-                >
-                  {booking.status}
-                </span>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p
-                    className="mb-0.5 font-medium"
-                    style={{ color: 'rgb(var(--muted-foreground))' }}
-                  >
-                    Time Slot
-                  </p>
-                  <p
-                    className="font-mono text-xs"
-                    style={{ color: 'rgb(var(--foreground))' }}
-                  >
-                    {booking.time_slot_id}
-                  </p>
-                </div>
-
-                <div>
-                  <p
-                    className="mb-0.5 font-medium"
-                    style={{ color: 'rgb(var(--muted-foreground))' }}
-                  >
-                    Booked On
-                  </p>
-                  <p style={{ color: 'rgb(var(--foreground))' }}>
-                    {new Date(booking.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            </div>
+          {sortedBookings.map((booking) => (
+            <BookingCard key={booking.id} booking={booking} onCancelled={refetch} />
           ))}
         </div>
       )}

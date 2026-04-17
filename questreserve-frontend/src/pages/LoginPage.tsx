@@ -1,5 +1,6 @@
 import { CrossRoleLink } from '@/components/CrossRoleLink'
 import { Button } from '@/components/ui/button'
+import logoLockup from '@/assets/logo-primary-white-gold.svg'
 
 export function LoginPage() {
   return (
@@ -8,15 +9,12 @@ export function LoginPage() {
       style={{ backgroundColor: 'rgb(var(--background))' }}
     >
       <div className="text-center">
-        <h1
-          className="mb-2 text-4xl font-bold tracking-wide"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            color: 'rgb(var(--foreground))',
-          }}
-        >
-          QuestReserve
-        </h1>
+        <img
+          src={logoLockup}
+          alt="QuestReserve"
+          className="mx-auto mb-3"
+          style={{ height: '72px' }}
+        />
         <p
           className="text-sm"
           style={{ color: 'rgb(var(--muted-foreground))' }}
@@ -28,7 +26,7 @@ export function LoginPage() {
       <div
         className="w-full max-w-sm rounded-lg p-8"
         style={{
-          backgroundColor: 'rgb(var(--surface))',
+          backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
         }}
       >

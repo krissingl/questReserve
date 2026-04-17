@@ -1,5 +1,6 @@
 import { Navigate, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import logoLockup from '@/assets/logo-primary-white-gold.svg'
 
 export function CustomerLayout() {
   const { token, role, isLoading, logout } = useAuth()
@@ -15,17 +16,26 @@ export function CustomerLayout() {
         className="flex w-56 flex-shrink-0 flex-col px-4 py-6"
         style={{ backgroundColor: 'rgb(var(--background))' }}
       >
-        <span
-          className="mb-8 text-lg font-bold tracking-wide"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            color: 'rgb(var(--accent))',
-          }}
-        >
-          QuestReserve
-        </span>
+        <img
+          src={logoLockup}
+          alt="QuestReserve"
+          className="mb-8"
+          style={{ height: '40px' }}
+        />
 
         <div className="flex flex-col gap-1">
+          <NavLink
+            to="/customer"
+            end
+            className="rounded px-3 py-2 text-sm font-medium transition-colors"
+            style={({ isActive }) => ({
+              color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
+              backgroundColor: isActive ? 'rgb(var(--accent) / 0.1)' : 'transparent',
+            })}
+          >
+            Dashboard
+          </NavLink>
+
           <NavLink
             to="/customer/locations"
             className="rounded px-3 py-2 text-sm font-medium transition-colors"
@@ -49,7 +59,18 @@ export function CustomerLayout() {
           </NavLink>
         </div>
 
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-1">
+          <NavLink
+            to="/customer/settings"
+            className="rounded px-3 py-2 text-sm font-medium transition-colors"
+            style={({ isActive }) => ({
+              color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
+              backgroundColor: isActive ? 'rgb(var(--accent) / 0.1)' : 'transparent',
+            })}
+          >
+            Settings
+          </NavLink>
+
           <button
             type="button"
             onClick={logout}

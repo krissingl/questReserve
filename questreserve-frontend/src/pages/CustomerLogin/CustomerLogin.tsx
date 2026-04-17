@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuth } from '@/contexts/AuthContext'
@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 export function CustomerLogin() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [apiError, setApiError] = useState<string | null>(null)
 
   const {
@@ -27,7 +28,14 @@ export function CustomerLogin() {
     setApiError(null)
     try {
       await login(values.email, values.password, 'customer')
-      navigate('/customer')
+      const redirect = searchParams.get('redirect')
+      const slot = searchParams.get('slot')
+      if (redirect && redirect.startsWith('/')) {
+        const destination = slot ? `${redirect}?slot=${slot}` : redirect
+        navigate(destination)
+      } else {
+        navigate('/customer')
+      }
     } catch (err: unknown) {
       setApiError(extractLoginError(err))
     }
@@ -41,7 +49,7 @@ export function CustomerLogin() {
       <div
         className="w-full max-w-sm rounded-lg p-8"
         style={{
-          backgroundColor: 'rgb(var(--surface))',
+          backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
         }}
       >

@@ -53,7 +53,7 @@ export function BrowseLocations() {
             to={`/customer/locations/${location.id}`}
             className="block rounded-lg p-6 transition-opacity hover:opacity-80"
             style={{
-              backgroundColor: 'rgb(var(--surface))',
+              backgroundColor: 'rgb(var(--card))',
               boxShadow: 'var(--shadow-card)',
             }}
           >
