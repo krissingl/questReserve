@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { CustomerLayout } from '@/layouts/CustomerLayout'
+import { GuestLayout } from '@/layouts/GuestLayout'
 import { ProviderLayout } from '@/layouts/ProviderLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AlreadyAuthRedirect } from '@/layouts/AlreadyAuthRedirect'
@@ -17,11 +18,36 @@ import { LocationDetail } from '@/pages/LocationDetail/LocationDetail'
 import { MyBookings } from '@/pages/MyBookings/MyBookings'
 import { CustomerSettings } from '@/pages/CustomerSettings/CustomerSettings'
 import { PaymentStub } from '@/pages/PaymentStub/PaymentStub'
+import { About } from '@/pages/About/About'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <HomePage />,
+  },
+  {
+    path: '/locations',
+    element: <GuestLayout />,
+    children: [
+      {
+        index: true,
+        element: <BrowseLocations />,
+      },
+      {
+        path: ':id',
+        element: <LocationDetail />,
+      },
+    ],
+  },
+  {
+    path: '/about',
+    element: <GuestLayout />,
+    children: [
+      {
+        index: true,
+        element: <About />,
+      },
+    ],
   },
   {
     path: '/login',
