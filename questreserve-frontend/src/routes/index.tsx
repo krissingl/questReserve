@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { CustomerLayout } from '@/layouts/CustomerLayout'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ProviderLayout } from '@/layouts/ProviderLayout'
@@ -8,7 +8,6 @@ import { CustomerHome } from '@/pages/CustomerHome'
 import { ProviderHome } from '@/pages/ProviderHome'
 import { AdminHome } from '@/pages/AdminHome'
 import { LoginPage } from '@/pages/LoginPage'
-import { HomePage } from '@/pages/HomePage'
 import { CustomerLogin } from '@/pages/CustomerLogin/CustomerLogin'
 import { CustomerRegister } from '@/pages/CustomerRegister/CustomerRegister'
 import { ProviderLogin } from '@/pages/ProviderLogin/ProviderLogin'
@@ -23,7 +22,7 @@ import { About } from '@/pages/About/About'
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <HomePage />,
+    element: <Navigate to="/locations" replace />,
   },
   {
     path: '/locations',
@@ -96,14 +95,6 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <CustomerHome />,
-      },
-      {
-        path: 'locations',
-        element: <BrowseLocations />,
-      },
-      {
-        path: 'locations/:id',
-        element: <LocationDetail />,
       },
       {
         path: 'bookings',

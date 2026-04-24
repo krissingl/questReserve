@@ -26,82 +26,47 @@ export function HeaderNav() {
         <img src={logoLockup} alt="QuestReserve" style={{ height: '40px' }} />
       </Link>
 
-      <nav className="flex flex-1 items-center gap-4">
-        {!token && (
-          <>
-            <NavLink to="/locations" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              Browse Adventures
-            </NavLink>
-            <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              About
-            </NavLink>
-            <NavLink to="/login" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              Login
-            </NavLink>
-          </>
+      <nav className="flex flex-1 items-center justify-end gap-4">
+        {(!token || role === 'customer') && (
+          <NavLink to="/locations" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
+            Browse Adventures
+          </NavLink>
         )}
 
         {token && role === 'customer' && (
           <>
-            <NavLink to="/locations" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              Browse Adventures
-            </NavLink>
-            <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              About
-            </NavLink>
             <NavLink to="/customer/bookings" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
               My Bookings
             </NavLink>
             <NavLink to="/customer/settings" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
               Settings
             </NavLink>
-            <button
-              type="button"
-              onClick={logout}
-              className="text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: 'rgb(var(--foreground))' }}
-            >
-              Log Out
-            </button>
           </>
         )}
 
-        {token && role === 'provider' && (
-          <>
-            <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              About
-            </NavLink>
-            <NavLink to="/provider" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              Dashboard
-            </NavLink>
-            <button
-              type="button"
-              onClick={logout}
-              className="text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: 'rgb(var(--foreground))' }}
-            >
-              Log Out
-            </button>
-          </>
+        {token && (role === 'provider' || role === 'admin') && (
+          <NavLink to={`/${role}`} style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
+            Dashboard
+          </NavLink>
         )}
 
-        {token && role === 'admin' && (
-          <>
-            <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              About
-            </NavLink>
-            <NavLink to="/admin" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              Dashboard
-            </NavLink>
-            <button
-              type="button"
-              onClick={logout}
-              className="text-sm font-medium transition-colors hover:opacity-80"
-              style={{ color: 'rgb(var(--foreground))' }}
-            >
-              Log Out
-            </button>
-          </>
+        <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
+          About
+        </NavLink>
+
+        {!token ? (
+          <NavLink to="/login" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
+            Login
+          </NavLink>
+        ) : (
+          <button
+            type="button"
+            onClick={logout}
+            className="text-sm font-medium transition-colors hover:opacity-80"
+            style={{ color: 'rgb(var(--foreground))' }}
+          >
+            Log Out
+          </button>
         )}
       </nav>
     </header>

@@ -13,9 +13,7 @@ export function CustomerLayout() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--surface))' }}>
       <HeaderNav />
-      <div>
-        <Outlet />
-      </div>
+      <Outlet />
     </div>
   )
 }
