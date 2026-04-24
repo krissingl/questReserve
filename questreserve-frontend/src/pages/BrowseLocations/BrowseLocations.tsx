@@ -50,7 +50,7 @@ export function BrowseLocations() {
         {locations?.map((location) => (
           <Link
             key={location.id}
-            to={`/customer/locations/${location.id}`}
+            to={`/locations/${location.id}`}
             className="block rounded-lg p-6 transition-opacity hover:opacity-80"
             style={{
               backgroundColor: 'rgb(var(--card))',

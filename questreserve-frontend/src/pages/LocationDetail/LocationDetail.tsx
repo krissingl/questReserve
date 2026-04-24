@@ -48,7 +48,7 @@ export function LocationDetail() {
 
   const handleReserveClick = (slot: TimeSlot) => {
     if (!token) {
-      const redirect = `/customer/locations/${id}`
+      const redirect = `/locations/${id}`
       navigate(`/customer/login?redirect=${encodeURIComponent(redirect)}&slot=${slot.id}`)
       return
     }
@@ -95,7 +95,7 @@ export function LocationDetail() {
     return (
       <main className="p-8">
         <Link
-          to="/customer/locations"
+          to="/locations"
           className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
           style={{ color: 'rgb(var(--accent))' }}
         >
@@ -113,7 +113,7 @@ export function LocationDetail() {
   return (
     <main className="p-8">
       <Link
-        to="/customer/locations"
+        to="/locations"
         className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
         style={{ color: 'rgb(var(--accent))' }}
       >

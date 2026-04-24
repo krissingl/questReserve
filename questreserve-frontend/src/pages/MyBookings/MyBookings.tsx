@@ -43,7 +43,7 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
     >
       <div className="flex items-center justify-between gap-4">
         <Link
-          to={`/customer/locations/${booking.booking_location_id}`}
+          to={`/locations/${booking.booking_location_id}`}
           className="text-lg font-semibold hover:underline"
           style={{
             fontFamily: 'var(--font-heading)',

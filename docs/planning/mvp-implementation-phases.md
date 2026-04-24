@@ -75,7 +75,7 @@ The core customer booking journey, deferred from Phase 10. Full scope:
 - Booking cancellation action on the My Bookings page (also deferred from Phase 10)
 
 ## Phase 10.2: Frontend — Guest Access
-Status : NOT STARTED
+Status : IN PROGRESS
 
 Unauthenticated location browsing. Allow guests to browse and view booking locations without signing in. Requires dedicated routes, a guest layout, and any supporting backend endpoint changes to expose location data publicly.
 
