@@ -49,7 +49,7 @@ export function CustomerHome() {
             {upcomingBookings.map((booking) => (
               <li key={booking.id}>
                 <Link
-                  to={`/customer/locations/${booking.booking_location_id}`}
+                  to={`/locations/${booking.booking_location_id}`}
                   className="block rounded-lg p-4 text-sm transition-opacity hover:opacity-80"
                   style={{
                     backgroundColor: 'rgb(var(--card))',
