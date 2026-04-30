@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useBookingLocations } from '@/hooks/useBookingLocations'
+import { LocationFilterBar } from '@/components/LocationFilterBar/LocationFilterBar'
 import type { Difficulty } from '@/types/domain'
 
 const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
@@ -10,7 +12,28 @@ const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
 }
 
 export function BrowseLocations() {
-  const { data: locations, isLoading, error } = useBookingLocations()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const difficulty = searchParams.get('difficulty') ?? ''
+
+  const { data: locations, isLoading, error } = useBookingLocations(
+    difficulty ? { difficulty } : undefined
+  )
+
+  function handleFilterChange(value: string) {
+    if (value === '') {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('difficulty')
+        return next
+      })
+    } else {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev)
+        next.set('difficulty', value)
+        return next
+      })
+    }
+  }
 
   if (isLoading) {
     return (
@@ -41,6 +64,8 @@ export function BrowseLocations() {
       >
         Browse Locations
       </h1>
+
+      <LocationFilterBar difficulty={difficulty} onChange={handleFilterChange} />
 
       {locations && locations.length === 0 && (
         <p style={{ color: 'rgb(var(--muted-foreground))' }}>No locations found.</p>
