@@ -46,11 +46,7 @@ export class CustomerService {
   ) {}
 
   async browseLocations(difficulty?: Difficulty): Promise<BookingLocation[]> {
-    const all = await this.locationRepo.findAll();
-    if (difficulty) {
-      return all.filter((loc) => loc.difficulty === difficulty);
-    }
-    return all;
+    return this.locationRepo.list(difficulty);
   }
 
   async getLocation(locationId: string): Promise<BookingLocation | null> {
