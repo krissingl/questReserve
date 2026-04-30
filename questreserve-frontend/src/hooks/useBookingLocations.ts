@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getBookingLocations } from '@/api/customer.api'
-import type { BookingLocation } from '@/types/domain'
+import type { BookingLocation, LocationFilters } from '@/types/domain'
 
 interface UseBookingLocationsResult {
   data: BookingLocation[] | null
@@ -8,7 +8,7 @@ interface UseBookingLocationsResult {
   error: Error | null
 }
 
-export function useBookingLocations(filters?: { difficulty?: string }): UseBookingLocationsResult {
+export function useBookingLocations(filters?: LocationFilters): UseBookingLocationsResult {
   const [data, setData] = useState<BookingLocation[] | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
@@ -17,12 +17,13 @@ export function useBookingLocations(filters?: { difficulty?: string }): UseBooki
 
   useEffect(() => {
     let cancelled = false
+    setIsLoading(true)
+    setError(null)
 
     getBookingLocations(difficulty ? { difficulty } : undefined)
       .then((result) => {
         if (!cancelled) {
           setData(result)
-          setError(null)
           setIsLoading(false)
         }
       })

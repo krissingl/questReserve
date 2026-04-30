@@ -1,7 +1,7 @@
 import { apiClient } from './client'
-import type { BookingLocation, Booking, TimeSlot } from '@/types/domain'
+import type { BookingLocation, Booking, TimeSlot, LocationFilters } from '@/types/domain'
 
-export async function getBookingLocations(filters?: { difficulty?: string }): Promise<BookingLocation[]> {
+export async function getBookingLocations(filters?: LocationFilters): Promise<BookingLocation[]> {
   const params: Record<string, string> = {}
   if (filters?.difficulty) {
     params.difficulty = filters.difficulty

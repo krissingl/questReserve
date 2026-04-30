@@ -1,4 +1,11 @@
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'LEGENDARY'
+
+export const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'] as const satisfies ReadonlyArray<Difficulty>
+
+export interface LocationFilters {
+  difficulty?: Difficulty
+}
+
 export type BookingStatus = 'BOOKED' | 'CANCELLED'
 
 export interface TimeSlot {
