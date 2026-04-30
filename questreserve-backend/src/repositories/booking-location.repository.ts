@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseRepository } from '../infrastructure';
-import { BookingLocation } from '../types';
+import { BookingLocation, Difficulty } from '../types';
 
 export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   constructor(knex: Knex) {
@@ -15,6 +15,14 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
 
   async findAll(): Promise<BookingLocation[]> {
     return this.knex<BookingLocation>('booking_location').select('*');
+  }
+
+  async list(difficulty?: Difficulty): Promise<BookingLocation[]> {
+    const query = this.knex<BookingLocation>('booking_location').select('*');
+    if (difficulty) {
+      query.where('difficulty', difficulty);
+    }
+    return query;
   }
 
   async findAllByProvider(providerId: string): Promise<BookingLocation[]> {

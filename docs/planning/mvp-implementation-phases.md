@@ -80,7 +80,7 @@ Status : ✅ COMPLETE
 Unauthenticated location browsing. Allow guests to browse and view booking locations without signing in. Requires dedicated routes, a guest layout, and any supporting backend endpoint changes to expose location data publicly.
 
 ## Phase 10.3: Frontend — Location Filtering
-Status : NOT STARTED
+Status : IN PROGRESS
 
 Full filtering implementation for the browse locations view, covering both guest and authenticated customer flows. Includes filter UI controls (difficulty, rules, and other relevant fields) and any supporting backend query changes needed to power them.
 
