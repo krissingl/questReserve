@@ -24,6 +24,7 @@ export interface BookingLocation {
   description: string | null
   difficulty: Difficulty
   cancellation_policy: string
+  image_url: string | null
   created_at: string
   updated_at: string
 }
