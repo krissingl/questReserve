@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useBookingLocations } from '@/hooks/useBookingLocations'
 import { FilterDrawer } from '@/components/FilterDrawer/FilterDrawer'
-import type { Difficulty, LocationFilters } from '@/types/domain'
+import type { BookingLocation, Difficulty, LocationFilters } from '@/types/domain'
 import { DIFFICULTY_OPTIONS } from '@/types/domain'
 
 const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
@@ -12,55 +12,214 @@ const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
   LEGENDARY: 'rgb(var(--primary))',
 }
 
-function SkeletonGrid() {
+const HEADER_HEIGHT = '64px'
+
+interface LocationThumbnailProps {
+  location: BookingLocation
+  isFocused: boolean
+  onClick: () => void
+}
+
+function LocationThumbnail({ location, isFocused, onClick }: LocationThumbnailProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={`skeleton-${i}`}
-          className="rounded-lg p-6"
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        width: '100%',
+        padding: '0.75rem',
+        textAlign: 'left',
+        background: isFocused ? 'rgb(var(--accent) / 0.15)' : 'transparent',
+        border: `1px solid ${isFocused ? 'rgb(var(--accent))' : 'transparent'}`,
+        borderRadius: 'var(--radius)',
+        cursor: 'pointer',
+        transition: 'background 0.1s ease, border-color 0.1s ease',
+      }}
+    >
+      <div
+        style={{
+          flexShrink: 0,
+          width: '56px',
+          height: '56px',
+          borderRadius: 'var(--radius)',
+          overflow: 'hidden',
+          backgroundColor: 'rgb(var(--background))',
+          position: 'relative',
+        }}
+      >
+        {location.image_url ? (
+          <img
+            src={location.image_url}
+            alt={location.name}
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgb(var(--card))',
+            }}
+          >
+            <span style={{ fontSize: '1.25rem', opacity: 0.3, color: 'rgb(var(--foreground))' }}>
+              &#9956;
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <p
           style={{
-            backgroundColor: 'rgb(var(--card))',
-            boxShadow: 'var(--shadow-card)',
+            fontFamily: 'var(--font-heading)',
+            fontWeight: 'var(--weight-semibold)',
+            color: isFocused ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
+            fontSize: 'var(--text-sm)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            marginBottom: '0.25rem',
           }}
         >
-          <div
+          {location.name}
+        </p>
+        <span
+          style={{
+            display: 'inline-block',
+            padding: '0.1rem 0.4rem',
+            borderRadius: 'var(--radius-pill)',
+            fontSize: '0.65rem',
+            fontWeight: 'var(--weight-medium)',
+            backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
+            color: 'rgb(var(--primary-foreground, 255 255 255))',
+          }}
+        >
+          {location.difficulty}
+        </span>
+      </div>
+    </button>
+  )
+}
+
+interface PreviewPanelProps {
+  location: BookingLocation
+}
+
+function PreviewPanel({ location }: PreviewPanelProps) {
+  const navigate = useNavigate()
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          paddingTop: '56.25%',
+          backgroundColor: 'rgb(var(--background))',
+          overflow: 'hidden',
+          flexShrink: 0,
+        }}
+      >
+        {location.image_url ? (
+          <img
+            src={location.image_url}
+            alt={location.name}
             style={{
-              height: '1.25rem',
-              width: '60%',
-              borderRadius: 'var(--radius)',
-              backgroundColor: 'rgb(var(--muted))',
-              marginBottom: '0.75rem',
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
             }}
           />
+        ) : (
           <div
             style={{
-              height: '1rem',
-              width: '25%',
-              borderRadius: 'var(--radius-pill)',
-              backgroundColor: 'rgb(var(--muted))',
-              marginBottom: '0.75rem',
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgb(var(--card))',
             }}
-          />
-          <div
+          >
+            <span style={{ fontSize: '4rem', opacity: 0.2, color: 'rgb(var(--foreground))' }}>
+              &#9956;
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>
+        <h2
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1.5rem',
+            fontWeight: 'var(--weight-bold)',
+            color: 'rgb(var(--foreground))',
+            marginBottom: '0.5rem',
+          }}
+        >
+          {location.name}
+        </h2>
+
+        <span
+          style={{
+            display: 'inline-block',
+            padding: '0.15rem 0.5rem',
+            borderRadius: 'var(--radius-pill)',
+            fontSize: '0.7rem',
+            fontWeight: 'var(--weight-medium)',
+            backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
+            color: 'rgb(var(--primary-foreground, 255 255 255))',
+            marginBottom: '1rem',
+          }}
+        >
+          {location.difficulty}
+        </span>
+
+        {location.description && (
+          <p
             style={{
-              height: '0.75rem',
-              width: '90%',
-              borderRadius: 'var(--radius)',
-              backgroundColor: 'rgb(var(--muted))',
-              marginBottom: '0.5rem',
+              fontSize: 'var(--text-sm)',
+              color: 'rgb(var(--muted-foreground))',
+              lineHeight: '1.6',
+              marginBottom: '1.5rem',
             }}
-          />
-          <div
-            style={{
-              height: '0.75rem',
-              width: '70%',
-              borderRadius: 'var(--radius)',
-              backgroundColor: 'rgb(var(--muted))',
-            }}
-          />
-        </div>
-      ))}
+          >
+            {location.description}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={() => navigate(`/locations/${location.id}`)}
+          style={{
+            display: 'inline-block',
+            padding: '0.6rem 1.5rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontWeight: 'var(--weight-semibold)',
+            fontSize: 'var(--text-sm)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          View &amp; Book
+        </button>
+      </div>
     </div>
   )
 }
@@ -69,6 +228,7 @@ export function BrowseLocations() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [filtersHovered, setFiltersHovered] = useState(false)
+  const [focusedId, setFocusedId] = useState<string | null>(null)
 
   const rawDifficulty = searchParams.get('difficulty')
   const appliedFilters: LocationFilters = {
@@ -80,6 +240,11 @@ export function BrowseLocations() {
 
   const { data: locations, isLoading, error } = useBookingLocations(appliedFilters)
 
+  const focusedLocation =
+    locations && locations.length > 0
+      ? locations.find((l) => l.id === focusedId) ?? locations[0]
+      : null
+
   function handleApply(filters: LocationFilters) {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -90,6 +255,7 @@ export function BrowseLocations() {
       }
       return next
     })
+    setFocusedId(null)
   }
 
   function handleClearFilters() {
@@ -98,25 +264,44 @@ export function BrowseLocations() {
       next.delete('difficulty')
       return next
     })
+    setFocusedId(null)
   }
 
   const isEmpty = !isLoading && !error && locations?.length === 0
-
   const filtersButtonActive = hasActiveFilters || filtersHovered
 
   return (
-    <main className="p-8">
-      <h1
-        className="mb-6 text-2xl font-bold"
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: `calc(100vh - ${HEADER_HEIGHT})`,
+        overflow: 'hidden',
+      }}
+    >
+      <div
         style={{
-          fontFamily: 'var(--font-heading)',
-          color: 'rgb(var(--foreground))',
+          padding: '0.75rem 1.5rem',
+          borderBottom: '1px solid rgb(var(--border))',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          flexShrink: 0,
+          backgroundColor: 'rgb(var(--background))',
         }}
       >
-        Browse Locations
-      </h1>
+        <h1
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1.1rem',
+            fontWeight: 'var(--weight-bold)',
+            color: 'rgb(var(--foreground))',
+            margin: 0,
+          }}
+        >
+          Browse Locations
+        </h1>
 
-      <div className="mb-6">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
@@ -126,7 +311,7 @@ export function BrowseLocations() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.5rem',
-            padding: '0.5rem 1rem',
+            padding: '0.4rem 0.9rem',
             border: `1px solid ${filtersButtonActive ? 'rgb(var(--accent))' : 'rgb(var(--border))'}`,
             borderRadius: 'var(--radius-pill)',
             background: hasActiveFilters
@@ -142,10 +327,7 @@ export function BrowseLocations() {
             cursor: 'pointer',
             fontSize: 'var(--text-sm)',
             fontWeight: hasActiveFilters ? 'var(--weight-semibold)' : 'var(--weight-regular)',
-            boxShadow: hasActiveFilters && filtersHovered
-              ? '0 0 10px rgb(var(--accent) / 0.45)'
-              : 'none',
-            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease',
+            transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
           }}
         >
           Filters
@@ -155,12 +337,12 @@ export function BrowseLocations() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '1.25rem',
-                height: '1.25rem',
+                width: '1.1rem',
+                height: '1.1rem',
                 borderRadius: '9999px',
                 backgroundColor: 'rgb(var(--primary))',
                 color: 'rgb(var(--primary-foreground))',
-                fontSize: '0.7rem',
+                fontSize: '0.65rem',
                 fontWeight: 'var(--weight-bold)',
               }}
             >
@@ -170,88 +352,83 @@ export function BrowseLocations() {
         </button>
       </div>
 
-      {isLoading && <SkeletonGrid />}
-
-      {!isLoading && error && (
-        <p style={{ color: 'rgb(var(--destructive))' }}>
-          Failed to load locations. Please try again.
-        </p>
-      )}
-
-      {isEmpty && hasActiveFilters && (
-        <div style={{ textAlign: 'center', padding: '3rem 0' }}>
-          <p
-            style={{
-              color: 'rgb(var(--muted-foreground))',
-              marginBottom: '1rem',
-            }}
-          >
-            No locations match your filters.
-          </p>
-          <button
-            type="button"
-            onClick={handleClearFilters}
-            style={{
-              padding: '0.4rem 1rem',
-              border: '1px solid rgb(var(--border))',
-              borderRadius: 'var(--radius-pill)',
-              background: 'transparent',
-              color: 'rgb(var(--foreground))',
-              cursor: 'pointer',
-              fontSize: 'var(--text-sm)',
-            }}
-          >
-            Clear filters
-          </button>
+      {isLoading && (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading locations…</p>
         </div>
       )}
 
-      {isEmpty && !hasActiveFilters && (
-        <p style={{ color: 'rgb(var(--muted-foreground))' }}>No locations found.</p>
+      {!isLoading && error && (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: 'rgb(var(--destructive))' }}>Failed to load locations. Please try again.</p>
+        </div>
+      )}
+
+      {isEmpty && (
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1rem',
+          }}
+        >
+          <p style={{ color: 'rgb(var(--muted-foreground))' }}>
+            {hasActiveFilters ? 'No locations match this filter.' : 'No locations found.'}
+          </p>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              style={{
+                padding: '0.4rem 1rem',
+                border: '1px solid rgb(var(--border))',
+                borderRadius: 'var(--radius-pill)',
+                background: 'transparent',
+                color: 'rgb(var(--foreground))',
+                cursor: 'pointer',
+                fontSize: 'var(--text-sm)',
+              }}
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
       )}
 
       {!isLoading && !error && locations && locations.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {locations.map((location) => (
-            <Link
-              key={location.id}
-              to={`/locations/${location.id}`}
-              className="block rounded-lg p-6 transition-opacity hover:opacity-80"
-              style={{
-                backgroundColor: 'rgb(var(--card))',
-                boxShadow: 'var(--shadow-card)',
-              }}
-            >
-              <h2
-                className="mb-2 text-lg font-semibold"
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  color: 'rgb(var(--foreground))',
-                }}
-              >
-                {location.name}
-              </h2>
+        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+          <div
+            style={{
+              width: '280px',
+              flexShrink: 0,
+              overflowY: 'auto',
+              borderRight: '1px solid rgb(var(--border))',
+              padding: '0.5rem',
+              backgroundColor: 'rgb(var(--background))',
+            }}
+          >
+            {locations.map((location) => (
+              <LocationThumbnail
+                key={location.id}
+                location={location}
+                isFocused={focusedLocation?.id === location.id}
+                onClick={() => setFocusedId(location.id)}
+              />
+            ))}
+          </div>
 
-              <span
-                className="mb-3 inline-block rounded px-2 py-0.5 text-xs font-medium"
-                style={{
-                  backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
-                  color: 'rgb(var(--primary-foreground, 255 255 255))',
-                }}
-              >
-                {location.difficulty}
-              </span>
-
-              {location.description && (
-                <p
-                  className="mt-2 line-clamp-3 text-sm"
-                  style={{ color: 'rgb(var(--muted-foreground))' }}
-                >
-                  {location.description}
-                </p>
-              )}
-            </Link>
-          ))}
+          <div
+            style={{
+              flex: 1,
+              overflow: 'hidden',
+              backgroundColor: 'rgb(var(--card))',
+            }}
+          >
+            {focusedLocation && <PreviewPanel location={focusedLocation} />}
+          </div>
         </div>
       )}
 
@@ -261,6 +438,6 @@ export function BrowseLocations() {
         applied={appliedFilters}
         onApply={handleApply}
       />
-    </main>
+    </div>
   )
 }
