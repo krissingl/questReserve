@@ -205,6 +205,7 @@ function PreviewPanel({ location }: PreviewPanelProps) {
         <button
           type="button"
           onClick={() => navigate(`/locations/${location.id}`)}
+          aria-label={`View and book ${location.name}`}
           style={{
             display: 'inline-block',
             padding: '0.6rem 1.5rem',
