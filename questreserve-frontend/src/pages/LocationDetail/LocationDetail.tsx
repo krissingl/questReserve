@@ -121,12 +121,59 @@ export function LocationDetail() {
       </Link>
 
       <div
-        className="mt-4 rounded-lg p-8"
+        className="mt-4 rounded-lg overflow-hidden"
         style={{
           backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
         }}
       >
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            paddingTop: '56.25%',
+            backgroundColor: 'rgb(var(--background))',
+            overflow: 'hidden',
+          }}
+        >
+          {location.image_url ? (
+            <img
+              src={location.image_url}
+              alt={location.name}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgb(var(--surface, var(--card)))',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '3rem',
+                  opacity: 0.3,
+                  color: 'rgb(var(--foreground))',
+                  userSelect: 'none',
+                }}
+              >
+                &#9956;
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="p-8">
         <h1
           className="mb-2 text-3xl font-bold"
           style={{
@@ -169,6 +216,7 @@ export function LocationDetail() {
           >
             {location.cancellation_policy}
           </p>
+        </div>
         </div>
       </div>
 
