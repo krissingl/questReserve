@@ -73,6 +73,7 @@ export async function createTestLocation(
     description: null,
     difficulty: 'EASY' as Difficulty,
     cancellation_policy: 'No refunds.',
+    image_url: null,
     ...overrides,
   };
   const [row] = await testKnex<BookingLocation>('booking_location').insert(data).returning('*');

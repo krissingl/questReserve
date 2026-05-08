@@ -62,6 +62,7 @@ export class ProviderService {
       description: data.description ?? null,
       difficulty: data.difficulty,
       cancellation_policy: data.cancellation_policy,
+      image_url: null,
     });
   }
 

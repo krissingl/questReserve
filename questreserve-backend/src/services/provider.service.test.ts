@@ -17,6 +17,7 @@ function makeLocation(overrides: Partial<BookingLocation> = {}): BookingLocation
     description: null,
     difficulty: 'EASY',
     cancellation_policy: 'No refunds.',
+    image_url: null,
     created_at: new Date(),
     updated_at: new Date(),
     ...overrides,

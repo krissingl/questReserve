@@ -47,6 +47,7 @@ export interface BookingLocation {
   description: string | null;
   difficulty: Difficulty;
   cancellation_policy: string;
+  image_url: string | null;
   created_at: Date;
   updated_at: Date;
 }
