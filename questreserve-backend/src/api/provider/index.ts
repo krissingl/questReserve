@@ -1,4 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import { Router, Request, Response, NextFunction } from 'express';
+import multer, { MulterError } from 'multer';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
@@ -12,6 +15,29 @@ import {
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
+
+const UPLOAD_DIR = path.join(process.cwd(), 'uploads', 'location-images');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ACCEPTED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+    }
+  },
+});
 
 const router = Router();
 
@@ -110,6 +136,38 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
   } catch (err) {
     handleProviderError(err, res, next);
   }
+});
+
+router.post('/locations/:id/image', (req: Request, res: Response, next: NextFunction) => {
+  upload.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr instanceof MulterError) {
+      res.status(400).json({ error: uploadErr.message });
+      return;
+    }
+    if (uploadErr) {
+      next(uploadErr);
+      return;
+    }
+    if (!req.file) {
+      res.status(400).json({ error: 'No image file provided' });
+      return;
+    }
+    const imageUrl = `/uploads/location-images/${req.file.filename}`;
+    try {
+      await providerService.setLocationImage(getUser(req).sub, req.params.id, imageUrl);
+      res.json({ image_url: imageUrl });
+    } catch (err) {
+      if (err instanceof UnauthenticatedError) {
+        res.status(401).json({ error: (err as Error).message });
+      } else if (err instanceof LocationNotFoundError) {
+        res.status(404).json({ error: 'Not found' });
+      } else if (err instanceof LocationOwnershipError) {
+        res.status(403).json({ error: 'Forbidden' });
+      } else {
+        next(err);
+      }
+    }
+  });
 });
 
 router.get('/bookings', async (req: Request, res: Response, next: NextFunction) => {

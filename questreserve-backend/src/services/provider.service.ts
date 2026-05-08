@@ -119,6 +119,17 @@ export class ProviderService {
     await this.slotRepo.delete(slotId);
   }
 
+  async setLocationImage(
+    providerId: string,
+    locationId: string,
+    url: string
+  ): Promise<BookingLocation> {
+    await this.assertLocationOwnership(providerId, locationId);
+    const updated = await this.locationRepo.updateImageUrl(locationId, url);
+    if (!updated) throw new LocationNotFoundError();
+    return updated;
+  }
+
   async getBookings(providerId: string): Promise<ProviderBookingView[]> {
     const rows = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
