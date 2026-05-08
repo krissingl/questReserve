@@ -220,6 +220,17 @@ export async function seed(knex: Knex): Promise<void> {
     ];
     await trx("end_user").insert(endUsers);
 
+    // Seed images: place the corresponding files in uploads/location-images/ before running the seed.
+    // All images sourced from Unsplash (free to use under the Unsplash License).
+    // Source URLs:
+    //   castle-ravenloft-great-hall.jpg   — https://unsplash.com/photos/gray-concrete-castle-under-blue-sky-S9UhCvM5jRQ
+    //   castle-ravenloft-crypts.jpg       — https://unsplash.com/photos/dark-stone-corridor-with-torches-m82uh_vamSg
+    //   barovia-midnight-market.jpg       — https://unsplash.com/photos/foggy-night-market-lanterns-RHh-VvSC1mk
+    //   undermountain-sargauth.jpg        — https://unsplash.com/photos/cave-passageway-with-green-light-Bkci_8qcdvQ
+    //   undermountain-xanathar.jpg        — https://unsplash.com/photos/cavern-stalactites-dark-5IHz5WhosQE
+    //   lonely-mountain-vault.jpg         — https://unsplash.com/photos/gold-coins-treasure-chest-yui5vfKHuzs
+    //   whispered-tomb-archive.jpg        — https://unsplash.com/photos/ancient-library-scrolls-dark-stone-walls-GnvurTqDNO4
+    //   obsidian-citadel-apprentice.jpg   — https://unsplash.com/photos/fantasy-stone-fortress-glowing-portal-sVFaFpw-Qo4
     const locations = [
       {
         id: "10c00001-0000-0000-0000-000000000000",
@@ -229,6 +240,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Navigate the fog-drenched halls of Castle Ravenloft. Solve the riddle of the dark lord's curse before the final bell tolls.",
         difficulty: "MEDIUM",
         cancellation_policy: "Full refund if cancelled 7 or more days in advance. No refund within 7 days.",
+        image_url: "/uploads/location-images/castle-ravenloft-great-hall.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -240,6 +252,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Descend into the ancestral crypts beneath the castle. Ancient traps and undead sentinels guard the count's most jealously kept secret.",
         difficulty: "LEGENDARY",
         cancellation_policy: "Full refund if cancelled 7 or more days in advance. No refund within 7 days.",
+        image_url: "/uploads/location-images/castle-ravenloft-crypts.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -251,6 +264,7 @@ export async function seed(knex: Knex): Promise<void> {
           "A moonlit market that appears only at midnight. Barter with spectral merchants and find the one item that breaks the village's curse.",
         difficulty: "EASY",
         cancellation_policy: "Full refund if cancelled 48 hours or more in advance. No refund within 48 hours.",
+        image_url: "/uploads/location-images/barovia-midnight-market.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -262,6 +276,7 @@ export async function seed(knex: Knex): Promise<void> {
           "The mad mage's mid-tier dungeon wing. Collapsing passages and Halaster's own illusion traps test your wits as much as your strength.",
         difficulty: "HARD",
         cancellation_policy: "No refunds within 24 hours of the raid. 50% refund if cancelled 1–3 days before.",
+        image_url: "/uploads/location-images/undermountain-sargauth.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -273,6 +288,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Tread carefully through the Xanathar's private surveillance network. One wrong step and the beholder's eye opens.",
         difficulty: "LEGENDARY",
         cancellation_policy: "No refunds within 24 hours of the raid. 50% refund if cancelled 1–3 days before.",
+        image_url: "/uploads/location-images/undermountain-xanathar.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -284,6 +300,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Walk the treasure-choked halls of Erebor and find the Arkenstone before the dragon stirs. Time your movements carefully — sound carries.",
         difficulty: "HARD",
         cancellation_policy: "No refunds. The dragon waits for no one.",
+        image_url: "/uploads/location-images/lonely-mountain-vault.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -295,6 +312,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Decipher the lich's ritual inscriptions before his awakening is complete. The archive holds the counterspell — if you can read it.",
         difficulty: "MEDIUM",
         cancellation_policy: "Full refund if cancelled 5 or more days in advance. No refund within 5 days.",
+        image_url: "/uploads/location-images/whispered-tomb-archive.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -306,6 +324,7 @@ export async function seed(knex: Knex): Promise<void> {
           "A structured introductory raid designed for first-timers. Mordenkainen himself reviews the challenge designs. Difficulty is real but survivable.",
         difficulty: "EASY",
         cancellation_policy: "Full refund if cancelled 24 hours or more in advance.",
+        image_url: "/uploads/location-images/obsidian-citadel-apprentice.jpg",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
