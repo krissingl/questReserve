@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import { jsonBody, requestLogger, errorHandler } from '../middleware';
@@ -16,6 +17,8 @@ app.use(cors({
 }));
 app.use(requestLogger);
 app.use(jsonBody);
+
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.get('/', (_req, res) => res.send('Ollo, Backend?'));
 app.use('/api', apiRouter);
