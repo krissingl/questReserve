@@ -3,8 +3,10 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
 import { useCreateBooking } from '@/hooks/useCreateBooking'
+import { useLocationImages } from '@/hooks/useLocationImages'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatSlotTime } from '@/utils/formatSlotTime'
+import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import type { TimeSlot } from '@/types/domain'
 
 function getResponseStatus(err: unknown): number | null {
@@ -28,6 +30,7 @@ export function LocationDetail() {
   const { token } = useAuth()
 
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
+  const { data: images } = useLocationImages(id ?? '')
   const { data: rawSlots, isLoading: slotsLoading, error: slotsError } = useAvailableSlots(id ?? '')
   const slots = rawSlots
     ? rawSlots.filter((s) => new Date(s.start_time) > new Date())
@@ -127,51 +130,11 @@ export function LocationDetail() {
           boxShadow: 'var(--shadow-card)',
         }}
       >
-        <div
-          style={{
-            position: 'relative',
-            width: '100%',
-            paddingTop: '56.25%',
-            backgroundColor: 'rgb(var(--background))',
-            overflow: 'hidden',
-          }}
-        >
-          {location.image_url ? (
-            <img
-              src={location.image_url}
-              alt={location.name}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgb(var(--surface, var(--card)))',
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '3rem',
-                  opacity: 0.3,
-                  color: 'rgb(var(--foreground))',
-                  userSelect: 'none',
-                }}
-              >
-                &#9956;
-              </span>
-            </div>
-          )}
-        </div>
+        {images && images.length > 0 && (
+          <div style={{ padding: '1rem 1rem 0' }}>
+            <LocationGallery images={images} locationName={location.name} />
+          </div>
+        )}
 
         <div className="p-8">
         <h1

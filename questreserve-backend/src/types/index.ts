@@ -52,6 +52,15 @@ export interface BookingLocation {
   updated_at: Date;
 }
 
+export interface LocationImage {
+  id: string;
+  booking_location_id: string;
+  image_url: string;
+  display_order: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export interface TimeSlot {
   id: string;
   booking_location_id: string;

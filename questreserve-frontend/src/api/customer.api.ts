@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { BookingLocation, Booking, TimeSlot, LocationFilters } from '@/types/domain'
+import type { BookingLocation, LocationImage, Booking, TimeSlot, LocationFilters } from '@/types/domain'
 
 export async function getBookingLocations(filters?: LocationFilters): Promise<BookingLocation[]> {
   const params: Record<string, string> = {}
@@ -17,6 +17,11 @@ export async function getBookingLocationById(id: string): Promise<BookingLocatio
 
 export async function createBooking(timeSlotId: string): Promise<void> {
   await apiClient.post('/customer/bookings', { time_slot_id: timeSlotId })
+}
+
+export async function getLocationImages(locationId: string): Promise<LocationImage[]> {
+  const response = await apiClient.get<LocationImage[]>(`/customer/locations/${locationId}/images`)
+  return response.data
 }
 
 export async function getAvailableSlots(locationId: string): Promise<TimeSlot[]> {

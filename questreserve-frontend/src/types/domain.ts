@@ -29,6 +29,15 @@ export interface BookingLocation {
   updated_at: string
 }
 
+export interface LocationImage {
+  id: string
+  booking_location_id: string
+  image_url: string
+  display_order: number
+  created_at: string
+  updated_at: string
+}
+
 export interface Booking {
   id: string
   time_slot_id: string

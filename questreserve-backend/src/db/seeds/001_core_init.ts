@@ -1,5 +1,15 @@
 import { Knex } from "knex";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
+import {
+  S3Client,
+  PutObjectCommand,
+  CreateBucketCommand,
+  PutBucketPolicyCommand,
+  HeadBucketCommand,
+} from "@aws-sdk/client-s3";
 
 const SALT_ROUNDS = 10;
 const SHARED_PASSWORD = "Password1!";
@@ -10,17 +20,121 @@ const FIXED_END_USER_ID = "33333333-3333-3333-3333-333333333333";
 
 /** Returns a fixed absolute date for seed stability. */
 function fixedDate(year: number, month: number, day: number, hour: number): Date {
-  // month is 1-based
-  const d = new Date(year, month - 1, day, hour, 0, 0, 0);
-  return d;
+  return new Date(year, month - 1, day, hour, 0, 0, 0);
 }
+
+// --- S3 / MinIO helpers ---
+
+const S3_BUCKET = process.env.S3_BUCKET ?? "location-images";
+const S3_ENDPOINT = process.env.S3_ENDPOINT ?? "http://localhost:9000";
+const S3_PUBLIC_URL = process.env.S3_PUBLIC_URL ?? "http://localhost:9000";
+
+const s3 = new S3Client({
+  endpoint: S3_ENDPOINT,
+  region: process.env.S3_REGION ?? "us-east-1",
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "minioadmin",
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "minioadmin",
+  },
+  forcePathStyle: true,
+});
+
+const MIME_MAP: Record<string, string> = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".webp": "image/webp",
+};
+
+async function ensureBucket(): Promise<void> {
+  try {
+    await s3.send(new HeadBucketCommand({ Bucket: S3_BUCKET }));
+  } catch {
+    await s3.send(new CreateBucketCommand({ Bucket: S3_BUCKET }));
+    await s3.send(
+      new PutBucketPolicyCommand({
+        Bucket: S3_BUCKET,
+        Policy: JSON.stringify({
+          Version: "2012-10-17",
+          Statement: [
+            {
+              Effect: "Allow",
+              Principal: "*",
+              Action: "s3:GetObject",
+              Resource: `arn:aws:s3:::${S3_BUCKET}/*`,
+            },
+          ],
+        }),
+      })
+    );
+  }
+}
+
+async function uploadImage(localPath: string, key: string): Promise<string> {
+  const buffer = fs.readFileSync(localPath);
+  const ext = path.extname(localPath).toLowerCase();
+  const contentType = MIME_MAP[ext] ?? "image/jpeg";
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    })
+  );
+  return `${S3_PUBLIC_URL}/${S3_BUCKET}/${key}`;
+}
+
+// Assets directory — relative to project root from backend cwd
+const ASSETS_DIR = path.resolve(process.cwd(), "..", "assets", "locationImagesDemo");
+
+function imagesInFolder(folder: string): string[] {
+  const dir = path.join(ASSETS_DIR, folder);
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
+    .map((f) => path.join(dir, f));
+}
+
+// Map location IDs to their asset folders
+const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
+  "10c00001-0000-0000-0000-000000000000": "ravenloft-greathall",
+  "10c00002-0000-0000-0000-000000000000": "ravenloft-crypts",
+  "10c00003-0000-0000-0000-000000000000": "barovia-midnight-market",
+  "10c00004-0000-0000-0000-000000000000": "undermountain-sargauth",
+  "10c00005-0000-0000-0000-000000000000": "undermountain-xanthar",
+  "10c00006-0000-0000-0000-000000000000": "lonelymtn",
+  "10c00007-0000-0000-0000-000000000000": "whisperedtomb",
+  "10c00008-0000-0000-0000-000000000000": "cursedDekuTree",
+};
 
 export async function seed(knex: Knex): Promise<void> {
   const hash = await bcrypt.hash(SHARED_PASSWORD, SALT_ROUNDS);
 
+  // Upload all demo images to MinIO and collect URL mappings
+  await ensureBucket();
+
+  // locationId -> ordered list of uploaded URLs
+  const locationImageUrls: Record<string, string[]> = {};
+
+  for (const [locationId, folder] of Object.entries(LOCATION_IMAGE_FOLDERS)) {
+    const files = imagesInFolder(folder);
+    const urls: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = path.extname(file);
+      const key = `${locationId}/${folder}-${i}${ext}`;
+      const url = await uploadImage(file, key);
+      urls.push(url);
+    }
+    locationImageUrls[locationId] = urls;
+  }
+
   await knex.transaction(async (trx) => {
     await trx("booking").del();
     await trx("time_slot").del();
+    await trx("location_images").del();
     await trx("booking_location").del();
     await trx("end_user").del();
     await trx("provider").del();
@@ -110,6 +224,7 @@ export async function seed(knex: Knex): Promise<void> {
         updated_at: trx.fn.now(),
       },
       {
+        // Previously hosted Obsidian Citadel — suspended now that location is removed
         id: "ffffffff-ffff-ffff-ffff-ffffffffffff",
         first_name: "Vlad",
         last_name: "Dracula Tepes",
@@ -117,7 +232,7 @@ export async function seed(knex: Knex): Promise<void> {
         password_hash: hash,
         organization_name: "Castlevania Experiences",
         plan: "PREMIUM",
-        status: "ACTIVE",
+        status: "SUSPENDED",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -129,7 +244,7 @@ export async function seed(knex: Knex): Promise<void> {
         password_hash: hash,
         organization_name: "Ganon's Forces",
         plan: "PREMIUM",
-        status: "SUSPENDED",
+        status: "ACTIVE",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -220,17 +335,8 @@ export async function seed(knex: Knex): Promise<void> {
     ];
     await trx("end_user").insert(endUsers);
 
-    // Seed images: place the corresponding files in uploads/location-images/ before running the seed.
-    // All images sourced from Unsplash (free to use under the Unsplash License).
-    // Source URLs:
-    //   castle-ravenloft-great-hall.jpg   — https://unsplash.com/photos/gray-concrete-castle-under-blue-sky-S9UhCvM5jRQ
-    //   castle-ravenloft-crypts.jpg       — https://unsplash.com/photos/dark-stone-corridor-with-torches-m82uh_vamSg
-    //   barovia-midnight-market.jpg       — https://unsplash.com/photos/foggy-night-market-lanterns-RHh-VvSC1mk
-    //   undermountain-sargauth.jpg        — https://unsplash.com/photos/cave-passageway-with-green-light-Bkci_8qcdvQ
-    //   undermountain-xanathar.jpg        — https://unsplash.com/photos/cavern-stalactites-dark-5IHz5WhosQE
-    //   lonely-mountain-vault.jpg         — https://unsplash.com/photos/gold-coins-treasure-chest-yui5vfKHuzs
-    //   whispered-tomb-archive.jpg        — https://unsplash.com/photos/ancient-library-scrolls-dark-stone-walls-GnvurTqDNO4
-    //   obsidian-citadel-apprentice.jpg   — https://unsplash.com/photos/fantasy-stone-fortress-glowing-portal-sVFaFpw-Qo4
+    const firstUrl = (id: string) => locationImageUrls[id]?.[0] ?? null;
+
     const locations = [
       {
         id: "10c00001-0000-0000-0000-000000000000",
@@ -240,7 +346,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Navigate the fog-drenched halls of Castle Ravenloft. Solve the riddle of the dark lord's curse before the final bell tolls.",
         difficulty: "MEDIUM",
         cancellation_policy: "Full refund if cancelled 7 or more days in advance. No refund within 7 days.",
-        image_url: "/uploads/location-images/castle-ravenloft-great-hall.jpg",
+        image_url: firstUrl("10c00001-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -252,7 +358,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Descend into the ancestral crypts beneath the castle. Ancient traps and undead sentinels guard the count's most jealously kept secret.",
         difficulty: "LEGENDARY",
         cancellation_policy: "Full refund if cancelled 7 or more days in advance. No refund within 7 days.",
-        image_url: "/uploads/location-images/castle-ravenloft-crypts.jpg",
+        image_url: firstUrl("10c00002-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -264,7 +370,7 @@ export async function seed(knex: Knex): Promise<void> {
           "A moonlit market that appears only at midnight. Barter with spectral merchants and find the one item that breaks the village's curse.",
         difficulty: "EASY",
         cancellation_policy: "Full refund if cancelled 48 hours or more in advance. No refund within 48 hours.",
-        image_url: "/uploads/location-images/barovia-midnight-market.jpg",
+        image_url: firstUrl("10c00003-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -276,7 +382,7 @@ export async function seed(knex: Knex): Promise<void> {
           "The mad mage's mid-tier dungeon wing. Collapsing passages and Halaster's own illusion traps test your wits as much as your strength.",
         difficulty: "HARD",
         cancellation_policy: "No refunds within 24 hours of the raid. 50% refund if cancelled 1–3 days before.",
-        image_url: "/uploads/location-images/undermountain-sargauth.jpg",
+        image_url: firstUrl("10c00004-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -288,7 +394,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Tread carefully through the Xanathar's private surveillance network. One wrong step and the beholder's eye opens.",
         difficulty: "LEGENDARY",
         cancellation_policy: "No refunds within 24 hours of the raid. 50% refund if cancelled 1–3 days before.",
-        image_url: "/uploads/location-images/undermountain-xanathar.jpg",
+        image_url: firstUrl("10c00005-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -300,7 +406,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Walk the treasure-choked halls of Erebor and find the Arkenstone before the dragon stirs. Time your movements carefully — sound carries.",
         difficulty: "HARD",
         cancellation_policy: "No refunds. The dragon waits for no one.",
-        image_url: "/uploads/location-images/lonely-mountain-vault.jpg",
+        image_url: firstUrl("10c00006-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -312,24 +418,49 @@ export async function seed(knex: Knex): Promise<void> {
           "Decipher the lich's ritual inscriptions before his awakening is complete. The archive holds the counterspell — if you can read it.",
         difficulty: "MEDIUM",
         cancellation_policy: "Full refund if cancelled 5 or more days in advance. No refund within 5 days.",
-        image_url: "/uploads/location-images/whispered-tomb-archive.jpg",
+        image_url: firstUrl("10c00007-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
       {
         id: "10c00008-0000-0000-0000-000000000000",
-        provider_id: "ffffffff-ffff-ffff-ffff-ffffffffffff",
-        name: "The Obsidian Citadel — Apprentice Wing",
+        provider_id: "00000000-ffff-0000-ffff-000000000000",
+        name: "The Cursed Deku Tree — Heart of the Forest",
         description:
-          "A structured introductory raid designed for first-timers. Mordenkainen himself reviews the challenge designs. Difficulty is real but survivable.",
+          "Venture into the ancient tree's cursed heartwood and break the parasite's hold before the forest spirit fades forever. Speed and silence are your only allies.",
         difficulty: "EASY",
         cancellation_policy: "Full refund if cancelled 24 hours or more in advance.",
-        image_url: "/uploads/location-images/obsidian-citadel-apprentice.jpg",
+        image_url: firstUrl("10c00008-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
     ];
     await trx("booking_location").insert(locations);
+
+    // Insert location_images rows for every uploaded image
+    const imageRows: {
+      id: string;
+      booking_location_id: string;
+      image_url: string;
+      display_order: number;
+      created_at: ReturnType<typeof trx.fn.now>;
+      updated_at: ReturnType<typeof trx.fn.now>;
+    }[] = [];
+    for (const [locationId, urls] of Object.entries(locationImageUrls)) {
+      urls.forEach((url, i) => {
+        imageRows.push({
+          id: uuidv4(),
+          booking_location_id: locationId,
+          image_url: url,
+          display_order: i,
+          created_at: trx.fn.now(),
+          updated_at: trx.fn.now(),
+        });
+      });
+    }
+    if (imageRows.length > 0) {
+      await trx("location_images").insert(imageRows);
+    }
 
     // Past slots (2026-01 to 2026-02) — kept for expired/past-excursion testing
     const pastSlots = [
@@ -384,7 +515,7 @@ export async function seed(knex: Knex): Promise<void> {
       { id: "510c0036-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 12, 16), end_time: fixedDate(2027, 9, 12, 18), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0037-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 6, 10), end_time: fixedDate(2027, 11, 6, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
 
-      // The Obsidian Citadel — Apprentice Wing (loc 8)
+      // The Cursed Deku Tree — Heart of the Forest (loc 8)
       { id: "510c0017-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 19, 10), end_time: fixedDate(2027, 4, 19, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0018-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 28, 14), end_time: fixedDate(2027, 6, 28, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0019-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 9,  11), end_time: fixedDate(2027, 8, 9,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },

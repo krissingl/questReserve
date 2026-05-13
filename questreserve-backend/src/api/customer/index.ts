@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
 import { BookingRepository } from '../../repositories/booking.repository';
 import {
@@ -21,6 +22,7 @@ const publicRouter = Router();
 const protectedRouter = Router();
 
 const locationRepo = new BookingLocationRepository(db);
+const locationImagesRepo = new LocationImagesRepository(db);
 const slotRepo = new TimeSlotRepository(db);
 const bookingRepo = new BookingRepository(db);
 const customerService = new CustomerService(locationRepo, slotRepo, bookingRepo);
@@ -71,6 +73,15 @@ publicRouter.get('/locations/:id', async (req: Request, res: Response, next: Nex
     res.json(location);
   } catch (err) {
     handleCustomerError(err, res, next);
+  }
+});
+
+publicRouter.get('/locations/:id/images', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const images = await locationImagesRepo.findByLocation(req.params.id);
+    res.json(images);
+  } catch (err) {
+    next(err);
   }
 });
 
