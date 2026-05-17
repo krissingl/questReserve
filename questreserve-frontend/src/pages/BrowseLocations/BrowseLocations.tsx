@@ -7,29 +7,22 @@ import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import type { BookingLocation, Difficulty, LocationFilters } from '@/types/domain'
 import { DIFFICULTY_OPTIONS } from '@/types/domain'
 
-const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
-  EASY: 'rgb(var(--success, 34 197 94))',
+const DIFFICULTY_COLOURS: Record<Difficulty, string> = {  EASY: 'rgb(var(--success, 34 197 94))',
   MEDIUM: 'rgb(var(--warning, 234 179 8))',
   HARD: 'rgb(var(--destructive))',
   LEGENDARY: 'rgb(var(--primary))',
 }
 
-const HEADER_HEIGHT = '64px'
-
 interface LocationListItemProps {
   location: BookingLocation
   isFocused: boolean
   onClick: () => void
-  onNavigate: () => void
 }
 
-function LocationListItem({ location, isFocused, onClick, onNavigate }: LocationListItemProps) {
+function LocationListItem({ location, isFocused, onClick }: LocationListItemProps) {
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.4rem',
         padding: '0.75rem',
         background: isFocused ? 'rgb(var(--accent) / 0.15)' : 'transparent',
         border: `1px solid ${isFocused ? 'rgb(var(--accent))' : 'transparent'}`,
@@ -116,34 +109,16 @@ function LocationListItem({ location, isFocused, onClick, onNavigate }: Location
         </div>
       </button>
 
-      {isFocused && (
-        <button
-          type="button"
-          onClick={onNavigate}
-          style={{
-            alignSelf: 'flex-end',
-            padding: '0.25rem 0.75rem',
-            borderRadius: 'var(--radius)',
-            backgroundColor: 'rgb(var(--accent))',
-            color: 'rgb(var(--accent-foreground))',
-            border: 'none',
-            fontSize: '0.7rem',
-            fontWeight: 'var(--weight-semibold)',
-            cursor: 'pointer',
-          }}
-        >
-          View &amp; Book →
-        </button>
-      )}
     </div>
   )
 }
 
 interface GalleryPanelProps {
   location: BookingLocation
+  onNavigate: () => void
 }
 
-function GalleryPanel({ location }: GalleryPanelProps) {
+function GalleryPanel({ location, onNavigate }: GalleryPanelProps) {
   const { data: images } = useLocationImages(location.id)
 
   return (
@@ -153,55 +128,79 @@ function GalleryPanel({ location }: GalleryPanelProps) {
           padding: '1rem 1.5rem 0.75rem',
           flexShrink: 0,
           borderBottom: '1px solid rgb(var(--border))',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '1rem',
         }}
       >
-        <h2
+        <div style={{ minWidth: 0 }}>
+          <h2
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.1rem',
+              fontWeight: 'var(--weight-bold)',
+              color: 'rgb(var(--foreground))',
+              marginBottom: '0.3rem',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {location.name}
+          </h2>
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '0.1rem 0.5rem',
+              borderRadius: 'var(--radius-pill)',
+              fontSize: '0.65rem',
+              fontWeight: 'var(--weight-medium)',
+              backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
+              color: 'rgb(var(--primary-foreground, 255 255 255))',
+            }}
+          >
+            {location.difficulty}
+          </span>
+          {location.description && (
+            <p
+              style={{
+                marginTop: '0.6rem',
+                fontSize: 'var(--text-sm)',
+                color: 'rgb(var(--muted-foreground))',
+                lineHeight: '1.6',
+              }}
+            >
+              {location.description}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={onNavigate}
           style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '1.1rem',
-            fontWeight: 'var(--weight-bold)',
-            color: 'rgb(var(--foreground))',
-            marginBottom: '0.3rem',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            flexShrink: 0,
+            padding: '0.5rem 1.25rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            border: 'none',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            cursor: 'pointer',
           }}
         >
-          {location.name}
-        </h2>
-        <span
-          style={{
-            display: 'inline-block',
-            padding: '0.1rem 0.5rem',
-            borderRadius: 'var(--radius-pill)',
-            fontSize: '0.65rem',
-            fontWeight: 'var(--weight-medium)',
-            backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
-            color: 'rgb(var(--primary-foreground, 255 255 255))',
-          }}
-        >
-          {location.difficulty}
-        </span>
+          View &amp; Book →
+        </button>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.5rem' }}>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '1rem 1.5rem' }}>
         <LocationGallery
           images={images ?? []}
           locationName={location.name}
+          variant="mosaic"
         />
-
-        {location.description && (
-          <p
-            style={{
-              marginTop: '1rem',
-              fontSize: 'var(--text-sm)',
-              color: 'rgb(var(--muted-foreground))',
-              lineHeight: '1.6',
-            }}
-          >
-            {location.description}
-          </p>
-        )}
       </div>
     </div>
   )
@@ -259,7 +258,7 @@ export function BrowseLocations() {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: `calc(100vh - ${HEADER_HEIGHT})`,
+        flex: 1,
         overflow: 'hidden',
       }}
     >
@@ -284,7 +283,7 @@ export function BrowseLocations() {
             margin: 0,
           }}
         >
-          Browse Locations
+          Browse Adventures
         </h1>
 
         <button
@@ -387,10 +386,10 @@ export function BrowseLocations() {
       {/* Main split panel */}
       {!isLoading && !error && locations && locations.length > 0 && (
         <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          {/* Left panel — 40% */}
+          {/* Left panel — 30% */}
           <div
             style={{
-              width: '40%',
+              width: '30%',
               flexShrink: 0,
               overflowY: 'auto',
               borderRight: '1px solid rgb(var(--border))',
@@ -404,12 +403,11 @@ export function BrowseLocations() {
                 location={location}
                 isFocused={focusedLocation?.id === location.id}
                 onClick={() => setFocusedId(location.id)}
-                onNavigate={() => navigate(`/locations/${location.id}`)}
               />
             ))}
           </div>
 
-          {/* Right panel — 60% gallery */}
+          {/* Right panel — 70% gallery */}
           <div
             style={{
               flex: 1,
@@ -417,7 +415,12 @@ export function BrowseLocations() {
               backgroundColor: 'rgb(var(--card))',
             }}
           >
-            {focusedLocation && <GalleryPanel location={focusedLocation} />}
+            {focusedLocation && (
+              <GalleryPanel
+                location={focusedLocation}
+                onNavigate={() => navigate(`/locations/${focusedLocation.id}`)}
+              />
+            )}
           </div>
         </div>
       )}

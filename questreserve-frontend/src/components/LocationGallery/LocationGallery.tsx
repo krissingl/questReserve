@@ -4,6 +4,7 @@ import type { LocationImage } from '@/types/domain'
 interface LocationGalleryProps {
   images: LocationImage[]
   locationName: string
+  variant?: 'grid' | 'mosaic'
 }
 
 interface LightboxProps {
@@ -151,7 +152,129 @@ function Lightbox({ images, startIndex, locationName, onClose }: LightboxProps) 
   )
 }
 
-export function LocationGallery({ images, locationName }: LocationGalleryProps) {
+function GalleryImg({
+  img,
+  index,
+  locationName,
+  onOpen,
+}: {
+  img: LocationImage
+  index: number
+  locationName: string
+  onOpen: (i: number) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(index)}
+      aria-label={`View image ${index + 1} for ${locationName}`}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        backgroundColor: 'rgb(var(--card))',
+        overflow: 'hidden',
+      }}
+    >
+      <img
+        src={img.image_url}
+        alt={`${locationName} — photo ${index + 1}`}
+        loading="lazy"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          display: 'block',
+          transition: 'opacity 0.15s ease',
+        }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.85' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1' }}
+      />
+    </button>
+  )
+}
+
+function MosaicGrid({
+  images,
+  locationName,
+  onOpen,
+}: {
+  images: LocationImage[]
+  locationName: string
+  onOpen: (i: number) => void
+}) {
+  const shown = images.slice(0, 5)
+  const [main, ...rest] = shown
+  const hasMore = images.length > shown.length
+  const remaining = images.length - shown.length
+
+  if (shown.length === 1) {
+    return (
+      <div style={{ position: 'relative', height: '100%', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+        <GalleryImg img={main} index={0} locationName={locationName} onOpen={onOpen} />
+      </div>
+    )
+  }
+
+  const rightCols = rest.length >= 3 ? 2 : 1
+  const rightRows = Math.ceil(rest.length / rightCols)
+
+  return (
+    <div style={{ display: 'flex', gap: '0.25rem', height: '100%', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+      <div style={{ flex: '0 0 60%', position: 'relative' }}>
+        <GalleryImg img={main} index={0} locationName={locationName} onOpen={onOpen} />
+      </div>
+      <div
+        style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: `repeat(${rightCols}, 1fr)`,
+          gridTemplateRows: `repeat(${rightRows}, 1fr)`,
+          gap: '0.25rem',
+        }}
+      >
+        {rest.map((img, i) => {
+          const isLastVisible = i === rest.length - 1 && hasMore
+          return (
+            <div key={img.id} style={{ position: 'relative' }}>
+              <GalleryImg img={img} index={i + 1} locationName={locationName} onOpen={onOpen} />
+              {isLastVisible && (
+                <button
+                  type="button"
+                  onClick={() => onOpen(i + 1)}
+                  aria-label={`See all ${images.length} photos`}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 1,
+                    backgroundColor: 'rgba(0,0,0,0.55)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--weight-semibold)',
+                    gap: '0.3rem',
+                  }}
+                >
+                  +{remaining} more
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+export function LocationGallery({ images, locationName, variant = 'grid' }: LocationGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   if (images.length === 0) {
@@ -175,48 +298,54 @@ export function LocationGallery({ images, locationName }: LocationGalleryProps) 
 
   return (
     <>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: '0.5rem',
-        }}
-      >
-        {images.map((img, i) => (
-          <button
-            key={img.id}
-            type="button"
-            onClick={() => setLightboxIndex(i)}
-            aria-label={`View image ${i + 1} of ${images.length} for ${locationName}`}
-            style={{
-              display: 'block',
-              position: 'relative',
-              paddingTop: '66.67%',
-              overflow: 'hidden',
-              borderRadius: 'var(--radius)',
-              border: 'none',
-              cursor: 'pointer',
-              backgroundColor: 'rgb(var(--card))',
-            }}
-          >
-            <img
-              src={img.image_url}
-              alt={`${locationName} — photo ${i + 1}`}
-              loading="lazy"
+      {variant === 'mosaic' ? (
+        <div style={{ height: '100%' }}>
+          <MosaicGrid images={images} locationName={locationName} onOpen={setLightboxIndex} />
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+            gap: '0.5rem',
+          }}
+        >
+          {images.map((img, i) => (
+            <button
+              key={img.id}
+              type="button"
+              onClick={() => setLightboxIndex(i)}
+              aria-label={`View image ${i + 1} of ${images.length} for ${locationName}`}
               style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'opacity 0.15s ease',
+                display: 'block',
+                position: 'relative',
+                paddingTop: '66.67%',
+                overflow: 'hidden',
+                borderRadius: 'var(--radius)',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: 'rgb(var(--card))',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.85' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1' }}
-            />
-          </button>
-        ))}
-      </div>
+            >
+              <img
+                src={img.image_url}
+                alt={`${locationName} — photo ${i + 1}`}
+                loading="lazy"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'opacity 0.15s ease',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.85' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1' }}
+              />
+            </button>
+          ))}
+        </div>
+      )}
 
       {lightboxIndex !== null && (
         <Lightbox

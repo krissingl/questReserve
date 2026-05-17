@@ -9,6 +9,104 @@ import { formatSlotTime } from '@/utils/formatSlotTime'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import type { TimeSlot } from '@/types/domain'
 
+interface SlotCardProps {
+  slot: TimeSlot
+  isPending: boolean
+  bookingLoading: boolean
+  onReserve: (slot: TimeSlot) => void
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCancel }: SlotCardProps) {
+  const [hovered, setHovered] = useState(false)
+  const [reserveHovered, setReserveHovered] = useState(false)
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="rounded-lg p-4"
+      style={{
+        backgroundColor: hovered ? 'rgb(var(--accent) / 0.06)' : 'rgb(var(--card))',
+        boxShadow: 'var(--shadow-card)',
+        border: `1px solid ${hovered ? 'rgb(var(--accent) / 0.35)' : 'transparent'}`,
+        transition: 'background-color 0.15s ease, border-color 0.15s ease',
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <div className="text-sm">
+          <span style={{ color: 'rgb(var(--foreground))' }}>
+            {formatSlotTime(slot.start_time)}
+          </span>
+          <span className="mx-2" style={{ color: 'rgb(var(--muted-foreground))' }}>
+            &ndash;
+          </span>
+          <span style={{ color: 'rgb(var(--foreground))' }}>
+            {formatSlotTime(slot.end_time)}
+          </span>
+        </div>
+
+        {!isPending && (
+          <button
+            type="button"
+            onClick={() => onReserve(slot)}
+            onMouseEnter={() => setReserveHovered(true)}
+            onMouseLeave={() => setReserveHovered(false)}
+            className="rounded px-4 py-1.5 text-sm font-medium"
+            style={{
+              backgroundColor: reserveHovered ? 'rgb(var(--accent))' : 'rgb(var(--primary))',
+              color: 'rgb(var(--primary-foreground, 255 255 255))',
+              transition: 'background-color 0.15s ease',
+            }}
+          >
+            Reserve
+          </button>
+        )}
+      </div>
+
+      {isPending && (
+        <div
+          className="mt-3 rounded p-3 text-sm"
+          style={{ backgroundColor: 'rgb(var(--primary) / 0.08)' }}
+        >
+          <p className="mb-2 font-medium" style={{ color: 'rgb(var(--foreground))' }}>
+            Confirm reservation for{' '}
+            <span style={{ color: 'rgb(var(--accent))' }}>
+              {formatSlotTime(slot.start_time)} &ndash; {formatSlotTime(slot.end_time)}
+            </span>
+            ?
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={bookingLoading}
+              className="rounded px-4 py-1.5 text-sm font-medium"
+              style={{
+                backgroundColor: 'rgb(var(--accent))',
+                color: 'rgb(var(--accent-foreground))',
+                opacity: bookingLoading ? 0.6 : 1,
+              }}
+            >
+              {bookingLoading ? 'Booking…' : 'Confirm'}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={bookingLoading}
+              className="rounded px-4 py-1.5 text-sm font-medium"
+              style={{ color: 'rgb(var(--muted-foreground))' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function getResponseStatus(err: unknown): number | null {
   if (
     err != null &&
@@ -102,7 +200,7 @@ export function LocationDetail() {
           className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
           style={{ color: 'rgb(var(--accent))' }}
         >
-          &larr; Back to Locations
+          &larr; Back to Adventures
         </Link>
         <p className="mt-4" style={{ color: 'rgb(var(--destructive))' }}>
           Location not found or an error occurred.
@@ -120,7 +218,7 @@ export function LocationDetail() {
         className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
         style={{ color: 'rgb(var(--accent))' }}
       >
-        &larr; Back to Locations
+        &larr; Back to Adventures
       </Link>
 
       <div
@@ -131,8 +229,8 @@ export function LocationDetail() {
         }}
       >
         {images && images.length > 0 && (
-          <div style={{ padding: '1rem 1rem 0' }}>
-            <LocationGallery images={images} locationName={location.name} />
+          <div style={{ padding: '1rem 1rem 0', height: '420px' }}>
+            <LocationGallery images={images} locationName={location.name} variant="mosaic" />
           </div>
         )}
 
@@ -229,90 +327,17 @@ export function LocationDetail() {
 
         {!slotsLoading && !slotsError && slots && slots.length > 0 && (
           <div className="flex flex-col gap-3">
-            {slots.map((slot) => {
-              const isPending = pendingSlot?.id === slot.id
-
-              return (
-                <div
-                  key={slot.id}
-                  className="rounded-lg p-4"
-                  style={{
-                    backgroundColor: 'rgb(var(--card))',
-                    boxShadow: 'var(--shadow-card)',
-                  }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <span style={{ color: 'rgb(var(--foreground))' }}>
-                        {formatSlotTime(slot.start_time)}
-                      </span>
-                      <span
-                        className="mx-2"
-                        style={{ color: 'rgb(var(--muted-foreground))' }}
-                      >
-                        &ndash;
-                      </span>
-                      <span style={{ color: 'rgb(var(--foreground))' }}>
-                        {formatSlotTime(slot.end_time)}
-                      </span>
-                    </div>
-
-                    {!isPending && (
-                      <button
-                        type="button"
-                        onClick={() => handleReserveClick(slot)}
-                        className="rounded px-4 py-1.5 text-sm font-medium"
-                        style={{
-                          backgroundColor: 'rgb(var(--primary))',
-                          color: 'rgb(var(--primary-foreground, 255 255 255))',
-                        }}
-                      >
-                        Reserve
-                      </button>
-                    )}
-                  </div>
-
-                  {isPending && (
-                    <div
-                      className="mt-3 rounded p-3 text-sm"
-                      style={{ backgroundColor: 'rgb(var(--primary) / 0.08)' }}
-                    >
-                      <p className="mb-2 font-medium" style={{ color: 'rgb(var(--foreground))' }}>
-                        Confirm reservation for{' '}
-                        <span style={{ color: 'rgb(var(--accent))' }}>
-                          {formatSlotTime(slot.start_time)} &ndash; {formatSlotTime(slot.end_time)}
-                        </span>
-                        ?
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={handleConfirm}
-                          disabled={bookingLoading}
-                          className="rounded px-4 py-1.5 text-sm font-medium"
-                          style={{
-                            backgroundColor: 'rgb(var(--accent))',
-                            color: 'rgb(var(--accent-foreground))',
-                            opacity: bookingLoading ? 0.6 : 1,
-                          }}
-                        >
-                          {bookingLoading ? 'Booking…' : 'Confirm'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleCancelConfirm}
-                          disabled={bookingLoading}
-                          className="rounded px-4 py-1.5 text-sm font-medium"
-                          style={{ color: 'rgb(var(--muted-foreground))' }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+            {slots.map((slot) => (
+              <SlotCard
+                key={slot.id}
+                slot={slot}
+                isPending={pendingSlot?.id === slot.id}
+                bookingLoading={bookingLoading}
+                onReserve={handleReserveClick}
+                onConfirm={handleConfirm}
+                onCancel={handleCancelConfirm}
+              />
+            ))}
           </div>
         )}
       </div>
