@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { Router, Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
@@ -15,12 +16,21 @@ import {
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
-import { S3_BUCKET, uploadBuffer, mimeFromExt } from '../../storage/s3';
 
 const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'location-images');
+const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
+
+fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname) || `.${file.mimetype.split('/')[1]}`;
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+    },
+  }),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (ACCEPTED_MIME_TYPES.has(file.mimetype)) {
@@ -140,8 +150,7 @@ router.post('/locations/:id/image', (req: Request, res: Response, next: NextFunc
     if (uploadErr) { next(uploadErr); return; }
     if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
     try {
-      const key = `${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(req.file.originalname)}`;
-      const imageUrl = await uploadBuffer(req.file.buffer, key, req.file.mimetype);
+      const imageUrl = `${PUBLIC_URL}/uploads/location-images/${req.file.filename}`;
       await providerService.setLocationImage(getUser(req).sub, req.params.id, imageUrl);
       res.json({ image_url: imageUrl });
     } catch (err) {
@@ -170,9 +179,7 @@ router.post('/locations/:id/images', (req: Request, res: Response, next: NextFun
       const providerId = getUser(req).sub;
       const location = await providerService.getLocation(providerId, req.params.id);
       if (!location) { res.status(404).json({ error: 'Not found' }); return; }
-      const ext = path.extname(req.file.originalname) || `.${req.file.mimetype.split('/')[1]}`;
-      const key = `${req.params.id}/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-      const imageUrl = await uploadBuffer(req.file.buffer, key, req.file.mimetype, S3_BUCKET);
+      const imageUrl = `${PUBLIC_URL}/uploads/location-images/${req.file.filename}`;
       const displayOrder = await locationImagesRepo.nextDisplayOrder(req.params.id);
       const image = await locationImagesRepo.create({
         booking_location_id: req.params.id,

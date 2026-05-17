@@ -3,13 +3,6 @@ import bcrypt from "bcryptjs";
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import {
-  S3Client,
-  PutObjectCommand,
-  CreateBucketCommand,
-  PutBucketPolicyCommand,
-  HeadBucketCommand,
-} from "@aws-sdk/client-s3";
 
 const SALT_ROUNDS = 10;
 const SHARED_PASSWORD = "Password1!";
@@ -23,70 +16,21 @@ function fixedDate(year: number, month: number, day: number, hour: number): Date
   return new Date(year, month - 1, day, hour, 0, 0, 0);
 }
 
-// --- S3 / MinIO helpers ---
+// --- Local static file helpers ---
 
-const S3_BUCKET = process.env.S3_BUCKET ?? "location-images";
-const S3_ENDPOINT = process.env.S3_ENDPOINT ?? "http://localhost:9000";
-const S3_PUBLIC_URL = process.env.S3_PUBLIC_URL ?? "http://localhost:9000";
+const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:3001";
+const UPLOADS_DIR = path.resolve(__dirname, "../../../uploads", "location-images");
 
-const s3 = new S3Client({
-  endpoint: S3_ENDPOINT,
-  region: process.env.S3_REGION ?? "us-east-1",
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID ?? "minioadmin",
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "minioadmin",
-  },
-  forcePathStyle: true,
-});
-
-const MIME_MAP: Record<string, string> = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".webp": "image/webp",
-};
-
-async function ensureBucket(): Promise<void> {
-  try {
-    await s3.send(new HeadBucketCommand({ Bucket: S3_BUCKET }));
-  } catch {
-    await s3.send(new CreateBucketCommand({ Bucket: S3_BUCKET }));
-    await s3.send(
-      new PutBucketPolicyCommand({
-        Bucket: S3_BUCKET,
-        Policy: JSON.stringify({
-          Version: "2012-10-17",
-          Statement: [
-            {
-              Effect: "Allow",
-              Principal: "*",
-              Action: "s3:GetObject",
-              Resource: `arn:aws:s3:::${S3_BUCKET}/*`,
-            },
-          ],
-        }),
-      })
-    );
-  }
+function copyImage(srcPath: string, locationId: string, index: number): string {
+  const ext = path.extname(srcPath);
+  const filename = `${locationId}-${index}${ext}`;
+  const destDir = path.join(UPLOADS_DIR, locationId);
+  fs.mkdirSync(destDir, { recursive: true });
+  fs.copyFileSync(srcPath, path.join(destDir, filename));
+  return `${BACKEND_PUBLIC_URL}/uploads/location-images/${locationId}/${filename}`;
 }
 
-async function uploadImage(localPath: string, key: string): Promise<string> {
-  const buffer = fs.readFileSync(localPath);
-  const ext = path.extname(localPath).toLowerCase();
-  const contentType = MIME_MAP[ext] ?? "image/jpeg";
-  await s3.send(
-    new PutObjectCommand({
-      Bucket: S3_BUCKET,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-    })
-  );
-  return `${S3_PUBLIC_URL}/${S3_BUCKET}/${key}`;
-}
-
-// Assets directory — relative to project root from backend cwd
-const ASSETS_DIR = path.resolve(process.cwd(), "..", "assets", "locationImagesDemo");
+const ASSETS_DIR = path.resolve(__dirname, "../../../../assets/locationImagesDemo");
 
 function imagesInFolder(folder: string): string[] {
   const dir = path.join(ASSETS_DIR, folder);
@@ -112,23 +56,11 @@ const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
 export async function seed(knex: Knex): Promise<void> {
   const hash = await bcrypt.hash(SHARED_PASSWORD, SALT_ROUNDS);
 
-  // Upload all demo images to MinIO and collect URL mappings
-  await ensureBucket();
-
-  // locationId -> ordered list of uploaded URLs
+  // Copy demo images to uploads/location-images/ and collect URL mappings
   const locationImageUrls: Record<string, string[]> = {};
-
   for (const [locationId, folder] of Object.entries(LOCATION_IMAGE_FOLDERS)) {
     const files = imagesInFolder(folder);
-    const urls: string[] = [];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const ext = path.extname(file);
-      const key = `${locationId}/${folder}-${i}${ext}`;
-      const url = await uploadImage(file, key);
-      urls.push(url);
-    }
-    locationImageUrls[locationId] = urls;
+    locationImageUrls[locationId] = files.map((file, i) => copyImage(file, locationId, i));
   }
 
   await knex.transaction(async (trx) => {
