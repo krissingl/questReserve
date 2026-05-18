@@ -5,6 +5,7 @@ import {
   SlotNotFoundError,
 } from './provider.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import {
   getTestKnex,
@@ -30,8 +31,9 @@ afterAll(async () => {
 
 function makeService() {
   const locationRepo = new BookingLocationRepository(testKnex);
+  const locationImagesRepo = new LocationImagesRepository(testKnex);
   const slotRepo = new TimeSlotRepository(testKnex);
-  return new ProviderService(locationRepo, slotRepo, testKnex);
+  return new ProviderService(locationRepo, locationImagesRepo, slotRepo, testKnex);
 }
 
 describe('ProviderService — integration', () => {

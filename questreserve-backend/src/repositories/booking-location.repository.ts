@@ -52,6 +52,14 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     return row ?? null;
   }
 
+  async updateImageUrl(locationId: string, url: string): Promise<BookingLocation | null> {
+    const [row] = await this.knex<BookingLocation>('booking_location')
+      .where({ id: locationId })
+      .update({ image_url: url, updated_at: new Date() })
+      .returning('*');
+    return row ?? null;
+  }
+
   async delete(id: string): Promise<void> {
     await this.knex<BookingLocation>('booking_location').where({ id }).delete();
   }

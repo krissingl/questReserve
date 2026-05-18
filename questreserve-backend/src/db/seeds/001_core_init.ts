@@ -1,5 +1,8 @@
 import { Knex } from "knex";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
 const SALT_ROUNDS = 10;
 const SHARED_PASSWORD = "Password1!";
@@ -10,17 +13,79 @@ const FIXED_END_USER_ID = "33333333-3333-3333-3333-333333333333";
 
 /** Returns a fixed absolute date for seed stability. */
 function fixedDate(year: number, month: number, day: number, hour: number): Date {
-  // month is 1-based
-  const d = new Date(year, month - 1, day, hour, 0, 0, 0);
-  return d;
+  return new Date(year, month - 1, day, hour, 0, 0, 0);
 }
+
+// --- Local static file helpers ---
+
+const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:3001";
+const UPLOADS_DIR = path.resolve(__dirname, "../../../uploads", "location-images");
+
+interface FileCopyJob {
+  src: string;
+  destDir: string;
+  destPath: string;
+  url: string;
+}
+
+function planImageCopy(srcPath: string, locationId: string, index: number): FileCopyJob {
+  const ext = path.extname(srcPath);
+  const filename = `${locationId}-${index}${ext}`;
+  const destDir = path.join(UPLOADS_DIR, locationId);
+  return {
+    src: srcPath,
+    destDir,
+    destPath: path.join(destDir, filename),
+    url: `${BACKEND_PUBLIC_URL}/uploads/location-images/${locationId}/${filename}`,
+  };
+}
+
+const ASSETS_DIR = path.resolve(__dirname, "../../../../assets/locationImagesDemo");
+
+function imagesInFolder(folder: string): string[] {
+  const dir = path.join(ASSETS_DIR, folder);
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
+    .map((f) => path.join(dir, f));
+}
+
+// Map location IDs to their asset folders
+const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
+  "10c00001-0000-0000-0000-000000000000": "ravenloft-greathall",
+  "10c00002-0000-0000-0000-000000000000": "ravenloft-crypts",
+  "10c00003-0000-0000-0000-000000000000": "barovia-midnight-market",
+  "10c00004-0000-0000-0000-000000000000": "undermountain-sargauth",
+  "10c00005-0000-0000-0000-000000000000": "undermountain-xanthar",
+  "10c00006-0000-0000-0000-000000000000": "lonelymtn",
+  "10c00007-0000-0000-0000-000000000000": "whisperedtomb",
+  "10c00008-0000-0000-0000-000000000000": "cursedDekuTree",
+  "10c00009-0000-0000-0000-000000000000": "StormveilCastle",
+  "10c00010-0000-0000-0000-000000000000": "Moria",
+  "10c00011-0000-0000-0000-000000000000": "TempleOfTime",
+  "10c00012-0000-0000-0000-000000000000": "DragonRoostCavern",
+};
 
 export async function seed(knex: Knex): Promise<void> {
   const hash = await bcrypt.hash(SHARED_PASSWORD, SALT_ROUNDS);
 
+  // Plan file copies (compute destinations and URLs without touching disk yet)
+  const copyJobs: FileCopyJob[] = [];
+  const locationImageUrls: Record<string, string[]> = {};
+  for (const [locationId, folder] of Object.entries(LOCATION_IMAGE_FOLDERS)) {
+    const files = imagesInFolder(folder);
+    locationImageUrls[locationId] = files.map((file, i) => {
+      const job = planImageCopy(file, locationId, i);
+      copyJobs.push(job);
+      return job.url;
+    });
+  }
+
   await knex.transaction(async (trx) => {
     await trx("booking").del();
     await trx("time_slot").del();
+    await trx("location_images").del();
     await trx("booking_location").del();
     await trx("end_user").del();
     await trx("provider").del();
@@ -110,6 +175,7 @@ export async function seed(knex: Knex): Promise<void> {
         updated_at: trx.fn.now(),
       },
       {
+        // Previously hosted Obsidian Citadel — suspended now that location is removed
         id: "ffffffff-ffff-ffff-ffff-ffffffffffff",
         first_name: "Vlad",
         last_name: "Dracula Tepes",
@@ -117,7 +183,7 @@ export async function seed(knex: Knex): Promise<void> {
         password_hash: hash,
         organization_name: "Castlevania Experiences",
         plan: "PREMIUM",
-        status: "ACTIVE",
+        status: "SUSPENDED",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -129,7 +195,31 @@ export async function seed(knex: Knex): Promise<void> {
         password_hash: hash,
         organization_name: "Ganon's Forces",
         plan: "PREMIUM",
-        status: "SUSPENDED",
+        status: "ACTIVE",
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "a1a1a1a1-0000-0000-0000-000000000000",
+        first_name: "Godrick",
+        last_name: "the Grafted",
+        email: "grafted@stormveil.net",
+        password_hash: hash,
+        organization_name: "Stormveil Castle",
+        plan: "STANDARD",
+        status: "ACTIVE",
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "b2b2b2b2-0000-0000-0000-000000000000",
+        first_name: "Durin's",
+        last_name: "Bane",
+        email: "durins.bane@khazad-dum.net",
+        password_hash: hash,
+        organization_name: "Khazad-dûm Expeditions",
+        plan: "PREMIUM",
+        status: "ACTIVE",
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -220,6 +310,8 @@ export async function seed(knex: Knex): Promise<void> {
     ];
     await trx("end_user").insert(endUsers);
 
+    const firstUrl = (id: string) => locationImageUrls[id]?.[0] ?? null;
+
     const locations = [
       {
         id: "10c00001-0000-0000-0000-000000000000",
@@ -229,6 +321,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Navigate the fog-drenched halls of Castle Ravenloft. Solve the riddle of the dark lord's curse before the final bell tolls.",
         difficulty: "MEDIUM",
         cancellation_policy: "Full refund if cancelled 7 or more days in advance. No refund within 7 days.",
+        image_url: firstUrl("10c00001-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -240,6 +333,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Descend into the ancestral crypts beneath the castle. Ancient traps and undead sentinels guard the count's most jealously kept secret.",
         difficulty: "LEGENDARY",
         cancellation_policy: "Full refund if cancelled 7 or more days in advance. No refund within 7 days.",
+        image_url: firstUrl("10c00002-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -251,6 +345,7 @@ export async function seed(knex: Knex): Promise<void> {
           "A moonlit market that appears only at midnight. Barter with spectral merchants and find the one item that breaks the village's curse.",
         difficulty: "EASY",
         cancellation_policy: "Full refund if cancelled 48 hours or more in advance. No refund within 48 hours.",
+        image_url: firstUrl("10c00003-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -262,6 +357,7 @@ export async function seed(knex: Knex): Promise<void> {
           "The mad mage's mid-tier dungeon wing. Collapsing passages and Halaster's own illusion traps test your wits as much as your strength.",
         difficulty: "HARD",
         cancellation_policy: "No refunds within 24 hours of the raid. 50% refund if cancelled 1–3 days before.",
+        image_url: firstUrl("10c00004-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -273,6 +369,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Tread carefully through the Xanathar's private surveillance network. One wrong step and the beholder's eye opens.",
         difficulty: "LEGENDARY",
         cancellation_policy: "No refunds within 24 hours of the raid. 50% refund if cancelled 1–3 days before.",
+        image_url: firstUrl("10c00005-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -284,6 +381,7 @@ export async function seed(knex: Knex): Promise<void> {
           "Walk the treasure-choked halls of Erebor and find the Arkenstone before the dragon stirs. Time your movements carefully — sound carries.",
         difficulty: "HARD",
         cancellation_policy: "No refunds. The dragon waits for no one.",
+        image_url: firstUrl("10c00006-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -295,22 +393,97 @@ export async function seed(knex: Knex): Promise<void> {
           "Decipher the lich's ritual inscriptions before his awakening is complete. The archive holds the counterspell — if you can read it.",
         difficulty: "MEDIUM",
         cancellation_policy: "Full refund if cancelled 5 or more days in advance. No refund within 5 days.",
+        image_url: firstUrl("10c00007-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
       {
         id: "10c00008-0000-0000-0000-000000000000",
-        provider_id: "ffffffff-ffff-ffff-ffff-ffffffffffff",
-        name: "The Obsidian Citadel — Apprentice Wing",
+        provider_id: "00000000-ffff-0000-ffff-000000000000",
+        name: "The Cursed Deku Tree — Heart of the Forest",
         description:
-          "A structured introductory raid designed for first-timers. Mordenkainen himself reviews the challenge designs. Difficulty is real but survivable.",
+          "Venture into the ancient tree's cursed heartwood and break the parasite's hold before the forest spirit fades forever. Speed and silence are your only allies.",
         difficulty: "EASY",
         cancellation_policy: "Full refund if cancelled 24 hours or more in advance.",
+        image_url: firstUrl("10c00008-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "10c00009-0000-0000-0000-000000000000",
+        provider_id: "a1a1a1a1-0000-0000-0000-000000000000",
+        name: "Stormveil Castle — Grafted Throne",
+        description:
+          "Breach the storm-drenched ramparts and fog-gated corridors of Godrick's stronghold. Navigate the battlements, the grafting chambers, and the All-Conquering's throne room. Few who enter leave unchanged.",
+        difficulty: "HARD",
+        cancellation_policy: "50% refund if cancelled 24 hours or more in advance. No refund within 24 hours of the raid.",
+        image_url: firstUrl("10c00009-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "10c00010-0000-0000-0000-000000000000",
+        provider_id: "b2b2b2b2-0000-0000-0000-000000000000",
+        name: "Moria — The Bridge of Khazad-dûm",
+        description:
+          "Descend through the ancient halls of Khazad-dûm and cross the bridge before Durin's Bane rises from the deep. The chasm below is bottomless, the bridge will not hold forever, and the Balrog has never been kept waiting.",
+        difficulty: "LEGENDARY",
+        cancellation_policy: "No refunds. Durin's Bane accepts no cancellations.",
+        image_url: firstUrl("10c00010-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "10c00011-0000-0000-0000-000000000000",
+        provider_id: "00000000-ffff-0000-ffff-000000000000",
+        name: "Temple of Time — Sacred Grove",
+        description:
+          "Navigate the ancient ruins of the Temple of Time, past stone guardians and crumbling passages, to confront Armogohma in the sanctum above. The temple has slept for centuries — your arrival will wake it.",
+        difficulty: "MEDIUM",
+        cancellation_policy: "Full refund if cancelled 5 or more days in advance. No refund within 5 days.",
+        image_url: firstUrl("10c00011-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "10c00012-0000-0000-0000-000000000000",
+        provider_id: "00000000-ffff-0000-ffff-000000000000",
+        name: "Dragon Roost Cavern",
+        description:
+          "Climb the volcanic interior of Dragon Roost Island, navigate the lava-choked chambers of the Rito tribe's ancestral home, and face Gohma at the cavern's heart. A classic quest for those new to the adventure.",
+        difficulty: "EASY",
+        cancellation_policy: "Full refund if cancelled 48 hours or more in advance. No refund within 48 hours.",
+        image_url: firstUrl("10c00012-0000-0000-0000-000000000000"),
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
     ];
     await trx("booking_location").insert(locations);
+
+    // Insert location_images rows for every uploaded image
+    const imageRows: {
+      id: string;
+      booking_location_id: string;
+      image_url: string;
+      display_order: number;
+      created_at: ReturnType<typeof trx.fn.now>;
+      updated_at: ReturnType<typeof trx.fn.now>;
+    }[] = [];
+    for (const [locationId, urls] of Object.entries(locationImageUrls)) {
+      urls.forEach((url, i) => {
+        imageRows.push({
+          id: uuidv4(),
+          booking_location_id: locationId,
+          image_url: url,
+          display_order: i,
+          created_at: trx.fn.now(),
+          updated_at: trx.fn.now(),
+        });
+      });
+    }
+    if (imageRows.length > 0) {
+      await trx("location_images").insert(imageRows);
+    }
 
     // Past slots (2026-01 to 2026-02) — kept for expired/past-excursion testing
     const pastSlots = [
@@ -365,12 +538,34 @@ export async function seed(knex: Knex): Promise<void> {
       { id: "510c0036-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 12, 16), end_time: fixedDate(2027, 9, 12, 18), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0037-0000-0000-0000-000000000000", booking_location_id: "10c00007-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 6, 10), end_time: fixedDate(2027, 11, 6, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
 
-      // The Obsidian Citadel — Apprentice Wing (loc 8)
+      // The Cursed Deku Tree — Heart of the Forest (loc 8)
       { id: "510c0017-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 19, 10), end_time: fixedDate(2027, 4, 19, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0018-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 28, 14), end_time: fixedDate(2027, 6, 28, 16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0019-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 9,  11), end_time: fixedDate(2027, 8, 9,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0038-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 16, 10), end_time: fixedDate(2027, 10, 16, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0039-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 7,  14), end_time: fixedDate(2027, 12, 7,  16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Stormveil Castle — Grafted Throne (loc 9)
+      { id: "510c0040-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 15, 14), end_time: fixedDate(2027, 5, 15, 17), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0041-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 22, 18), end_time: fixedDate(2027, 7, 22, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0042-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 18, 12), end_time: fixedDate(2027, 9, 18, 15), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0043-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 14, 16), end_time: fixedDate(2027, 11, 14, 19), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Moria — The Bridge of Khazad-dûm (loc 10)
+      { id: "510c0044-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 21, 20), end_time: fixedDate(2027, 6, 21, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0045-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 31, 20), end_time: fixedDate(2027, 10, 31, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0046-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 20, 21), end_time: fixedDate(2027, 12, 20, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Temple of Time — Sacred Grove (loc 11)
+      { id: "510c0047-0000-0000-0000-000000000000", booking_location_id: "10c00011-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 24, 10), end_time: fixedDate(2027, 4, 24, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0048-0000-0000-0000-000000000000", booking_location_id: "10c00011-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 11, 11), end_time: fixedDate(2027, 7, 11, 13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0049-0000-0000-0000-000000000000", booking_location_id: "10c00011-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 9,  10), end_time: fixedDate(2027, 10, 9,  12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Dragon Roost Cavern (loc 12)
+      { id: "510c0050-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 1,  10), end_time: fixedDate(2027, 5, 1,  12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0051-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 12, 13), end_time: fixedDate(2027, 6, 12, 15), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0052-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 28, 10), end_time: fixedDate(2027, 8, 28, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0053-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 6,  11), end_time: fixedDate(2027, 11, 6,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
     ];
 
     const slots = [...pastSlots, ...futureSlots];
@@ -388,4 +583,10 @@ export async function seed(knex: Knex): Promise<void> {
     ];
     await trx("booking").insert(bookings);
   });
+
+  // Execute file copies only after the transaction commits successfully
+  for (const { src, destDir, destPath } of copyJobs) {
+    fs.mkdirSync(destDir, { recursive: true });
+    fs.copyFileSync(src, destPath);
+  }
 }

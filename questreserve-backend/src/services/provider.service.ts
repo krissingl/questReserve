@@ -1,7 +1,8 @@
 import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, Difficulty, ProviderBookingView, TimeSlot } from '../types';
+import { BookingLocation, Difficulty, LocationImage, ProviderBookingView, TimeSlot } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -21,6 +22,13 @@ export class SlotNotFoundError extends Error {
   constructor() {
     super('Time slot not found');
     this.name = 'SlotNotFoundError';
+  }
+}
+
+export class ImageNotFoundError extends Error {
+  constructor() {
+    super('Location image not found');
+    this.name = 'ImageNotFoundError';
   }
 }
 
@@ -51,6 +59,7 @@ export interface UpdateSlotInput {
 export class ProviderService {
   constructor(
     private readonly locationRepo: BookingLocationRepository,
+    private readonly locationImagesRepo: LocationImagesRepository,
     private readonly slotRepo: TimeSlotRepository,
     private readonly knex: Knex
   ) {}
@@ -62,6 +71,7 @@ export class ProviderService {
       description: data.description ?? null,
       difficulty: data.difficulty,
       cancellation_policy: data.cancellation_policy,
+      image_url: null,
     });
   }
 
@@ -116,6 +126,46 @@ export class ProviderService {
   async deleteSlot(providerId: string, slotId: string): Promise<void> {
     await this.assertSlotOwnership(providerId, slotId);
     await this.slotRepo.delete(slotId);
+  }
+
+  async setLocationImage(
+    providerId: string,
+    locationId: string,
+    url: string
+  ): Promise<BookingLocation> {
+    await this.assertLocationOwnership(providerId, locationId);
+    const updated = await this.locationRepo.updateImageUrl(locationId, url);
+    if (!updated) throw new LocationNotFoundError();
+    return updated;
+  }
+
+  async addLocationImage(
+    providerId: string,
+    locationId: string,
+    imageUrl: string
+  ): Promise<LocationImage> {
+    await this.assertLocationOwnership(providerId, locationId);
+    const displayOrder = await this.locationImagesRepo.nextDisplayOrder(locationId);
+    return this.locationImagesRepo.create({
+      booking_location_id: locationId,
+      image_url: imageUrl,
+      display_order: displayOrder,
+    });
+  }
+
+  async getLocationImages(providerId: string, locationId: string): Promise<LocationImage[]> {
+    await this.assertLocationOwnership(providerId, locationId);
+    return this.locationImagesRepo.findByLocation(locationId);
+  }
+
+  async deleteLocationImage(
+    providerId: string,
+    locationId: string,
+    imageId: string
+  ): Promise<void> {
+    await this.assertLocationOwnership(providerId, locationId);
+    const deleted = await this.locationImagesRepo.deleteByLocationAndId(locationId, imageId);
+    if (!deleted) throw new ImageNotFoundError();
   }
 
   async getBookings(providerId: string): Promise<ProviderBookingView[]> {

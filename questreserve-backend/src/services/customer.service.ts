@@ -1,7 +1,8 @@
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
-import { Booking, BookingLocation, Difficulty, TimeSlot } from '../types';
+import { Booking, BookingLocation, Difficulty, LocationImage, TimeSlot } from '../types';
 
 export class SlotNotFoundError extends Error {
   constructor() {
@@ -38,9 +39,17 @@ export class BookingAlreadyCancelledError extends Error {
   }
 }
 
+export class LocationNotFoundError extends Error {
+  constructor() {
+    super('Booking location not found');
+    this.name = 'LocationNotFoundError';
+  }
+}
+
 export class CustomerService {
   constructor(
     private readonly locationRepo: BookingLocationRepository,
+    private readonly locationImagesRepo: LocationImagesRepository,
     private readonly slotRepo: TimeSlotRepository,
     private readonly bookingRepo: BookingRepository
   ) {}
@@ -51,6 +60,12 @@ export class CustomerService {
 
   async getLocation(locationId: string): Promise<BookingLocation | null> {
     return this.locationRepo.findById(locationId);
+  }
+
+  async getLocationImages(locationId: string): Promise<LocationImage[]> {
+    const location = await this.locationRepo.findById(locationId);
+    if (!location) throw new LocationNotFoundError();
+    return this.locationImagesRepo.findByLocation(locationId);
   }
 
   async getAvailableSlots(locationId: string, date?: string): Promise<TimeSlot[]> {

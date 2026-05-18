@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { HeaderNav } from '@/components/HeaderNav/HeaderNav'
+import { SiteFooter } from '@/components/SiteFooter/SiteFooter'
 
 export function CustomerLayout() {
   const { token, role, isLoading } = useAuth()
@@ -11,9 +12,12 @@ export function CustomerLayout() {
   if (role !== 'customer') return <Navigate to={`/${role}`} replace />
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'rgb(var(--surface))' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'rgb(var(--surface))' }}>
       <HeaderNav />
-      <Outlet />
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+        <Outlet />
+      </main>
+      <SiteFooter />
     </div>
   )
 }

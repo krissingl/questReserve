@@ -7,6 +7,7 @@ import {
   BookingAlreadyCancelledError,
 } from './customer.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
 import { Booking, BookingLocation, TimeSlot } from '../types';
@@ -19,6 +20,7 @@ function makeLocation(overrides: Partial<BookingLocation> = {}): BookingLocation
     description: null,
     difficulty: 'EASY',
     cancellation_policy: 'No refunds.',
+    image_url: null,
     created_at: new Date(),
     updated_at: new Date(),
     ...overrides,
@@ -61,6 +63,18 @@ function makeRepositories() {
     delete: jest.fn(),
   } as unknown as jest.Mocked<BookingLocationRepository>;
 
+  const locationImagesRepo = {
+    findById: jest.fn(),
+    findAll: jest.fn(),
+    findByLocation: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    deleteByLocation: jest.fn(),
+    deleteByLocationAndId: jest.fn(),
+    nextDisplayOrder: jest.fn(),
+  } as unknown as jest.Mocked<LocationImagesRepository>;
+
   const slotRepo = {
     findById: jest.fn(),
     findAll: jest.fn(),
@@ -81,7 +95,7 @@ function makeRepositories() {
     delete: jest.fn(),
   } as unknown as jest.Mocked<BookingRepository>;
 
-  return { locationRepo, slotRepo, bookingRepo };
+  return { locationRepo, locationImagesRepo, slotRepo, bookingRepo };
 }
 
 describe('CustomerService', () => {
@@ -95,7 +109,7 @@ describe('CustomerService', () => {
     locationRepo = repos.locationRepo;
     slotRepo = repos.slotRepo;
     bookingRepo = repos.bookingRepo;
-    service = new CustomerService(locationRepo, slotRepo, bookingRepo);
+    service = new CustomerService(locationRepo, repos.locationImagesRepo, slotRepo, bookingRepo);
   });
 
   describe('browseLocations', () => {

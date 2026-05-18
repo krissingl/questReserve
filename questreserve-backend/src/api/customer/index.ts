@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
 import { BookingRepository } from '../../repositories/booking.repository';
 import {
@@ -11,6 +12,7 @@ import {
   BookingNotFoundError,
   BookingOwnershipError,
   BookingAlreadyCancelledError,
+  LocationNotFoundError,
 } from '../../services/customer.service';
 import { Booking, Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
@@ -21,9 +23,10 @@ const publicRouter = Router();
 const protectedRouter = Router();
 
 const locationRepo = new BookingLocationRepository(db);
+const locationImagesRepo = new LocationImagesRepository(db);
 const slotRepo = new TimeSlotRepository(db);
 const bookingRepo = new BookingRepository(db);
-const customerService = new CustomerService(locationRepo, slotRepo, bookingRepo);
+const customerService = new CustomerService(locationRepo, locationImagesRepo, slotRepo, bookingRepo);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
@@ -35,7 +38,11 @@ function getUser(req: Request): NonNullable<Request['user']> {
 function handleCustomerError(err: unknown, res: Response, next: NextFunction): void {
   if (err instanceof UnauthenticatedError) {
     res.status(401).json({ error: err.message });
-  } else if (err instanceof SlotNotFoundError || err instanceof BookingNotFoundError) {
+  } else if (
+    err instanceof LocationNotFoundError ||
+    err instanceof SlotNotFoundError ||
+    err instanceof BookingNotFoundError
+  ) {
     res.status(404).json({ error: 'Not found' });
   } else if (err instanceof SlotUnavailableError) {
     res.status(409).json({ error: err.message });
@@ -69,6 +76,15 @@ publicRouter.get('/locations/:id', async (req: Request, res: Response, next: Nex
     const location = await customerService.getLocation(req.params.id);
     if (!location) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(location);
+  } catch (err) {
+    handleCustomerError(err, res, next);
+  }
+});
+
+publicRouter.get('/locations/:id/images', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const images = await customerService.getLocationImages(req.params.id);
+    res.json(images);
   } catch (err) {
     handleCustomerError(err, res, next);
   }
