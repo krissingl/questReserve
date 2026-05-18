@@ -18,7 +18,7 @@ app.use(cors({
 app.use(requestLogger);
 app.use(jsonBody);
 
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads/location-images', express.static(path.join(process.cwd(), 'uploads', 'location-images')));
 
 app.get('/', (_req, res) => res.send('Ollo, Backend?'));
 app.use('/api', apiRouter);

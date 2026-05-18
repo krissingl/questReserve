@@ -21,13 +21,23 @@ function fixedDate(year: number, month: number, day: number, hour: number): Date
 const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:3001";
 const UPLOADS_DIR = path.resolve(__dirname, "../../../uploads", "location-images");
 
-function copyImage(srcPath: string, locationId: string, index: number): string {
+interface FileCopyJob {
+  src: string;
+  destDir: string;
+  destPath: string;
+  url: string;
+}
+
+function planImageCopy(srcPath: string, locationId: string, index: number): FileCopyJob {
   const ext = path.extname(srcPath);
   const filename = `${locationId}-${index}${ext}`;
   const destDir = path.join(UPLOADS_DIR, locationId);
-  fs.mkdirSync(destDir, { recursive: true });
-  fs.copyFileSync(srcPath, path.join(destDir, filename));
-  return `${BACKEND_PUBLIC_URL}/uploads/location-images/${locationId}/${filename}`;
+  return {
+    src: srcPath,
+    destDir,
+    destPath: path.join(destDir, filename),
+    url: `${BACKEND_PUBLIC_URL}/uploads/location-images/${locationId}/${filename}`,
+  };
 }
 
 const ASSETS_DIR = path.resolve(__dirname, "../../../../assets/locationImagesDemo");
@@ -56,11 +66,16 @@ const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
 export async function seed(knex: Knex): Promise<void> {
   const hash = await bcrypt.hash(SHARED_PASSWORD, SALT_ROUNDS);
 
-  // Copy demo images to uploads/location-images/ and collect URL mappings
+  // Plan file copies (compute destinations and URLs without touching disk yet)
+  const copyJobs: FileCopyJob[] = [];
   const locationImageUrls: Record<string, string[]> = {};
   for (const [locationId, folder] of Object.entries(LOCATION_IMAGE_FOLDERS)) {
     const files = imagesInFolder(folder);
-    locationImageUrls[locationId] = files.map((file, i) => copyImage(file, locationId, i));
+    locationImageUrls[locationId] = files.map((file, i) => {
+      const job = planImageCopy(file, locationId, i);
+      copyJobs.push(job);
+      return job.url;
+    });
   }
 
   await knex.transaction(async (trx) => {
@@ -470,4 +485,10 @@ export async function seed(knex: Knex): Promise<void> {
     ];
     await trx("booking").insert(bookings);
   });
+
+  // Execute file copies only after the transaction commits successfully
+  for (const { src, destDir, destPath } of copyJobs) {
+    fs.mkdirSync(destDir, { recursive: true });
+    fs.copyFileSync(src, destPath);
+  }
 }

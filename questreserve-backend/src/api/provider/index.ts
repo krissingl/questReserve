@@ -12,6 +12,7 @@ import {
   LocationNotFoundError,
   LocationOwnershipError,
   SlotNotFoundError,
+  ImageNotFoundError,
 } from '../../services/provider.service';
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
@@ -21,13 +22,14 @@ const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'location-images');
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
 
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-
 const upload = multer({
   storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+    destination: (_req, _file, cb) => {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      cb(null, UPLOADS_DIR);
+    },
     filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname) || `.${file.mimetype.split('/')[1]}`;
+      const ext = `.${file.mimetype.split('/')[1]}`;
       cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
     },
   }),
@@ -46,7 +48,7 @@ const router = Router();
 const locationRepo = new BookingLocationRepository(db);
 const locationImagesRepo = new LocationImagesRepository(db);
 const slotRepo = new TimeSlotRepository(db);
-const providerService = new ProviderService(locationRepo, slotRepo, db);
+const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
@@ -60,8 +62,9 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
     res.status(401).json({ error: err.message });
   } else if (
     err instanceof LocationNotFoundError ||
+    err instanceof LocationOwnershipError ||
     err instanceof SlotNotFoundError ||
-    err instanceof LocationOwnershipError
+    err instanceof ImageNotFoundError
   ) {
     res.status(404).json({ error: 'Not found' });
   } else {
@@ -154,15 +157,8 @@ router.post('/locations/:id/image', (req: Request, res: Response, next: NextFunc
       await providerService.setLocationImage(getUser(req).sub, req.params.id, imageUrl);
       res.json({ image_url: imageUrl });
     } catch (err) {
-      if (err instanceof UnauthenticatedError) {
-        res.status(401).json({ error: (err as Error).message });
-      } else if (err instanceof LocationNotFoundError) {
-        res.status(404).json({ error: 'Not found' });
-      } else if (err instanceof LocationOwnershipError) {
-        res.status(403).json({ error: 'Forbidden' });
-      } else {
-        next(err);
-      }
+      fs.unlink(req.file.path, () => {});
+      handleProviderError(err, res, next);
     }
   });
 });
@@ -176,18 +172,11 @@ router.post('/locations/:id/images', (req: Request, res: Response, next: NextFun
     if (uploadErr) { next(uploadErr); return; }
     if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
     try {
-      const providerId = getUser(req).sub;
-      const location = await providerService.getLocation(providerId, req.params.id);
-      if (!location) { res.status(404).json({ error: 'Not found' }); return; }
       const imageUrl = `${PUBLIC_URL}/uploads/location-images/${req.file.filename}`;
-      const displayOrder = await locationImagesRepo.nextDisplayOrder(req.params.id);
-      const image = await locationImagesRepo.create({
-        booking_location_id: req.params.id,
-        image_url: imageUrl,
-        display_order: displayOrder,
-      });
+      const image = await providerService.addLocationImage(getUser(req).sub, req.params.id, imageUrl);
       res.status(201).json(image);
     } catch (err) {
+      fs.unlink(req.file.path, () => {});
       handleProviderError(err, res, next);
     }
   });
@@ -195,8 +184,7 @@ router.post('/locations/:id/images', (req: Request, res: Response, next: NextFun
 
 router.get('/locations/:id/images', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await providerService.getLocation(getUser(req).sub, req.params.id);
-    const images = await locationImagesRepo.findByLocation(req.params.id);
+    const images = await providerService.getLocationImages(getUser(req).sub, req.params.id);
     res.json(images);
   } catch (err) {
     handleProviderError(err, res, next);
@@ -205,8 +193,7 @@ router.get('/locations/:id/images', async (req: Request, res: Response, next: Ne
 
 router.delete('/locations/:locationId/images/:imageId', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await providerService.getLocation(getUser(req).sub, req.params.locationId);
-    await locationImagesRepo.delete(req.params.imageId);
+    await providerService.deleteLocationImage(getUser(req).sub, req.params.locationId, req.params.imageId);
     res.status(204).send();
   } catch (err) {
     handleProviderError(err, res, next);

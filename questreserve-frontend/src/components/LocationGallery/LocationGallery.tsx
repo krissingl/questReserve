@@ -4,7 +4,6 @@ import type { LocationImage } from '@/types/domain'
 interface LocationGalleryProps {
   images: LocationImage[]
   locationName: string
-  variant?: 'grid' | 'mosaic'
 }
 
 interface LightboxProps {
@@ -274,7 +273,7 @@ function MosaicGrid({
   )
 }
 
-export function LocationGallery({ images, locationName, variant = 'grid' }: LocationGalleryProps) {
+export function LocationGallery({ images, locationName }: LocationGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
 
   if (images.length === 0) {
@@ -298,54 +297,9 @@ export function LocationGallery({ images, locationName, variant = 'grid' }: Loca
 
   return (
     <>
-      {variant === 'mosaic' ? (
-        <div style={{ height: '100%' }}>
-          <MosaicGrid images={images} locationName={locationName} onOpen={setLightboxIndex} />
-        </div>
-      ) : (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-            gap: '0.5rem',
-          }}
-        >
-          {images.map((img, i) => (
-            <button
-              key={img.id}
-              type="button"
-              onClick={() => setLightboxIndex(i)}
-              aria-label={`View image ${i + 1} of ${images.length} for ${locationName}`}
-              style={{
-                display: 'block',
-                position: 'relative',
-                paddingTop: '66.67%',
-                overflow: 'hidden',
-                borderRadius: 'var(--radius)',
-                border: 'none',
-                cursor: 'pointer',
-                backgroundColor: 'rgb(var(--card))',
-              }}
-            >
-              <img
-                src={img.image_url}
-                alt={`${locationName} — photo ${i + 1}`}
-                loading="lazy"
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  transition: 'opacity 0.15s ease',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.85' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '1' }}
-              />
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{ height: '100%' }}>
+        <MosaicGrid images={images} locationName={locationName} onOpen={setLightboxIndex} />
+      </div>
 
       {lightboxIndex !== null && (
         <Lightbox

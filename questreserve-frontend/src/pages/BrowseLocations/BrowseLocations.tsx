@@ -119,7 +119,7 @@ interface GalleryPanelProps {
 }
 
 function GalleryPanel({ location, onNavigate }: GalleryPanelProps) {
-  const { data: images } = useLocationImages(location.id)
+  const { data: images, isLoading: imagesLoading, error: imagesError } = useLocationImages(location.id)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
@@ -196,11 +196,16 @@ function GalleryPanel({ location, onNavigate }: GalleryPanelProps) {
       </div>
 
       <div style={{ flex: 1, minHeight: 0, overflow: 'hidden', padding: '1rem 1.5rem' }}>
-        <LocationGallery
-          images={images ?? []}
-          locationName={location.name}
-          variant="mosaic"
-        />
+        {imagesLoading ? (
+          <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading images…</p>
+        ) : imagesError ? (
+          <p style={{ color: 'rgb(var(--destructive))' }}>Failed to load images.</p>
+        ) : (
+          <LocationGallery
+            images={images ?? []}
+            locationName={location.name}
+          />
+        )}
       </div>
     </div>
   )

@@ -47,6 +47,13 @@ export class LocationImagesRepository extends BaseRepository<LocationImage> {
     await this.knex<LocationImage>('location_images').where({ id }).delete();
   }
 
+  async deleteByLocationAndId(locationId: string, imageId: string): Promise<boolean> {
+    const count = await this.knex('location_images')
+      .where({ id: imageId, booking_location_id: locationId })
+      .delete();
+    return count > 0;
+  }
+
   async deleteByLocation(locationId: string): Promise<void> {
     await this.knex<LocationImage>('location_images')
       .where({ booking_location_id: locationId })

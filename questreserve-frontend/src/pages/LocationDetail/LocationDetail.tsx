@@ -230,7 +230,7 @@ export function LocationDetail() {
       >
         {images && images.length > 0 && (
           <div style={{ padding: '1rem 1rem 0', height: '420px' }}>
-            <LocationGallery images={images} locationName={location.name} variant="mosaic" />
+            <LocationGallery images={images} locationName={location.name} />
           </div>
         )}
 

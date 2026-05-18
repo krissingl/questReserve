@@ -1,5 +1,6 @@
 import { CustomerService, SlotNotFoundError, SlotUnavailableError, BookingNotFoundError, BookingOwnershipError, BookingAlreadyCancelledError } from './customer.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
 import {
@@ -27,9 +28,10 @@ afterAll(async () => {
 
 function makeService() {
   const locationRepo = new BookingLocationRepository(testKnex);
+  const locationImagesRepo = new LocationImagesRepository(testKnex);
   const slotRepo = new TimeSlotRepository(testKnex);
   const bookingRepo = new BookingRepository(testKnex);
-  return new CustomerService(locationRepo, slotRepo, bookingRepo);
+  return new CustomerService(locationRepo, locationImagesRepo, slotRepo, bookingRepo);
 }
 
 describe('CustomerService — integration', () => {

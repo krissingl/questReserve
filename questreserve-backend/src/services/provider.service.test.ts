@@ -5,6 +5,7 @@ import {
   SlotNotFoundError,
 } from './provider.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingLocation, TimeSlot } from '../types';
 import { Knex } from 'knex';
@@ -47,6 +48,15 @@ function makeRepositories() {
     delete: jest.fn(),
   } as unknown as jest.Mocked<BookingLocationRepository>;
 
+  const locationImagesRepo = {
+    findByLocation: jest.fn(),
+    create: jest.fn(),
+    delete: jest.fn(),
+    deleteByLocation: jest.fn(),
+    deleteByLocationAndId: jest.fn(),
+    nextDisplayOrder: jest.fn(),
+  } as unknown as jest.Mocked<LocationImagesRepository>;
+
   const slotRepo = {
     findById: jest.fn(),
     findAll: jest.fn(),
@@ -58,7 +68,7 @@ function makeRepositories() {
 
   const mockKnex = {} as Knex;
 
-  return { locationRepo, slotRepo, mockKnex };
+  return { locationRepo, locationImagesRepo, slotRepo, mockKnex };
 }
 
 describe('ProviderService', () => {
@@ -70,7 +80,7 @@ describe('ProviderService', () => {
     const repos = makeRepositories();
     locationRepo = repos.locationRepo;
     slotRepo = repos.slotRepo;
-    service = new ProviderService(locationRepo, slotRepo, repos.mockKnex);
+    service = new ProviderService(locationRepo, repos.locationImagesRepo, slotRepo, repos.mockKnex);
   });
 
   describe('createLocation', () => {
@@ -91,6 +101,7 @@ describe('ProviderService', () => {
         description: null,
         difficulty: 'EASY',
         cancellation_policy: 'No refunds.',
+        image_url: null,
       });
     });
   });
