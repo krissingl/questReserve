@@ -61,6 +61,8 @@ const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
   "10c00006-0000-0000-0000-000000000000": "lonelymtn",
   "10c00007-0000-0000-0000-000000000000": "whisperedtomb",
   "10c00008-0000-0000-0000-000000000000": "cursedDekuTree",
+  "10c00009-0000-0000-0000-000000000000": "stormveil",
+  "10c00010-0000-0000-0000-000000000000": "khazad-dum",
 };
 
 export async function seed(knex: Knex): Promise<void> {
@@ -190,6 +192,30 @@ export async function seed(knex: Knex): Promise<void> {
         email: "gohma@deku-tree.hyrule",
         password_hash: hash,
         organization_name: "Ganon's Forces",
+        plan: "PREMIUM",
+        status: "ACTIVE",
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "a1a1a1a1-0000-0000-0000-000000000000",
+        first_name: "Godrick",
+        last_name: "the Grafted",
+        email: "grafted@stormveil.net",
+        password_hash: hash,
+        organization_name: "Stormveil Castle",
+        plan: "STANDARD",
+        status: "ACTIVE",
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "b2b2b2b2-0000-0000-0000-000000000000",
+        first_name: "Durin's",
+        last_name: "Bane",
+        email: "durins.bane@khazad-dum.net",
+        password_hash: hash,
+        organization_name: "Khazad-dûm Expeditions",
         plan: "PREMIUM",
         status: "ACTIVE",
         created_at: trx.fn.now(),
@@ -381,6 +407,30 @@ export async function seed(knex: Knex): Promise<void> {
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
+      {
+        id: "10c00009-0000-0000-0000-000000000000",
+        provider_id: "a1a1a1a1-0000-0000-0000-000000000000",
+        name: "Stormveil Castle — Grafted Throne",
+        description:
+          "Breach the storm-drenched ramparts and fog-gated corridors of Godrick's stronghold. Navigate the battlements, the grafting chambers, and the All-Conquering's throne room. Few who enter leave unchanged.",
+        difficulty: "HARD",
+        cancellation_policy: "50% refund if cancelled 24 hours or more in advance. No refund within 24 hours of the raid.",
+        image_url: firstUrl("10c00009-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "10c00010-0000-0000-0000-000000000000",
+        provider_id: "b2b2b2b2-0000-0000-0000-000000000000",
+        name: "Moria — The Bridge of Khazad-dûm",
+        description:
+          "Descend through the ancient halls of Khazad-dûm and cross the bridge before Durin's Bane rises from the deep. The chasm below is bottomless, the bridge will not hold forever, and the Balrog has never been kept waiting.",
+        difficulty: "LEGENDARY",
+        cancellation_policy: "No refunds. Durin's Bane accepts no cancellations.",
+        image_url: firstUrl("10c00010-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
     ];
     await trx("booking_location").insert(locations);
 
@@ -468,6 +518,17 @@ export async function seed(knex: Knex): Promise<void> {
       { id: "510c0019-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 9,  11), end_time: fixedDate(2027, 8, 9,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0038-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 16, 10), end_time: fixedDate(2027, 10, 16, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0039-0000-0000-0000-000000000000", booking_location_id: "10c00008-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 7,  14), end_time: fixedDate(2027, 12, 7,  16), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Stormveil Castle — Grafted Throne (loc 9)
+      { id: "510c0040-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 15, 14), end_time: fixedDate(2027, 5, 15, 17), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0041-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 22, 18), end_time: fixedDate(2027, 7, 22, 21), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0042-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 9, 18, 12), end_time: fixedDate(2027, 9, 18, 15), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0043-0000-0000-0000-000000000000", booking_location_id: "10c00009-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 14, 16), end_time: fixedDate(2027, 11, 14, 19), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Moria — The Bridge of Khazad-dûm (loc 10)
+      { id: "510c0044-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 21, 20), end_time: fixedDate(2027, 6, 21, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0045-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 31, 20), end_time: fixedDate(2027, 10, 31, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0046-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 20, 21), end_time: fixedDate(2027, 12, 20, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
     ];
 
     const slots = [...pastSlots, ...futureSlots];
