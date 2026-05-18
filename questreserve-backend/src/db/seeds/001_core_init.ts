@@ -63,6 +63,8 @@ const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
   "10c00008-0000-0000-0000-000000000000": "cursedDekuTree",
   "10c00009-0000-0000-0000-000000000000": "stormveil",
   "10c00010-0000-0000-0000-000000000000": "khazad-dum",
+  "10c00011-0000-0000-0000-000000000000": "temple-of-time",
+  "10c00012-0000-0000-0000-000000000000": "dragon-roost-cavern",
 };
 
 export async function seed(knex: Knex): Promise<void> {
@@ -431,6 +433,30 @@ export async function seed(knex: Knex): Promise<void> {
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
+      {
+        id: "10c00011-0000-0000-0000-000000000000",
+        provider_id: "00000000-ffff-0000-ffff-000000000000",
+        name: "Temple of Time — Sacred Grove",
+        description:
+          "Navigate the ancient ruins of the Temple of Time, past stone guardians and crumbling passages, to confront Armogohma in the sanctum above. The temple has slept for centuries — your arrival will wake it.",
+        difficulty: "MEDIUM",
+        cancellation_policy: "Full refund if cancelled 5 or more days in advance. No refund within 5 days.",
+        image_url: firstUrl("10c00011-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
+      {
+        id: "10c00012-0000-0000-0000-000000000000",
+        provider_id: "00000000-ffff-0000-ffff-000000000000",
+        name: "Dragon Roost Cavern",
+        description:
+          "Climb the volcanic interior of Dragon Roost Island, navigate the lava-choked chambers of the Rito tribe's ancestral home, and face Gohma at the cavern's heart. A classic quest for those new to the adventure.",
+        difficulty: "EASY",
+        cancellation_policy: "Full refund if cancelled 48 hours or more in advance. No refund within 48 hours.",
+        image_url: firstUrl("10c00012-0000-0000-0000-000000000000"),
+        created_at: trx.fn.now(),
+        updated_at: trx.fn.now(),
+      },
     ];
     await trx("booking_location").insert(locations);
 
@@ -529,6 +555,17 @@ export async function seed(knex: Knex): Promise<void> {
       { id: "510c0044-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 21, 20), end_time: fixedDate(2027, 6, 21, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0045-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 31, 20), end_time: fixedDate(2027, 10, 31, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
       { id: "510c0046-0000-0000-0000-000000000000", booking_location_id: "10c00010-0000-0000-0000-000000000000", start_time: fixedDate(2027, 12, 20, 21), end_time: fixedDate(2027, 12, 20, 23), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Temple of Time — Sacred Grove (loc 11)
+      { id: "510c0047-0000-0000-0000-000000000000", booking_location_id: "10c00011-0000-0000-0000-000000000000", start_time: fixedDate(2027, 4, 24, 10), end_time: fixedDate(2027, 4, 24, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0048-0000-0000-0000-000000000000", booking_location_id: "10c00011-0000-0000-0000-000000000000", start_time: fixedDate(2027, 7, 11, 11), end_time: fixedDate(2027, 7, 11, 13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0049-0000-0000-0000-000000000000", booking_location_id: "10c00011-0000-0000-0000-000000000000", start_time: fixedDate(2027, 10, 9,  10), end_time: fixedDate(2027, 10, 9,  12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+
+      // Dragon Roost Cavern (loc 12)
+      { id: "510c0050-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 5, 1,  10), end_time: fixedDate(2027, 5, 1,  12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0051-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 6, 12, 13), end_time: fixedDate(2027, 6, 12, 15), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0052-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 8, 28, 10), end_time: fixedDate(2027, 8, 28, 12), created_at: trx.fn.now(), updated_at: trx.fn.now() },
+      { id: "510c0053-0000-0000-0000-000000000000", booking_location_id: "10c00012-0000-0000-0000-000000000000", start_time: fixedDate(2027, 11, 6,  11), end_time: fixedDate(2027, 11, 6,  13), created_at: trx.fn.now(), updated_at: trx.fn.now() },
     ];
 
     const slots = [...pastSlots, ...futureSlots];
