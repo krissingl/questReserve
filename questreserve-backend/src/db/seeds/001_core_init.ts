@@ -61,10 +61,10 @@ const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
   "10c00006-0000-0000-0000-000000000000": "lonelymtn",
   "10c00007-0000-0000-0000-000000000000": "whisperedtomb",
   "10c00008-0000-0000-0000-000000000000": "cursedDekuTree",
-  "10c00009-0000-0000-0000-000000000000": "stormveil",
-  "10c00010-0000-0000-0000-000000000000": "khazad-dum",
-  "10c00011-0000-0000-0000-000000000000": "temple-of-time",
-  "10c00012-0000-0000-0000-000000000000": "dragon-roost-cavern",
+  "10c00009-0000-0000-0000-000000000000": "StormveilCastle",
+  "10c00010-0000-0000-0000-000000000000": "Moria",
+  "10c00011-0000-0000-0000-000000000000": "TempleOfTime",
+  "10c00012-0000-0000-0000-000000000000": "DragonRoostCavern",
 };
 
 export async function seed(knex: Knex): Promise<void> {

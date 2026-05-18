@@ -104,6 +104,25 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--primary) / 0.6) rgb(var(--surface));
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgb(var(--surface));
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--primary) / 0.6);
+  border-radius: var(--radius-pill);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--primary));
 }
 
 body {

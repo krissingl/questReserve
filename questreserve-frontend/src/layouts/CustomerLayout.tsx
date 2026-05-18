@@ -12,9 +12,9 @@ export function CustomerLayout() {
   if (role !== 'customer') return <Navigate to={`/${role}`} replace />
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'rgb(var(--surface))' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'rgb(var(--surface))' }}>
       <HeaderNav />
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
         <Outlet />
       </main>
       <SiteFooter />
