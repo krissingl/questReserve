@@ -75,6 +75,15 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
 
 router.use(authenticate, requireRole('provider'));
 
+router.get('/dashboard/stats', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const stats = await providerService.getDashboardStats(getUser(req).sub);
+    res.json(stats);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const provider = await db<Provider>('provider').where({ id: getUser(req).sub }).first();

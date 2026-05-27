@@ -2,7 +2,7 @@ import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, Difficulty, LocationImage, ProviderBookingView, TimeSlot, TimeSlotWithBooking } from '../types';
+import { BookingLocation, BookingLocationWithSlotCount, Difficulty, LocationImage, ProviderBookingView, ProviderDashboardStats, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -75,8 +75,44 @@ export class ProviderService {
     });
   }
 
-  async getLocations(providerId: string): Promise<BookingLocation[]> {
-    return this.locationRepo.findAllByProvider(providerId);
+  async getLocations(providerId: string): Promise<BookingLocationWithSlotCount[]> {
+    const locations = await this.locationRepo.findAllByProvider(providerId);
+    if (locations.length === 0) return [];
+    const locationIds = locations.map((l) => l.id);
+    const slotCounts = await this.knex('time_slot')
+      .whereIn('booking_location_id', locationIds)
+      .select('booking_location_id')
+      .count('id as count')
+      .groupBy('booking_location_id') as { booking_location_id: string; count: string | number }[];
+    const countMap = new Map(slotCounts.map((r) => [r.booking_location_id, Number(r.count)]));
+    return locations.map((l) => ({ ...l, slot_count: countMap.get(l.id) ?? 0 }));
+  }
+
+  async getDashboardStats(providerId: string): Promise<ProviderDashboardStats> {
+    const now = new Date();
+    const [adventuresResult, openSlotsResult, upcomingResult] = await Promise.all([
+      this.knex('booking_location').where({ provider_id: providerId }).count('id as count').first() as Promise<{ count: string | number }>,
+      this.knex('time_slot')
+        .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+        .where({ 'booking_location.provider_id': providerId })
+        .whereNotIn('time_slot.id', (qb) => {
+          qb.select('time_slot_id').from('booking').where({ status: 'BOOKED' });
+        })
+        .count('time_slot.id as count')
+        .first() as Promise<{ count: string | number }>,
+      this.knex('booking')
+        .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
+        .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+        .where({ 'booking_location.provider_id': providerId, 'booking.status': 'BOOKED' })
+        .where('time_slot.start_time', '>', now)
+        .count('booking.id as count')
+        .first() as Promise<{ count: string | number }>,
+    ]);
+    return {
+      total_adventures: Number(adventuresResult?.count ?? 0),
+      open_slots: Number(openSlotsResult?.count ?? 0),
+      upcoming_bookings: Number(upcomingResult?.count ?? 0),
+    };
   }
 
   async getLocation(providerId: string, locationId: string): Promise<BookingLocation> {

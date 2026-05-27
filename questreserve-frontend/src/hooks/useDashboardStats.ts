@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react'
-import { getMyLocations } from '@/api/provider.api'
-import type { BookingLocationWithSlotCount } from '@/types/domain'
+import { getDashboardStats } from '@/api/provider.api'
+import type { ProviderDashboardStats } from '@/types/domain'
 
-interface UseMyLocationsResult {
-  data: BookingLocationWithSlotCount[]
+interface UseDashboardStatsResult {
+  data: ProviderDashboardStats | null
   isLoading: boolean
   error: string | null
 }
 
-export function useMyLocations(): UseMyLocationsResult {
-  const [data, setData] = useState<BookingLocationWithSlotCount[]>([])
+export function useDashboardStats(): UseDashboardStatsResult {
+  const [data, setData] = useState<ProviderDashboardStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +18,7 @@ export function useMyLocations(): UseMyLocationsResult {
     setIsLoading(true)
     setError(null)
 
-    getMyLocations()
+    getDashboardStats()
       .then((result) => {
         if (!cancelled) {
           setData(result)
@@ -27,7 +27,7 @@ export function useMyLocations(): UseMyLocationsResult {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to fetch locations')
+          setError(err instanceof Error ? err.message : 'Failed to fetch stats')
           setIsLoading(false)
         }
       })

@@ -34,6 +34,16 @@ export interface BookingLocation {
   updated_at: string
 }
 
+export interface BookingLocationWithSlotCount extends BookingLocation {
+  slot_count: number
+}
+
+export interface ProviderDashboardStats {
+  total_adventures: number
+  open_slots: number
+  upcoming_bookings: number
+}
+
 export interface LocationImage {
   id: string
   booking_location_id: string
