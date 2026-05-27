@@ -157,8 +157,8 @@ export function TimeSlotManager({ locationId }: TimeSlotManagerProps) {
   const [addError, setAddError] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
 
-  const openSlots = slots.filter((s) => !s.booking_id)
-  const bookedSlots = slots.filter((s) => s.booking_id !== null)
+  const openSlots = slots.filter((s) => s.booking_id == null)
+  const bookedSlots = slots.filter((s) => s.booking_id != null)
 
   async function handleAddSlot(e: React.FormEvent) {
     e.preventDefault()
@@ -201,59 +201,7 @@ export function TimeSlotManager({ locationId }: TimeSlotManagerProps) {
         Time Slots
       </h2>
 
-      {isLoading && (
-        <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
-          Loading slots…
-        </p>
-      )}
-
-      {!isLoading && fetchError && (
-        <p style={{ color: 'rgb(var(--destructive))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
-          {fetchError}
-        </p>
-      )}
-
-      {!isLoading && !fetchError && (
-        <div style={{ marginBottom: '1.5rem' }}>
-          <div style={{ marginBottom: '1.25rem' }}>
-            <div style={sectionHeadingStyle}>
-              Open Slots
-              <span style={countBadgeStyle}>{openSlots.length}</span>
-            </div>
-            {openSlots.length === 0 ? (
-              <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
-                No open slots.
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {openSlots.map((slot) => (
-                  <OpenSlotRow key={slot.id} slot={slot} onDeleted={refetch} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div>
-            <div style={sectionHeadingStyle}>
-              Booked Slots
-              <span style={countBadgeStyle}>{bookedSlots.length}</span>
-            </div>
-            {bookedSlots.length === 0 ? (
-              <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
-                No booked slots.
-              </p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {bookedSlots.map((slot) => (
-                  <BookedSlotRow key={slot.id} slot={slot} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleAddSlot}>
+      <form onSubmit={handleAddSlot} style={{ marginBottom: '1.5rem' }}>
         <h3
           style={{
             fontSize: 'var(--text-sm)',
@@ -343,6 +291,58 @@ export function TimeSlotManager({ locationId }: TimeSlotManagerProps) {
           </p>
         )}
       </form>
+
+      {isLoading && (
+        <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
+          Loading slots…
+        </p>
+      )}
+
+      {!isLoading && fetchError && (
+        <p style={{ color: 'rgb(var(--destructive))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
+          {fetchError}
+        </p>
+      )}
+
+      {!isLoading && !fetchError && (
+        <div>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div style={sectionHeadingStyle}>
+              Booked Slots
+              <span style={countBadgeStyle}>{bookedSlots.length}</span>
+            </div>
+            {bookedSlots.length === 0 ? (
+              <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+                No booked slots.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {bookedSlots.map((slot) => (
+                  <BookedSlotRow key={slot.id} slot={slot} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <div style={sectionHeadingStyle}>
+              Open Slots
+              <span style={countBadgeStyle}>{openSlots.length}</span>
+            </div>
+            {openSlots.length === 0 ? (
+              <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+                No open slots.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {openSlots.map((slot) => (
+                  <OpenSlotRow key={slot.id} slot={slot} onDeleted={refetch} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
