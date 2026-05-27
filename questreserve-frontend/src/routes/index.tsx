@@ -18,6 +18,11 @@ import { MyBookings } from '@/pages/MyBookings/MyBookings'
 import { CustomerSettings } from '@/pages/CustomerSettings/CustomerSettings'
 import { PaymentStub } from '@/pages/PaymentStub/PaymentStub'
 import { About } from '@/pages/About/About'
+import { ProviderDashboard } from '@/pages/ProviderDashboard/ProviderDashboard'
+import { ProviderLocationNew } from '@/pages/ProviderLocationNew/ProviderLocationNew'
+import { ProviderLocationDetail } from '@/pages/ProviderLocationDetail/ProviderLocationDetail'
+import { ProviderLocationEdit } from '@/pages/ProviderLocationEdit/ProviderLocationEdit'
+import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
 
 export const router = createBrowserRouter([
   {
@@ -116,7 +121,27 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ProviderHome />,
+        element: <Navigate to="/provider/dashboard" replace />,
+      },
+      {
+        path: 'dashboard',
+        element: <ProviderDashboard />,
+      },
+      {
+        path: 'locations/new',
+        element: <ProviderLocationNew />,
+      },
+      {
+        path: 'locations/:id',
+        element: <ProviderLocationDetail />,
+      },
+      {
+        path: 'locations/:id/edit',
+        element: <ProviderLocationEdit />,
+      },
+      {
+        path: 'bookings',
+        element: <ProviderBookings />,
       },
     ],
   },

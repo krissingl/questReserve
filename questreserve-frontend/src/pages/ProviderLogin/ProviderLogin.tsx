@@ -27,7 +27,7 @@ export function ProviderLogin() {
     setApiError(null)
     try {
       await login(values.email, values.password, 'provider')
-      navigate('/provider')
+      navigate('/provider/dashboard')
     } catch (err: unknown) {
       setApiError(extractLoginError(err))
     }
