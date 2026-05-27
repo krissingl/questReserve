@@ -99,15 +99,17 @@ function UpcomingBookingRow({ booking }: UpcomingBookingRowProps) {
           {formatDateTime(booking.start_time)}
         </div>
       </div>
-      <div
-        style={{
-          fontSize: '0.75rem',
-          color: 'rgb(var(--muted-foreground))',
-          flexShrink: 0,
-        }}
-      >
-        Customer: {booking.end_user_id.slice(0, 8)}…
-      </div>
+      {booking.end_user_name?.trim() && (
+        <div
+          style={{
+            fontSize: '0.75rem',
+            color: 'rgb(var(--muted-foreground))',
+            flexShrink: 0,
+          }}
+        >
+          {booking.end_user_name.trim()}
+        </div>
+      )}
     </div>
   )
 }

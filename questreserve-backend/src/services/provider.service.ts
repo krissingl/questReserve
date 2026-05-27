@@ -226,7 +226,7 @@ export class ProviderService {
         'booking.id',
         'booking.time_slot_id',
         'booking.end_user_id',
-        this.knex.raw("CONCAT(end_user.first_name, ' ', end_user.last_name) as end_user_name"),
+        this.knex.raw("NULLIF(TRIM(CONCAT(COALESCE(end_user.first_name, ''), ' ', COALESCE(end_user.last_name, ''))), '') as end_user_name"),
         'booking.status',
         'booking.created_at',
         'booking.updated_at',

@@ -34,7 +34,7 @@ interface BookingCardProps {
 
 function BookingCard({ booking }: BookingCardProps) {
   const colours = statusColours[booking.status] ?? statusColours.CANCELLED
-  const customerLabel = booking.end_user_name?.trim() || booking.end_user_id
+  const customerLabel = booking.end_user_name?.trim() || ''
 
   return (
     <div
