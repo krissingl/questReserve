@@ -22,6 +22,7 @@ import { ProviderDashboard } from '@/pages/ProviderDashboard/ProviderDashboard'
 import { ProviderLocationNew } from '@/pages/ProviderLocationNew/ProviderLocationNew'
 import { ProviderLocationDetail } from '@/pages/ProviderLocationDetail/ProviderLocationDetail'
 import { ProviderLocationEdit } from '@/pages/ProviderLocationEdit/ProviderLocationEdit'
+import { ProviderAdventures } from '@/pages/ProviderAdventures/ProviderAdventures'
 import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
 import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
 
@@ -127,6 +128,10 @@ export const router = createBrowserRouter([
       {
         path: 'dashboard',
         element: <ProviderDashboard />,
+      },
+      {
+        path: 'adventures',
+        element: <ProviderAdventures />,
       },
       {
         path: 'locations/new',

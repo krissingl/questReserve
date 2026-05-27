@@ -45,6 +45,9 @@ function ProviderNav() {
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flex: 1 }}>
         <NavLink to="/provider/dashboard" style={activeLinkStyle}>
+          Dashboard
+        </NavLink>
+        <NavLink to="/provider/adventures" style={activeLinkStyle}>
           My Adventures
         </NavLink>
         <NavLink to="/provider/bookings" style={activeLinkStyle}>

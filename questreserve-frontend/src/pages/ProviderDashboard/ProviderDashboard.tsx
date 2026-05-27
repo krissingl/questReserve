@@ -114,18 +114,19 @@ function UpcomingBookingRow({ booking }: UpcomingBookingRowProps) {
   )
 }
 
-interface AdventureCardProps {
+interface AdventurePreviewRowProps {
   location: BookingLocationWithSlotCount
 }
 
-function AdventureCard({ location }: AdventureCardProps) {
+function AdventurePreviewRow({ location }: AdventurePreviewRowProps) {
+  const slotCount = typeof location.slot_count === 'number' ? location.slot_count : null
+
   return (
     <div
       style={{
-        padding: '1rem 1.25rem',
+        padding: '0.75rem 1rem',
         borderRadius: 'var(--radius)',
-        backgroundColor: 'rgb(var(--card))',
-        boxShadow: 'var(--shadow-card)',
+        backgroundColor: 'rgb(var(--background))',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -136,10 +137,9 @@ function AdventureCard({ location }: AdventureCardProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', minWidth: 0 }}>
         <span
           style={{
-            fontFamily: 'var(--font-heading)',
             fontWeight: 'var(--weight-semibold)',
             color: 'rgb(var(--foreground))',
-            fontSize: 'var(--text-base)',
+            fontSize: 'var(--text-sm)',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -163,18 +163,20 @@ function AdventureCard({ location }: AdventureCardProps) {
         </span>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
-          {location.slot_count} slot{location.slot_count !== 1 ? 's' : ''}
-        </span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+        {slotCount !== null && (
+          <span style={{ fontSize: '0.75rem', color: 'rgb(var(--muted-foreground))' }}>
+            {slotCount} slot{slotCount !== 1 ? 's' : ''}
+          </span>
+        )}
         <Link
           to={`/provider/locations/${location.id}`}
           style={{
-            padding: '0.35rem 0.85rem',
+            padding: '0.25rem 0.65rem',
             borderRadius: 'var(--radius)',
             border: '1px solid rgb(var(--border))',
             color: 'rgb(var(--foreground))',
-            fontSize: 'var(--text-sm)',
+            fontSize: '0.75rem',
             fontWeight: 'var(--weight-medium)',
             textDecoration: 'none',
             backgroundColor: 'transparent',
@@ -185,11 +187,11 @@ function AdventureCard({ location }: AdventureCardProps) {
         <Link
           to={`/provider/locations/${location.id}/edit`}
           style={{
-            padding: '0.35rem 0.85rem',
+            padding: '0.25rem 0.65rem',
             borderRadius: 'var(--radius)',
             backgroundColor: 'rgb(var(--accent))',
             color: 'rgb(var(--accent-foreground))',
-            fontSize: 'var(--text-sm)',
+            fontSize: '0.75rem',
             fontWeight: 'var(--weight-semibold)',
             textDecoration: 'none',
           }}
@@ -210,8 +212,8 @@ const sectionHeadingStyle = {
 }
 
 export function ProviderDashboard() {
-  const { data: stats } = useDashboardStats()
-  const { data: locations, isLoading: locationsLoading, error: locationsError } = useMyLocations()
+  const { data: stats, isLoading: statsLoading } = useDashboardStats()
+  const { data: locations, isLoading: locationsLoading } = useMyLocations()
   const { data: bookings } = useMyProviderBookings()
 
   const now = new Date()
@@ -223,7 +225,6 @@ export function ProviderDashboard() {
   return (
     <div style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto', width: '90%' }}>
 
-      {/* Snapshot strip */}
       <div
         style={{
           display: 'flex',
@@ -232,12 +233,21 @@ export function ProviderDashboard() {
           marginBottom: '2rem',
         }}
       >
-        <StatCard label="Total Adventures" value={stats?.total_adventures ?? '—'} />
-        <StatCard label="Open Slots" value={stats?.open_slots ?? '—'} />
-        <StatCard label="Upcoming Bookings" value={stats?.upcoming_bookings ?? '—'} />
+        {statsLoading ? (
+          <>
+            <div style={{ ...statCardStyle, color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+              Loading…
+            </div>
+          </>
+        ) : (
+          <>
+            <StatCard label="Total Adventures" value={stats?.total_adventures ?? '—'} />
+            <StatCard label="Open Slots" value={stats?.open_slots ?? '—'} />
+            <StatCard label="Upcoming Bookings" value={stats?.upcoming_bookings ?? '—'} />
+          </>
+        )}
       </div>
 
-      {/* Bookings snapshot */}
       <div style={{ marginBottom: '2rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           <h2 style={sectionHeadingStyle}>Upcoming Bookings</h2>
@@ -276,7 +286,6 @@ export function ProviderDashboard() {
         </div>
       </div>
 
-      {/* Adventures section */}
       <div>
         <div
           style={{
@@ -288,18 +297,15 @@ export function ProviderDashboard() {
         >
           <h2 style={sectionHeadingStyle}>My Adventures</h2>
           <Link
-            to="/provider/locations/new"
+            to="/provider/adventures"
             style={{
-              padding: '0.5rem 1.25rem',
-              borderRadius: 'var(--radius)',
-              backgroundColor: 'rgb(var(--accent))',
-              color: 'rgb(var(--accent-foreground))',
               fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-semibold)',
+              color: 'rgb(var(--accent))',
               textDecoration: 'none',
+              fontWeight: 'var(--weight-medium)',
             }}
           >
-            + Add Adventure
+            View All Adventures →
           </Link>
         </div>
 
@@ -307,47 +313,32 @@ export function ProviderDashboard() {
           <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading adventures…</p>
         )}
 
-        {!locationsLoading && locationsError && (
-          <p style={{ color: 'rgb(var(--destructive))' }}>
-            Failed to load adventures. Please try again.
-          </p>
-        )}
-
-        {!locationsLoading && !locationsError && locations.length === 0 && (
+        {!locationsLoading && (
           <div
             style={{
-              padding: '3rem 2rem',
-              textAlign: 'center',
+              padding: '1rem 1.25rem',
               borderRadius: 'var(--radius)',
               backgroundColor: 'rgb(var(--card))',
-              color: 'rgb(var(--muted-foreground))',
+              boxShadow: 'var(--shadow-card)',
             }}
           >
-            <p>You haven&apos;t added any adventures yet.</p>
-            <Link
-              to="/provider/locations/new"
-              style={{
-                display: 'inline-block',
-                marginTop: '1rem',
-                padding: '0.5rem 1.25rem',
-                borderRadius: 'var(--radius)',
-                backgroundColor: 'rgb(var(--accent))',
-                color: 'rgb(var(--accent-foreground))',
-                fontSize: 'var(--text-sm)',
-                fontWeight: 'var(--weight-semibold)',
-                textDecoration: 'none',
-              }}
-            >
-              Add Your First Adventure
-            </Link>
-          </div>
-        )}
-
-        {!locationsLoading && !locationsError && locations.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {locations.map((location) => (
-              <AdventureCard key={location.id} location={location} />
-            ))}
+            {locations.length === 0 ? (
+              <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+                No adventures yet.{' '}
+                <Link
+                  to="/provider/adventures"
+                  style={{ color: 'rgb(var(--accent))', textDecoration: 'none', fontWeight: 'var(--weight-medium)' }}
+                >
+                  Get started →
+                </Link>
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {locations.map((location) => (
+                  <AdventurePreviewRow key={location.id} location={location} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
