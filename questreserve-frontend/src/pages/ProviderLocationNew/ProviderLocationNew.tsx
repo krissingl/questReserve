@@ -47,7 +47,7 @@ export function ProviderLocationNew() {
           marginBottom: '1.5rem',
         }}
       >
-        Add New Location
+        Add New Adventure
       </h1>
 
       <div
@@ -60,7 +60,7 @@ export function ProviderLocationNew() {
       >
         <LocationForm
           onSubmit={handleSubmit}
-          submitLabel="Create Location"
+          submitLabel="Create Adventure"
           apiError={apiError}
         />
       </div>

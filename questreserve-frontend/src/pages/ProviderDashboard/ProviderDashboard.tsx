@@ -98,7 +98,7 @@ export function ProviderDashboard() {
             margin: 0,
           }}
         >
-          My Dungeon Locations
+          My Adventures
         </h1>
         <Link
           to="/provider/locations/new"
@@ -112,17 +112,17 @@ export function ProviderDashboard() {
             textDecoration: 'none',
           }}
         >
-          + Add Location
+          + Add Adventure
         </Link>
       </div>
 
       {isLoading && (
-        <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading locations…</p>
+        <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading adventures…</p>
       )}
 
       {!isLoading && error && (
         <p style={{ color: 'rgb(var(--destructive))' }}>
-          Failed to load locations. Please try again.
+          Failed to load adventures. Please try again.
         </p>
       )}
 
@@ -136,7 +136,7 @@ export function ProviderDashboard() {
             color: 'rgb(var(--muted-foreground))',
           }}
         >
-          <p>You haven&apos;t added any dungeon locations yet.</p>
+          <p>You haven&apos;t added any adventures yet.</p>
           <Link
             to="/provider/locations/new"
             style={{
@@ -151,7 +151,7 @@ export function ProviderDashboard() {
               textDecoration: 'none',
             }}
           >
-            Add Your First Location
+            Add Your First Adventure
           </Link>
         </div>
       )}

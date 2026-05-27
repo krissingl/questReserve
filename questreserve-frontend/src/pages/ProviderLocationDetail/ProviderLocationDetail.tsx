@@ -38,7 +38,7 @@ export function ProviderLocationDetail() {
   if (isLoading) {
     return (
       <div style={{ padding: '2rem' }}>
-        <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading location…</p>
+        <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading adventure…</p>
       </div>
     )
   }
@@ -47,7 +47,7 @@ export function ProviderLocationDetail() {
     return (
       <div style={{ padding: '2rem' }}>
         <p style={{ color: 'rgb(var(--destructive))' }}>
-          Failed to load location.
+          Failed to load adventure.
         </p>
         <Link
           to="/provider/dashboard"
@@ -138,7 +138,7 @@ export function ProviderLocationDetail() {
               backgroundColor: 'transparent',
             }}
           >
-            Edit Location
+            Edit Adventure
           </Link>
         </div>
 

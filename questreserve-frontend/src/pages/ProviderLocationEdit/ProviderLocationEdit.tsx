@@ -30,7 +30,7 @@ export function ProviderLocationEdit() {
   if (isLoading) {
     return (
       <div style={{ padding: '2rem' }}>
-        <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading location…</p>
+        <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading adventure…</p>
       </div>
     )
   }
@@ -39,7 +39,7 @@ export function ProviderLocationEdit() {
     return (
       <div style={{ padding: '2rem' }}>
         <p style={{ color: 'rgb(var(--destructive))' }}>
-          Failed to load location. Please go back and try again.
+          Failed to load adventure. Please go back and try again.
         </p>
         <Link
           to="/provider/dashboard"
@@ -68,7 +68,7 @@ export function ProviderLocationEdit() {
             textDecoration: 'none',
           }}
         >
-          ← Back to Location
+          ← Back to Adventure
         </Link>
       </div>
 
@@ -81,7 +81,7 @@ export function ProviderLocationEdit() {
           marginBottom: '1.5rem',
         }}
       >
-        Edit Location
+        Edit Adventure
       </h1>
 
       <div
