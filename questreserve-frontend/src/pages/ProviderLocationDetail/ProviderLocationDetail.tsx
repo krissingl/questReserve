@@ -66,7 +66,7 @@ export function ProviderLocationDetail() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', width: '85%' }}>
       <div style={{ marginBottom: '1rem' }}>
         <Link
           to="/provider/dashboard"

@@ -58,7 +58,7 @@ export function ProviderLocationEdit() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', maxWidth: '900px', minWidth: 'min(700px, 100%)', margin: '0 auto', width: '85%' }}>
       <div style={{ marginBottom: '1.5rem' }}>
         <Link
           to={`/provider/locations/${id}`}
