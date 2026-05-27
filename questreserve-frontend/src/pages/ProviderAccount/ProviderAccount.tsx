@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useMyProfile } from '@/hooks/useMyProfile'
+import { useOutletContext } from 'react-router-dom'
 import { updateMyProfile } from '@/api/provider.api'
+import type { ProviderLayoutContext } from '@/layouts/ProviderLayout'
 
 const inputStyle = {
   width: '100%',
@@ -202,9 +203,9 @@ const sectionStyle = {
 }
 
 export function ProviderAccount() {
-  const { data: profile, isLoading, error, refetch } = useMyProfile()
+  const { profile, profileLoading, profileError, refetchProfile } = useOutletContext<ProviderLayoutContext>()
 
-  if (isLoading) {
+  if (profileLoading) {
     return (
       <div style={{ padding: '2rem' }}>
         <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading account…</p>
@@ -212,10 +213,27 @@ export function ProviderAccount() {
     )
   }
 
-  if (error || !profile) {
+  if (profileError || !profile) {
     return (
       <div style={{ padding: '2rem' }}>
         <p style={{ color: 'rgb(var(--destructive))' }}>Failed to load account details. Please try again.</p>
+        <button
+          type="button"
+          onClick={refetchProfile}
+          style={{
+            marginTop: '1rem',
+            padding: '0.5rem 1.25rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
       </div>
     )
   }
@@ -281,7 +299,7 @@ export function ProviderAccount() {
       </div>
 
       <div style={sectionStyle}>
-        <UpdateEmailForm currentEmail={profile.email} onSuccess={refetch} />
+        <UpdateEmailForm currentEmail={profile.email} onSuccess={refetchProfile} />
       </div>
 
       <div style={sectionStyle}>

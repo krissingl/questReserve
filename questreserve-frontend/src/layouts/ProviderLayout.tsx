@@ -2,10 +2,14 @@ import { NavLink, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { SiteFooter } from '@/components/SiteFooter/SiteFooter'
+import type { ProviderProfile } from '@/types/domain'
 
-function ProviderNav() {
+interface ProviderNavProps {
+  profile: ProviderProfile | null
+}
+
+function ProviderNav({ profile }: ProviderNavProps) {
   const { logout } = useAuth()
-  const { data: profile } = useMyProfile()
 
   const activeLinkStyle = ({ isActive }: { isActive: boolean }) => ({
     color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
@@ -95,19 +99,29 @@ function ProviderNav() {
   )
 }
 
+export interface ProviderLayoutContext {
+  profile: ProviderProfile | null
+  profileLoading: boolean
+  profileError: string | null
+  refetchProfile: () => void
+}
+
 export function ProviderLayout() {
   const { token, role, isLoading } = useAuth()
+  const { data: profile, isLoading: profileLoading, error: profileError, refetch: refetchProfile } = useMyProfile()
 
   if (isLoading) return null
 
   if (!token || role === null) return <Navigate to="/provider/login" replace />
   if (role !== 'provider') return <Navigate to={`/${role}`} replace />
 
+  const outletContext: ProviderLayoutContext = { profile, profileLoading, profileError, refetchProfile }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'rgb(var(--surface))' }}>
-      <ProviderNav />
+      <ProviderNav profile={profile} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <Outlet />
+        <Outlet context={outletContext} />
       </main>
       <SiteFooter />
     </div>
