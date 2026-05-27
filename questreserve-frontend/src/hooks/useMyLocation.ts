@@ -6,12 +6,14 @@ interface UseMyLocationResult {
   data: BookingLocation | null
   isLoading: boolean
   error: string | null
+  refetch: () => void
 }
 
 export function useMyLocation(id: string): UseMyLocationResult {
   const [data, setData] = useState<BookingLocation | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [fetchCount, setFetchCount] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -35,7 +37,11 @@ export function useMyLocation(id: string): UseMyLocationResult {
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [id, fetchCount])
 
-  return { data, isLoading, error }
+  function refetch() {
+    setFetchCount((c) => c + 1)
+  }
+
+  return { data, isLoading, error, refetch }
 }
