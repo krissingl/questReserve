@@ -241,8 +241,8 @@ export function ProviderBookings() {
             onChange={(e) => setSortKey(e.target.value as SortKey)}
             style={selectStyle}
           >
-            <option value="slot_date">Slot date</option>
-            <option value="created_date">Booking date</option>
+            <option value="slot_date">Adventure Date</option>
+            <option value="created_date">Date Booked</option>
           </select>
         </div>
       </div>
