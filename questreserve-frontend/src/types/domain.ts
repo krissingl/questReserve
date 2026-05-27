@@ -50,3 +50,16 @@ export interface Booking {
   slot_start_time: string
   slot_end_time: string
 }
+
+export interface ProviderBooking {
+  id: string
+  time_slot_id: string
+  end_user_id: string
+  status: BookingStatus
+  created_at: string
+  updated_at: string
+  start_time: string
+  end_time: string
+  booking_location_id: string
+  location_name: string
+}

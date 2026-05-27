@@ -1,0 +1,81 @@
+import { apiClient } from './client'
+import type { BookingLocation, TimeSlot, ProviderBooking, Difficulty } from '@/types/domain'
+
+export interface CreateLocationPayload {
+  name: string
+  description?: string
+  difficulty: Difficulty
+  cancellation_policy: string
+}
+
+export interface UpdateLocationPayload {
+  name?: string
+  description?: string
+  difficulty?: Difficulty
+  cancellation_policy?: string
+}
+
+export interface CreateSlotPayload {
+  start_time: string
+  end_time: string
+}
+
+export interface UpdateSlotPayload {
+  start_time?: string
+  end_time?: string
+}
+
+export async function getMyLocations(): Promise<BookingLocation[]> {
+  const response = await apiClient.get<BookingLocation[]>('/provider/locations')
+  return response.data
+}
+
+export async function getMyLocationById(id: string): Promise<BookingLocation> {
+  const response = await apiClient.get<BookingLocation>(`/provider/locations/${id}`)
+  return response.data
+}
+
+export async function createLocation(payload: CreateLocationPayload): Promise<BookingLocation> {
+  const response = await apiClient.post<BookingLocation>('/provider/locations', payload)
+  return response.data
+}
+
+export async function updateLocation(id: string, payload: UpdateLocationPayload): Promise<BookingLocation> {
+  const response = await apiClient.patch<BookingLocation>(`/provider/locations/${id}`, payload)
+  return response.data
+}
+
+export async function uploadLocationImage(id: string, file: File): Promise<{ image_url: string }> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post<{ image_url: string }>(
+    `/provider/locations/${id}/image`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return response.data
+}
+
+export async function getSlotsByLocation(locationId: string): Promise<TimeSlot[]> {
+  const response = await apiClient.get<TimeSlot[]>(`/provider/locations/${locationId}/slots`)
+  return response.data
+}
+
+export async function createSlot(locationId: string, payload: CreateSlotPayload): Promise<TimeSlot> {
+  const response = await apiClient.post<TimeSlot>(`/provider/locations/${locationId}/slots`, payload)
+  return response.data
+}
+
+export async function updateSlot(slotId: string, payload: UpdateSlotPayload): Promise<TimeSlot> {
+  const response = await apiClient.patch<TimeSlot>(`/provider/slots/${slotId}`, payload)
+  return response.data
+}
+
+export async function deleteSlot(slotId: string): Promise<void> {
+  await apiClient.delete(`/provider/slots/${slotId}`)
+}
+
+export async function getMyBookings(): Promise<ProviderBooking[]> {
+  const response = await apiClient.get<ProviderBooking[]>('/provider/bookings')
+  return response.data
+}
