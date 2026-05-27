@@ -1,9 +1,6 @@
-import { useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useMyLocation } from '@/hooks/useMyLocation'
-import { uploadLocationImage } from '@/api/provider.api'
 import { TimeSlotManager } from '@/components/TimeSlotManager/TimeSlotManager'
-import { extractApiError } from '@/utils/api-error'
 import type { Difficulty } from '@/types/domain'
 
 const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
@@ -15,25 +12,7 @@ const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
 
 export function ProviderLocationDetail() {
   const { id } = useParams<{ id: string }>()
-  const { data: location, isLoading, error: fetchError, refetch } = useMyLocation(id ?? '')
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-
-  async function handleUpload() {
-    const file = fileInputRef.current?.files?.[0]
-    if (!file || !id) return
-    setUploading(true)
-    setUploadError(null)
-    try {
-      await uploadLocationImage(id, file)
-      refetch()
-    } catch (err: unknown) {
-      setUploadError(extractApiError(err, 'Upload failed. Please try again.'))
-    } finally {
-      setUploading(false)
-    }
-  }
+  const { data: location, isLoading, error: fetchError } = useMyLocation(id ?? '')
 
   if (isLoading) {
     return (
@@ -142,82 +121,25 @@ export function ProviderLocationDetail() {
           </Link>
         </div>
 
-        {/* Cover image */}
-        <div
-          style={{
-            width: '100%',
-            aspectRatio: '16 / 9',
-            borderRadius: 'var(--radius)',
-            overflow: 'hidden',
-            marginBottom: '1.25rem',
-            backgroundColor: 'rgb(var(--background))',
-          }}
-        >
-          {location.image_url ? (
+        {location.image_url && (
+          <div
+            style={{
+              width: '100%',
+              aspectRatio: '16 / 9',
+              borderRadius: 'var(--radius)',
+              overflow: 'hidden',
+              marginBottom: '1.25rem',
+              backgroundColor: 'rgb(var(--background))',
+            }}
+          >
             <img
               src={location.image_url}
               alt={location.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
-          ) : (
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'rgb(var(--muted-foreground))',
-                fontSize: 'var(--text-sm)',
-              }}
-            >
-              No cover image
-            </div>
-          )}
-        </div>
-
-        {/* Image upload */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))' }}
-            />
-            <button
-              type="button"
-              onClick={handleUpload}
-              disabled={uploading}
-              style={{
-                padding: '0.4rem 1rem',
-                borderRadius: 'var(--radius)',
-                backgroundColor: 'rgb(var(--accent))',
-                color: 'rgb(var(--accent-foreground))',
-                fontSize: 'var(--text-sm)',
-                fontWeight: 'var(--weight-semibold)',
-                border: 'none',
-                cursor: uploading ? 'not-allowed' : 'pointer',
-                opacity: uploading ? 0.6 : 1,
-              }}
-            >
-              {uploading ? 'Uploading…' : 'Upload Cover Image'}
-            </button>
           </div>
-          {uploadError && (
-            <p
-              style={{
-                marginTop: '0.5rem',
-                fontSize: 'var(--text-sm)',
-                color: 'rgb(var(--destructive))',
-              }}
-            >
-              {uploadError}
-            </p>
-          )}
-        </div>
+        )}
 
-        {/* Description */}
         {location.description && (
           <div style={{ marginBottom: '1.25rem' }}>
             <h2
@@ -243,7 +165,6 @@ export function ProviderLocationDetail() {
           </div>
         )}
 
-        {/* Cancellation policy */}
         <div>
           <h2
             style={{
@@ -268,7 +189,6 @@ export function ProviderLocationDetail() {
         </div>
       </div>
 
-      {/* Time slots */}
       <TimeSlotManager locationId={id ?? ''} />
     </div>
   )

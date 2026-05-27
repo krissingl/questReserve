@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { BookingLocation, TimeSlot, ProviderBooking, ProviderProfile, Difficulty } from '@/types/domain'
+import type { BookingLocation, LocationImage, TimeSlot, ProviderBooking, ProviderProfile, Difficulty } from '@/types/domain'
 
 export interface CreateLocationPayload {
   name: string
@@ -73,6 +73,26 @@ export async function updateSlot(slotId: string, payload: UpdateSlotPayload): Pr
 
 export async function deleteSlot(slotId: string): Promise<void> {
   await apiClient.delete(`/provider/slots/${slotId}`)
+}
+
+export async function getProviderLocationImages(locationId: string): Promise<LocationImage[]> {
+  const response = await apiClient.get<LocationImage[]>(`/provider/locations/${locationId}/images`)
+  return response.data
+}
+
+export async function addProviderLocationImage(locationId: string, file: File): Promise<LocationImage> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post<LocationImage>(
+    `/provider/locations/${locationId}/images`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return response.data
+}
+
+export async function deleteProviderLocationImage(locationId: string, imageId: string): Promise<void> {
+  await apiClient.delete(`/provider/locations/${locationId}/images/${imageId}`)
 }
 
 export async function getMyBookings(): Promise<ProviderBooking[]> {
