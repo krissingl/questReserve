@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useSlotsByLocation } from '@/hooks/useSlotsByLocation'
 import { createSlot, deleteSlot } from '@/api/provider.api'
-import type { TimeSlot } from '@/types/domain'
+import type { TimeSlotWithBooking } from '@/types/domain'
 
 interface TimeSlotManagerProps {
   locationId: string
@@ -18,12 +19,12 @@ function formatDateTime(isoString: string): string {
   }
 }
 
-interface SlotRowProps {
-  slot: TimeSlot
+interface OpenSlotRowProps {
+  slot: TimeSlotWithBooking
   onDeleted: () => void
 }
 
-function SlotRow({ slot, onDeleted }: SlotRowProps) {
+function OpenSlotRow({ slot, onDeleted }: OpenSlotRowProps) {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
@@ -85,12 +86,79 @@ function SlotRow({ slot, onDeleted }: SlotRowProps) {
   )
 }
 
+interface BookedSlotRowProps {
+  slot: TimeSlotWithBooking
+}
+
+function BookedSlotRow({ slot }: BookedSlotRowProps) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0.75rem 1rem',
+        borderRadius: 'var(--radius)',
+        backgroundColor: 'rgb(var(--background))',
+        gap: '1rem',
+      }}
+    >
+      <div style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))' }}>
+        <span>{formatDateTime(slot.start_time)}</span>
+        <span style={{ margin: '0 0.5rem', color: 'rgb(var(--muted-foreground))' }}>→</span>
+        <span>{formatDateTime(slot.end_time)}</span>
+      </div>
+      {slot.booking_id && (
+        <Link
+          to={`/provider/bookings`}
+          state={{ highlightBookingId: slot.booking_id }}
+          style={{
+            flexShrink: 0,
+            padding: '0.3rem 0.75rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent) / 0.1)',
+            color: 'rgb(var(--accent))',
+            textDecoration: 'none',
+            fontSize: '0.75rem',
+            fontWeight: 'var(--weight-medium)',
+          }}
+        >
+          View Booking
+        </Link>
+      )}
+    </div>
+  )
+}
+
+const sectionHeadingStyle = {
+  fontSize: 'var(--text-sm)',
+  fontWeight: 'var(--weight-semibold)' as const,
+  color: 'rgb(var(--foreground))',
+  marginBottom: '0.5rem',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+}
+
+const countBadgeStyle = {
+  display: 'inline-block',
+  padding: '0.1rem 0.45rem',
+  borderRadius: 'var(--radius-pill)',
+  fontSize: '0.7rem',
+  fontWeight: 'var(--weight-medium)' as const,
+  backgroundColor: 'rgb(var(--muted))',
+  color: 'rgb(var(--muted-foreground))',
+}
+
 export function TimeSlotManager({ locationId }: TimeSlotManagerProps) {
   const { data: slots, isLoading, error: fetchError, refetch } = useSlotsByLocation(locationId)
   const [startTime, setStartTime] = useState('')
   const [endTime, setEndTime] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+
+  const openSlots = slots.filter((s) => !s.booking_id)
+  const bookedSlots = slots.filter((s) => s.booking_id !== null)
 
   async function handleAddSlot(e: React.FormEvent) {
     e.preventDefault()
@@ -133,7 +201,6 @@ export function TimeSlotManager({ locationId }: TimeSlotManagerProps) {
         Time Slots
       </h2>
 
-      {/* Slot list */}
       {isLoading && (
         <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
           Loading slots…
@@ -146,21 +213,46 @@ export function TimeSlotManager({ locationId }: TimeSlotManagerProps) {
         </p>
       )}
 
-      {!isLoading && !fetchError && slots.length === 0 && (
-        <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
-          No time slots yet.
-        </p>
-      )}
+      {!isLoading && !fetchError && (
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <div style={sectionHeadingStyle}>
+              Open Slots
+              <span style={countBadgeStyle}>{openSlots.length}</span>
+            </div>
+            {openSlots.length === 0 ? (
+              <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+                No open slots.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {openSlots.map((slot) => (
+                  <OpenSlotRow key={slot.id} slot={slot} onDeleted={refetch} />
+                ))}
+              </div>
+            )}
+          </div>
 
-      {!isLoading && !fetchError && slots.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          {slots.map((slot) => (
-            <SlotRow key={slot.id} slot={slot} onDeleted={refetch} />
-          ))}
+          <div>
+            <div style={sectionHeadingStyle}>
+              Booked Slots
+              <span style={countBadgeStyle}>{bookedSlots.length}</span>
+            </div>
+            {bookedSlots.length === 0 ? (
+              <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+                No booked slots.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {bookedSlots.map((slot) => (
+                  <BookedSlotRow key={slot.id} slot={slot} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Add slot form */}
       <form onSubmit={handleAddSlot}>
         <h3
           style={{

@@ -79,6 +79,11 @@ export interface Booking {
   updated_at: Date;
 }
 
+export interface TimeSlotWithBooking extends TimeSlot {
+  booking_id: string | null;
+  booking_status: BookingStatus | null;
+}
+
 export interface ProviderBookingView {
   id: string;
   time_slot_id: string;

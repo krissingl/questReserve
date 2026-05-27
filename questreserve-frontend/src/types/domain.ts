@@ -17,6 +17,11 @@ export interface TimeSlot {
   updated_at: string
 }
 
+export interface TimeSlotWithBooking extends TimeSlot {
+  booking_id: string | null
+  booking_status: BookingStatus | null
+}
+
 export interface BookingLocation {
   id: string
   provider_id: string

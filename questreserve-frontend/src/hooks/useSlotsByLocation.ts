@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
 import { getSlotsByLocation } from '@/api/provider.api'
-import type { TimeSlot } from '@/types/domain'
+import type { TimeSlotWithBooking } from '@/types/domain'
 
 interface UseSlotsByLocationResult {
-  data: TimeSlot[]
+  data: TimeSlotWithBooking[]
   isLoading: boolean
   error: string | null
   refetch: () => void
 }
 
 export function useSlotsByLocation(locationId: string): UseSlotsByLocationResult {
-  const [data, setData] = useState<TimeSlot[]>([])
+  const [data, setData] = useState<TimeSlotWithBooking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [fetchCount, setFetchCount] = useState(0)

@@ -2,7 +2,7 @@ import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, Difficulty, LocationImage, ProviderBookingView, TimeSlot } from '../types';
+import { BookingLocation, Difficulty, LocationImage, ProviderBookingView, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -107,9 +107,21 @@ export class ProviderService {
     });
   }
 
-  async getSlots(providerId: string, locationId: string): Promise<TimeSlot[]> {
+  async getSlots(providerId: string, locationId: string): Promise<TimeSlotWithBooking[]> {
     await this.assertLocationOwnership(providerId, locationId);
-    return this.slotRepo.findAllByLocation(locationId);
+    const knex = this.knex;
+    const rows = await knex('time_slot')
+      .leftJoin('booking', function () {
+        this.on('booking.time_slot_id', '=', 'time_slot.id')
+            .andOn('booking.status', '=', knex.raw("'BOOKED'"));
+      })
+      .where({ 'time_slot.booking_location_id': locationId })
+      .select(
+        'time_slot.*',
+        'booking.id as booking_id',
+        'booking.status as booking_status',
+      );
+    return rows as TimeSlotWithBooking[];
   }
 
   async updateSlot(
