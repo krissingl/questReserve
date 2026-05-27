@@ -1,5 +1,16 @@
+import { useState } from 'react'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 import type { ProviderBooking } from '@/types/domain'
+
+type SortKey = 'slot_date' | 'created_date'
+
+function formatDate(isoString: string): string {
+  try {
+    return new Date(isoString).toLocaleDateString(undefined, { dateStyle: 'medium' })
+  } catch {
+    return isoString
+  }
+}
 
 function formatDateTime(isoString: string): string {
   try {
@@ -12,12 +23,18 @@ function formatDateTime(isoString: string): string {
   }
 }
 
-interface BookingRowProps {
+const statusColours: Record<string, { bg: string; text: string }> = {
+  BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
+  CANCELLED: { bg: 'rgb(var(--muted))', text: 'rgb(var(--muted-foreground))' },
+}
+
+interface BookingCardProps {
   booking: ProviderBooking
 }
 
-function BookingRow({ booking }: BookingRowProps) {
-  const isCancelled = booking.status === 'CANCELLED'
+function BookingCard({ booking }: BookingCardProps) {
+  const colours = statusColours[booking.status] ?? statusColours.CANCELLED
+  const customerLabel = booking.end_user_name?.trim() || booking.end_user_id
 
   return (
     <div
@@ -26,7 +43,6 @@ function BookingRow({ booking }: BookingRowProps) {
         borderRadius: 'var(--radius)',
         backgroundColor: 'rgb(var(--card))',
         boxShadow: 'var(--shadow-card)',
-        opacity: isCancelled ? 0.6 : 1,
       }}
     >
       <div
@@ -56,12 +72,8 @@ function BookingRow({ booking }: BookingRowProps) {
             borderRadius: 'var(--radius-pill)',
             fontSize: '0.7rem',
             fontWeight: 'var(--weight-medium)',
-            backgroundColor: isCancelled
-              ? 'rgb(var(--muted))'
-              : 'rgb(var(--success, 34 197 94) / 0.15)',
-            color: isCancelled
-              ? 'rgb(var(--muted-foreground))'
-              : 'rgb(var(--success, 34 197 94))',
+            backgroundColor: colours.bg,
+            color: colours.text,
           }}
         >
           {booking.status}
@@ -74,42 +86,166 @@ function BookingRow({ booking }: BookingRowProps) {
           color: 'rgb(var(--muted-foreground))',
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '0.5rem 1.5rem',
+          gap: '0.4rem 1.5rem',
         }}
       >
         <span>
-          <strong style={{ color: 'rgb(var(--foreground))' }}>Start:</strong>{' '}
+          <strong style={{ color: 'rgb(var(--foreground))' }}>Slot:</strong>{' '}
           {formatDateTime(booking.start_time)}
         </span>
         <span>
-          <strong style={{ color: 'rgb(var(--foreground))' }}>End:</strong>{' '}
-          {formatDateTime(booking.end_time)}
+          <strong style={{ color: 'rgb(var(--foreground))' }}>Customer:</strong>{' '}
+          {customerLabel}
         </span>
         <span>
-          <strong style={{ color: 'rgb(var(--foreground))' }}>Customer ID:</strong>{' '}
-          {booking.end_user_id}
+          <strong style={{ color: 'rgb(var(--foreground))' }}>Booked on:</strong>{' '}
+          {formatDate(booking.created_at)}
         </span>
       </div>
     </div>
   )
 }
 
-export function ProviderBookings() {
-  const { data: bookings, isLoading, error } = useMyProviderBookings()
-
+function countBadge(count: number) {
   return (
-    <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '0.1rem 0.5rem',
+        borderRadius: 'var(--radius-pill)',
+        fontSize: '0.72rem',
+        fontWeight: 'var(--weight-medium)',
+        backgroundColor: 'rgb(var(--muted))',
+        color: 'rgb(var(--muted-foreground))',
+        marginLeft: '0.4rem',
+      }}
+    >
+      {count}
+    </span>
+  )
+}
+
+interface BookingSectionProps {
+  title: string
+  bookings: ProviderBooking[]
+  emptyMessage: string
+}
+
+function BookingSection({ title, bookings, emptyMessage }: BookingSectionProps) {
+  return (
+    <div style={{ marginBottom: '2rem' }}>
+      <h2
         style={{
           fontFamily: 'var(--font-heading)',
-          fontSize: '1.75rem',
+          fontSize: '1.15rem',
           fontWeight: 'var(--weight-bold)',
           color: 'rgb(var(--foreground))',
-          marginBottom: '1.5rem',
+          marginBottom: '0.75rem',
+          display: 'flex',
+          alignItems: 'center',
         }}
       >
-        My Bookings
-      </h1>
+        {title}
+        {countBadge(bookings.length)}
+      </h2>
+
+      {bookings.length === 0 ? (
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+          {emptyMessage}
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {bookings.map((b) => (
+            <BookingCard key={b.id} booking={b} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function ProviderBookings() {
+  const { data: bookings, isLoading, error } = useMyProviderBookings()
+  const [sortKey, setSortKey] = useState<SortKey>('slot_date')
+
+  const now = new Date()
+
+  const upcoming = bookings
+    .filter((b) => b.status === 'BOOKED' && new Date(b.start_time) > now)
+    .sort((a, b) =>
+      sortKey === 'slot_date'
+        ? new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+        : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+
+  const cancelled = bookings
+    .filter((b) => b.status === 'CANCELLED')
+    .sort((a, b) =>
+      sortKey === 'slot_date'
+        ? new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+
+  const past = bookings
+    .filter((b) => b.status === 'BOOKED' && new Date(b.start_time) <= now)
+    .sort((a, b) =>
+      sortKey === 'slot_date'
+        ? new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )
+
+  const selectStyle = {
+    padding: '0.35rem 0.75rem',
+    borderRadius: 'var(--radius)',
+    border: '1px solid rgb(var(--border))',
+    backgroundColor: 'rgb(var(--background))',
+    color: 'rgb(var(--foreground))',
+    fontSize: 'var(--text-sm)',
+    cursor: 'pointer',
+  }
+
+  return (
+    <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto', width: '85%' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap',
+          gap: '1rem',
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1.75rem',
+            fontWeight: 'var(--weight-bold)',
+            color: 'rgb(var(--foreground))',
+            margin: 0,
+          }}
+        >
+          My Bookings
+        </h1>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <label
+            htmlFor="sort-select"
+            style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}
+          >
+            Sort by:
+          </label>
+          <select
+            id="sort-select"
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            style={selectStyle}
+          >
+            <option value="slot_date">Slot date</option>
+            <option value="created_date">Booking date</option>
+          </select>
+        </div>
+      </div>
 
       {isLoading && (
         <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading bookings…</p>
@@ -121,26 +257,24 @@ export function ProviderBookings() {
         </p>
       )}
 
-      {!isLoading && !error && bookings.length === 0 && (
-        <div
-          style={{
-            padding: '3rem 2rem',
-            textAlign: 'center',
-            borderRadius: 'var(--radius)',
-            backgroundColor: 'rgb(var(--card))',
-            color: 'rgb(var(--muted-foreground))',
-          }}
-        >
-          <p>No bookings yet.</p>
-        </div>
-      )}
-
-      {!isLoading && !error && bookings.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {bookings.map((booking) => (
-            <BookingRow key={booking.id} booking={booking} />
-          ))}
-        </div>
+      {!isLoading && !error && (
+        <>
+          <BookingSection
+            title="Upcoming"
+            bookings={upcoming}
+            emptyMessage="No upcoming bookings."
+          />
+          <BookingSection
+            title="Cancelled"
+            bookings={cancelled}
+            emptyMessage="No cancelled bookings."
+          />
+          <BookingSection
+            title="Past"
+            bookings={past}
+            emptyMessage="No past bookings."
+          />
+        </>
       )}
     </div>
   )

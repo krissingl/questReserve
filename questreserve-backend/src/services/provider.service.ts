@@ -220,11 +220,13 @@ export class ProviderService {
     const rows = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
       .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+      .leftJoin('end_user', 'booking.end_user_id', 'end_user.id')
       .where('booking_location.provider_id', providerId)
       .select(
         'booking.id',
         'booking.time_slot_id',
         'booking.end_user_id',
+        this.knex.raw("CONCAT(end_user.first_name, ' ', end_user.last_name) as end_user_name"),
         'booking.status',
         'booking.created_at',
         'booking.updated_at',
