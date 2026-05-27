@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 import { Router, Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
 import db from '../../db/db';
@@ -14,7 +15,7 @@ import {
   SlotNotFoundError,
   ImageNotFoundError,
 } from '../../services/provider.service';
-import { Difficulty } from '../../types';
+import { Difficulty, Provider } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
@@ -73,6 +74,59 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
 }
 
 router.use(authenticate, requireRole('provider'));
+
+router.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const provider = await db<Provider>('provider').where({ id: getUser(req).sub }).first();
+    if (!provider) { res.status(404).json({ error: 'Provider not found' }); return; }
+    const { id, first_name, last_name, email, organization_name } = provider;
+    res.json({ id, first_name, last_name, email, organization_name });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/profile', async (req: Request, res: Response, next: NextFunction) => {
+  if (typeof req.body !== 'object' || req.body === null) {
+    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
+  }
+  const b = req.body as Record<string, unknown>;
+  const updates: Partial<Pick<Provider, 'email' | 'password_hash'>> = {};
+
+  if (b.email !== undefined) {
+    if (typeof b.email !== 'string' || b.email.trim() === '') {
+      res.status(400).json({ error: 'email must be a non-empty string' }); return;
+    }
+    const existing = await db<Provider>('provider').where({ email: b.email }).whereNot({ id: getUser(req).sub }).first();
+    if (existing) { res.status(409).json({ error: 'An account with this email already exists' }); return; }
+    updates.email = b.email.trim();
+  }
+
+  if (b.password !== undefined) {
+    if (typeof b.password !== 'string' || b.password.length < 8) {
+      res.status(400).json({ error: 'password must be at least 8 characters' }); return;
+    }
+    if (b.password.length > 72) {
+      res.status(400).json({ error: 'password must not exceed 72 characters' }); return;
+    }
+    updates.password_hash = await bcrypt.hash(b.password, 10);
+  }
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: 'No valid fields to update' }); return;
+  }
+
+  try {
+    const [updated] = await db<Provider>('provider')
+      .where({ id: getUser(req).sub })
+      .update({ ...updates, updated_at: new Date() })
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name']);
+    if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['name', 'difficulty', 'cancellation_policy']);

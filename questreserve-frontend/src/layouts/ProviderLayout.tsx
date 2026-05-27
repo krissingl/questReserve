@@ -1,9 +1,11 @@
 import { NavLink, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useMyProfile } from '@/hooks/useMyProfile'
 import { SiteFooter } from '@/components/SiteFooter/SiteFooter'
 
 function ProviderNav() {
   const { logout } = useAuth()
+  const { data: profile } = useMyProfile()
 
   const activeLinkStyle = ({ isActive }: { isActive: boolean }) => ({
     color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
@@ -48,7 +50,22 @@ function ProviderNav() {
         <NavLink to="/provider/bookings" style={activeLinkStyle}>
           My Bookings
         </NavLink>
+        <NavLink to="/provider/account" style={activeLinkStyle}>
+          My Account
+        </NavLink>
       </div>
+
+      {profile && (
+        <span
+          style={{
+            fontSize: 'var(--text-sm)',
+            color: 'rgb(var(--muted-foreground))',
+            marginRight: '1.25rem',
+          }}
+        >
+          {profile.first_name} {profile.last_name}
+        </span>
+      )}
 
       <button
         type="button"

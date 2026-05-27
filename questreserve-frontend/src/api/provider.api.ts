@@ -1,5 +1,5 @@
 import { apiClient } from './client'
-import type { BookingLocation, TimeSlot, ProviderBooking, Difficulty } from '@/types/domain'
+import type { BookingLocation, TimeSlot, ProviderBooking, ProviderProfile, Difficulty } from '@/types/domain'
 
 export interface CreateLocationPayload {
   name: string
@@ -77,5 +77,20 @@ export async function deleteSlot(slotId: string): Promise<void> {
 
 export async function getMyBookings(): Promise<ProviderBooking[]> {
   const response = await apiClient.get<ProviderBooking[]>('/provider/bookings')
+  return response.data
+}
+
+export async function getMyProfile(): Promise<ProviderProfile> {
+  const response = await apiClient.get<ProviderProfile>('/provider/profile')
+  return response.data
+}
+
+export interface UpdateProfilePayload {
+  email?: string
+  password?: string
+}
+
+export async function updateMyProfile(payload: UpdateProfilePayload): Promise<ProviderProfile> {
+  const response = await apiClient.patch<ProviderProfile>('/provider/profile', payload)
   return response.data
 }

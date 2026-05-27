@@ -23,6 +23,7 @@ import { ProviderLocationNew } from '@/pages/ProviderLocationNew/ProviderLocatio
 import { ProviderLocationDetail } from '@/pages/ProviderLocationDetail/ProviderLocationDetail'
 import { ProviderLocationEdit } from '@/pages/ProviderLocationEdit/ProviderLocationEdit'
 import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
+import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
 
 export const router = createBrowserRouter([
   {
@@ -142,6 +143,10 @@ export const router = createBrowserRouter([
       {
         path: 'bookings',
         element: <ProviderBookings />,
+      },
+      {
+        path: 'account',
+        element: <ProviderAccount />,
       },
     ],
   },

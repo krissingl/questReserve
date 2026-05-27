@@ -51,6 +51,14 @@ export interface Booking {
   slot_end_time: string
 }
 
+export interface ProviderProfile {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  organization_name: string | null
+}
+
 export interface ProviderBooking {
   id: string
   time_slot_id: string
