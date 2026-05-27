@@ -212,7 +212,7 @@ const sectionHeadingStyle = {
 }
 
 export function ProviderDashboard() {
-  const { data: stats, isLoading: statsLoading } = useDashboardStats()
+  const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats()
   const { data: locations, isLoading: locationsLoading } = useMyLocations()
   const { data: bookings } = useMyProviderBookings()
 
@@ -234,11 +234,13 @@ export function ProviderDashboard() {
         }}
       >
         {statsLoading ? (
-          <>
-            <div style={{ ...statCardStyle, color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
-              Loading…
-            </div>
-          </>
+          <div style={{ ...statCardStyle, color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+            Loading…
+          </div>
+        ) : statsError ? (
+          <div style={{ ...statCardStyle, color: 'rgb(var(--destructive))', fontSize: 'var(--text-sm)' }}>
+            Could not load stats.
+          </div>
         ) : (
           <>
             <StatCard label="Total Adventures" value={stats?.total_adventures ?? '—'} />
