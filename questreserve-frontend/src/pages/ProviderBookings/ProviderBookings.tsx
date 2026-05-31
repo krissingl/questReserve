@@ -1,23 +1,13 @@
 import { useRef, useState } from 'react'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 import type { ProviderBooking } from '@/types/domain'
+import { formatDateTime } from '@/utils/format'
 
 type SortKey = 'slot_date' | 'created_date'
 
 function formatDate(isoString: string): string {
   try {
     return new Date(isoString).toLocaleDateString(undefined, { dateStyle: 'medium' })
-  } catch {
-    return isoString
-  }
-}
-
-function formatDateTime(isoString: string): string {
-  try {
-    return new Date(isoString).toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    })
   } catch {
     return isoString
   }

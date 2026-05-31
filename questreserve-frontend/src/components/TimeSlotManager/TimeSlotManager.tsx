@@ -3,20 +3,10 @@ import { Link } from 'react-router-dom'
 import { useSlotsByLocation } from '@/hooks/useSlotsByLocation'
 import { createSlot, deleteSlot } from '@/api/provider.api'
 import type { TimeSlotWithBooking } from '@/types/domain'
+import { formatDateTime } from '@/utils/format'
 
 interface TimeSlotManagerProps {
   locationId: string
-}
-
-function formatDateTime(isoString: string): string {
-  try {
-    return new Date(isoString).toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    })
-  } catch {
-    return isoString
-  }
 }
 
 interface OpenSlotRowProps {

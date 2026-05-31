@@ -5,17 +5,7 @@ import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 import type { BookingLocationWithSlotCount, ProviderBooking } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
-
-function formatDateTime(isoString: string): string {
-  try {
-    return new Date(isoString).toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    })
-  } catch {
-    return isoString
-  }
-}
+import { formatDateTime } from '@/utils/format'
 
 const statCardStyle = {
   flex: '1 1 0',
