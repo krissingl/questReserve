@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { DIFFICULTY_OPTIONS } from '@/types/domain'
-import type { Difficulty } from '@/types/domain'
 
 const locationSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -62,7 +61,7 @@ export function LocationForm({
     defaultValues: {
       name: defaultValues?.name ?? '',
       description: defaultValues?.description ?? '',
-      difficulty: (defaultValues?.difficulty as Difficulty | undefined) ?? undefined,
+      difficulty: defaultValues?.difficulty ?? undefined,
       cancellation_policy: defaultValues?.cancellation_policy ?? '',
     },
   })
