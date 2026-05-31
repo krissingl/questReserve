@@ -291,10 +291,12 @@ export function ProviderAccount() {
               cursor: 'not-allowed',
               userSelect: 'none',
             }}
-            title="Profile pages are coming in a future update"
           >
             Update Profile
           </span>
+          <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'rgb(var(--muted-foreground))' }}>
+            Profile editing (name, organization) is coming in a future update.
+          </p>
         </div>
       </div>
 
