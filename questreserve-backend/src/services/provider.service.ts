@@ -59,11 +59,6 @@ export interface CreateSlotInput {
   end_time: Date;
 }
 
-export interface UpdateSlotInput {
-  start_time?: Date;
-  end_time?: Date;
-}
-
 export interface ProviderProfileView {
   id: string;
   first_name: string;
@@ -179,17 +174,6 @@ export class ProviderService {
         'booking.status as booking_status',
       );
     return rows as TimeSlotWithBooking[];
-  }
-
-  async updateSlot(
-    providerId: string,
-    slotId: string,
-    data: UpdateSlotInput
-  ): Promise<TimeSlot> {
-    await this.assertSlotOwnership(providerId, slotId);
-    const updated = await this.slotRepo.update(slotId, data);
-    if (!updated) throw new SlotNotFoundError();
-    return updated;
   }
 
   async deleteSlot(providerId: string, slotId: string): Promise<void> {

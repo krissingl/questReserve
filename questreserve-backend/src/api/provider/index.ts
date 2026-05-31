@@ -284,31 +284,6 @@ router.get('/locations/:locationId/slots', async (req: Request, res: Response, n
   }
 });
 
-router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
-  if (typeof req.body !== 'object' || req.body === null) {
-    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
-  }
-  const b = req.body as Record<string, unknown>;
-  const data: { start_time?: Date; end_time?: Date } = {};
-  if (b.start_time !== undefined) {
-    if (typeof b.start_time !== 'string') { res.status(400).json({ error: 'start_time must be a string' }); return; }
-    const d = new Date(b.start_time);
-    if (isNaN(d.getTime())) { res.status(400).json({ error: 'start_time must be a valid ISO date string' }); return; }
-    data.start_time = d;
-  }
-  if (b.end_time !== undefined) {
-    if (typeof b.end_time !== 'string') { res.status(400).json({ error: 'end_time must be a string' }); return; }
-    const d = new Date(b.end_time);
-    if (isNaN(d.getTime())) { res.status(400).json({ error: 'end_time must be a valid ISO date string' }); return; }
-    data.end_time = d;
-  }
-  try {
-    const slot = await providerService.updateSlot(getUser(req).sub, req.params.id, data);
-    res.json(slot);
-  } catch (err) {
-    handleProviderError(err, res, next);
-  }
-});
 
 router.delete('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {

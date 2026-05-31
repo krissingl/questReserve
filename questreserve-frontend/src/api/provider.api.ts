@@ -20,11 +20,6 @@ export interface CreateSlotPayload {
   end_time: string
 }
 
-export interface UpdateSlotPayload {
-  start_time?: string
-  end_time?: string
-}
-
 export async function getMyLocations(): Promise<BookingLocationWithSlotCount[]> {
   const response = await apiClient.get<BookingLocationWithSlotCount[]>('/provider/locations')
   return response.data
@@ -58,11 +53,6 @@ export async function getSlotsByLocation(locationId: string): Promise<TimeSlotWi
 
 export async function createSlot(locationId: string, payload: CreateSlotPayload): Promise<TimeSlot> {
   const response = await apiClient.post<TimeSlot>(`/provider/locations/${locationId}/slots`, payload)
-  return response.data
-}
-
-export async function updateSlot(slotId: string, payload: UpdateSlotPayload): Promise<TimeSlot> {
-  const response = await apiClient.patch<TimeSlot>(`/provider/slots/${slotId}`, payload)
   return response.data
 }
 
