@@ -208,24 +208,6 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
   }
 });
 
-router.post('/locations/:id/image', (req: Request, res: Response, next: NextFunction) => {
-  upload.single('image')(req, res, async (uploadErr) => {
-    if (uploadErr instanceof MulterError) {
-      res.status(400).json({ error: uploadErr.message });
-      return;
-    }
-    if (uploadErr) { next(uploadErr); return; }
-    if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
-    try {
-      const imageUrl = `${PUBLIC_URL}/uploads/location-images/${req.file.filename}`;
-      await providerService.setLocationImage(getUser(req).sub, req.params.id, imageUrl);
-      res.json({ image_url: imageUrl });
-    } catch (err) {
-      fs.unlink(req.file.path, () => {});
-      handleProviderError(err, res, next);
-    }
-  });
-});
 
 router.post('/locations/:id/images', (req: Request, res: Response, next: NextFunction) => {
   upload.single('image')(req, res, async (uploadErr) => {

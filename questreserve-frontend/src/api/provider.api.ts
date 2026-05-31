@@ -50,16 +50,6 @@ export async function updateLocation(id: string, payload: UpdateLocationPayload)
   return response.data
 }
 
-export async function uploadLocationImage(id: string, file: File): Promise<{ image_url: string }> {
-  const formData = new FormData()
-  formData.append('image', file)
-  const response = await apiClient.post<{ image_url: string }>(
-    `/provider/locations/${id}/image`,
-    formData,
-    { headers: { 'Content-Type': 'multipart/form-data' } },
-  )
-  return response.data
-}
 
 export async function getSlotsByLocation(locationId: string): Promise<TimeSlotWithBooking[]> {
   const response = await apiClient.get<TimeSlotWithBooking[]>(`/provider/locations/${locationId}/slots`)
