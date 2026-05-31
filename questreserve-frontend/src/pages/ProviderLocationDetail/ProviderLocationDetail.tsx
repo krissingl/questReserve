@@ -14,6 +14,14 @@ export function ProviderLocationDetail() {
   const { id } = useParams<{ id: string }>()
   const { data: location, isLoading, error: fetchError } = useMyLocation(id ?? '')
 
+  if (!id) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <p style={{ color: 'rgb(var(--destructive))' }}>Invalid adventure ID.</p>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div style={{ padding: '2rem' }}>
@@ -189,7 +197,7 @@ export function ProviderLocationDetail() {
         </div>
       </div>
 
-      <TimeSlotManager locationId={id ?? ''} />
+      <TimeSlotManager locationId={id} />
     </div>
   )
 }

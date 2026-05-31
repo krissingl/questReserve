@@ -317,6 +317,14 @@ export function ProviderLocationEdit() {
     }
   }
 
+  if (!id) {
+    return (
+      <div style={{ padding: '2rem' }}>
+        <p style={{ color: 'rgb(var(--destructive))' }}>Invalid adventure ID.</p>
+      </div>
+    )
+  }
+
   if (isLoading) {
     return (
       <div style={{ padding: '2rem' }}>
@@ -431,7 +439,7 @@ export function ProviderLocationEdit() {
 
         {!imagesLoading && (
           <GallerySection
-            locationId={id ?? ''}
+            locationId={id}
             images={galleryImages}
             onImagesChanged={refetchImages}
           />
