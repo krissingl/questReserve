@@ -1,14 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useMyLocation } from '@/hooks/useMyLocation'
 import { TimeSlotManager } from '@/components/TimeSlotManager/TimeSlotManager'
-import type { Difficulty } from '@/types/domain'
-
-const DIFFICULTY_COLOURS: Record<Difficulty, string> = {
-  EASY: 'rgb(var(--success, 34 197 94))',
-  MEDIUM: 'rgb(var(--warning, 234 179 8))',
-  HARD: 'rgb(var(--destructive))',
-  LEGENDARY: 'rgb(var(--primary))',
-}
+import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
 export function ProviderLocationDetail() {
   const { id } = useParams<{ id: string }>()

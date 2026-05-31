@@ -4,14 +4,9 @@ import { useBookingLocations } from '@/hooks/useBookingLocations'
 import { useLocationImages } from '@/hooks/useLocationImages'
 import { FilterDrawer } from '@/components/FilterDrawer/FilterDrawer'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
-import type { BookingLocation, Difficulty, LocationFilters } from '@/types/domain'
+import type { BookingLocation, LocationFilters } from '@/types/domain'
 import { DIFFICULTY_OPTIONS } from '@/types/domain'
-
-const DIFFICULTY_COLOURS: Record<Difficulty, string> = {  EASY: 'rgb(var(--success, 34 197 94))',
-  MEDIUM: 'rgb(var(--warning, 234 179 8))',
-  HARD: 'rgb(var(--destructive))',
-  LEGENDARY: 'rgb(var(--primary))',
-}
+import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
 interface LocationListItemProps {
   location: BookingLocation
