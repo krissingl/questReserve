@@ -105,6 +105,11 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
     if (typeof b.email !== 'string' || b.email.trim() === '') {
       res.status(400).json({ error: 'email must be a non-empty string' }); return;
     }
+    const trimmedEmail = b.email.trim();
+    const atIndex = trimmedEmail.indexOf('@');
+    if (atIndex < 1 || !trimmedEmail.slice(atIndex + 1).includes('.') || trimmedEmail.endsWith('.')) {
+      res.status(400).json({ error: 'email must be a valid email address' }); return;
+    }
   }
 
   if (b.password !== undefined) {
