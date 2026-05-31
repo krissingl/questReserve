@@ -9,7 +9,11 @@ import type { LocationImage } from '@/types/domain'
 
 const MAX_GALLERY_IMAGES = 15
 
-function CoverImageSection({ currentImageUrl }: { currentImageUrl: string | null }) {
+interface CoverImageSectionProps {
+  currentImageUrl: string | null
+}
+
+function CoverImageSection({ currentImageUrl }: CoverImageSectionProps) {
   const coverInputRef = useRef<HTMLInputElement>(null)
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
 
