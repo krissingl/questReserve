@@ -100,15 +100,11 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
     res.status(400).json({ error: 'Request body must be a JSON object' }); return;
   }
   const b = req.body as Record<string, unknown>;
-  const updates: Partial<Pick<Provider, 'email' | 'password_hash'>> = {};
 
   if (b.email !== undefined) {
     if (typeof b.email !== 'string' || b.email.trim() === '') {
       res.status(400).json({ error: 'email must be a non-empty string' }); return;
     }
-    const existing = await db<Provider>('provider').where({ email: b.email }).whereNot({ id: getUser(req).sub }).first();
-    if (existing) { res.status(409).json({ error: 'An account with this email already exists' }); return; }
-    updates.email = b.email.trim();
   }
 
   if (b.password !== undefined) {
@@ -118,14 +114,26 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
     if (b.password.length > 72) {
       res.status(400).json({ error: 'password must not exceed 72 characters' }); return;
     }
-    updates.password_hash = await bcrypt.hash(b.password, 10);
   }
 
-  if (Object.keys(updates).length === 0) {
+  if (b.email === undefined && b.password === undefined) {
     res.status(400).json({ error: 'No valid fields to update' }); return;
   }
 
   try {
+    const updates: Partial<Pick<Provider, 'email' | 'password_hash'>> = {};
+
+    if (b.email !== undefined) {
+      const email = (b.email as string).trim();
+      const existing = await db<Provider>('provider').where({ email }).whereNot({ id: getUser(req).sub }).first();
+      if (existing) { res.status(409).json({ error: 'An account with this email already exists' }); return; }
+      updates.email = email;
+    }
+
+    if (b.password !== undefined) {
+      updates.password_hash = await bcrypt.hash(b.password as string, 10);
+    }
+
     const [updated] = await db<Provider>('provider')
       .where({ id: getUser(req).sub })
       .update({ ...updates, updated_at: new Date() })
