@@ -120,15 +120,18 @@ interface GalleryImageCardProps {
 
 function GalleryImageCard({ image, locationId, onRemoved }: GalleryImageCardProps) {
   const [removing, setRemoving] = useState(false)
+  const [removeError, setRemoveError] = useState<string | null>(null)
 
   async function handleRemove() {
     if (!window.confirm('Remove this gallery image?')) return
     setRemoving(true)
+    setRemoveError(null)
     try {
       await deleteProviderLocationImage(locationId, image.id)
       onRemoved()
     } catch {
       setRemoving(false)
+      setRemoveError('Failed to remove image. Please try again.')
     }
   }
 
@@ -168,6 +171,23 @@ function GalleryImageCard({ image, locationId, onRemoved }: GalleryImageCardProp
       >
         {removing ? '…' : 'Remove'}
       </button>
+      {removeError && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '0.25rem 0.4rem',
+            backgroundColor: 'rgb(var(--destructive) / 0.9)',
+            color: 'rgb(var(--primary-foreground, 255 255 255))',
+            fontSize: '0.65rem',
+            textAlign: 'center',
+          }}
+        >
+          {removeError}
+        </div>
+      )}
     </div>
   )
 }
