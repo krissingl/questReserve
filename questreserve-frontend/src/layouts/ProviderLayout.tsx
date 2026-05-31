@@ -27,7 +27,6 @@ function ProviderNav({ profile }: ProviderNavProps) {
         padding: '0 1.5rem',
         display: 'flex',
         alignItems: 'center',
-        gap: '0',
         height: '52px',
         position: 'sticky',
         top: 0,
