@@ -106,7 +106,11 @@ function BookingCard({ booking }: BookingCardProps) {
   )
 }
 
-function countBadge(count: number) {
+interface CountBadgeProps {
+  count: number
+}
+
+function CountBadge({ count }: CountBadgeProps) {
   return (
     <span
       style={{
@@ -146,7 +150,7 @@ function BookingSection({ title, bookings, emptyMessage }: BookingSectionProps) 
         }}
       >
         {title}
-        {countBadge(bookings.length)}
+        <CountBadge count={bookings.length} />
       </h2>
 
       {bookings.length === 0 ? (
