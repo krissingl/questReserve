@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import bcrypt from 'bcryptjs';
 import { Router, Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
 import db from '../../db/db';
@@ -14,8 +13,9 @@ import {
   LocationOwnershipError,
   SlotNotFoundError,
   ImageNotFoundError,
+  EmailConflictError,
 } from '../../services/provider.service';
-import { Difficulty, Provider } from '../../types';
+import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
@@ -61,6 +61,8 @@ function getUser(req: Request): NonNullable<Request['user']> {
 function handleProviderError(err: unknown, res: Response, next: NextFunction): void {
   if (err instanceof UnauthenticatedError) {
     res.status(401).json({ error: err.message });
+  } else if (err instanceof EmailConflictError) {
+    res.status(409).json({ error: err.message });
   } else if (
     err instanceof LocationNotFoundError ||
     err instanceof LocationOwnershipError ||
@@ -86,10 +88,9 @@ router.get('/dashboard/stats', async (req: Request, res: Response, next: NextFun
 
 router.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const provider = await db<Provider>('provider').where({ id: getUser(req).sub }).first();
-    if (!provider) { res.status(404).json({ error: 'Provider not found' }); return; }
-    const { id, first_name, last_name, email, organization_name } = provider;
-    res.json({ id, first_name, last_name, email, organization_name });
+    const profile = await providerService.getProfile(getUser(req).sub);
+    if (!profile) { res.status(404).json({ error: 'Provider not found' }); return; }
+    res.json(profile);
   } catch (err) {
     next(err);
   }
@@ -126,27 +127,14 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
   }
 
   try {
-    const updates: Partial<Pick<Provider, 'email' | 'password_hash'>> = {};
-
-    if (b.email !== undefined) {
-      const email = (b.email as string).trim();
-      const existing = await db<Provider>('provider').where({ email }).whereNot({ id: getUser(req).sub }).first();
-      if (existing) { res.status(409).json({ error: 'An account with this email already exists' }); return; }
-      updates.email = email;
-    }
-
-    if (b.password !== undefined) {
-      updates.password_hash = await bcrypt.hash(b.password as string, 10);
-    }
-
-    const [updated] = await db<Provider>('provider')
-      .where({ id: getUser(req).sub })
-      .update({ ...updates, updated_at: new Date() })
-      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name']);
+    const updated = await providerService.updateProfile(getUser(req).sub, {
+      email: b.email !== undefined ? (b.email as string).trim() : undefined,
+      password: b.password !== undefined ? (b.password as string) : undefined,
+    });
     if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
     res.json(updated);
   } catch (err) {
-    next(err);
+    handleProviderError(err, res, next);
   }
 });
 
