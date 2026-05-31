@@ -2,7 +2,6 @@ import {
   ProviderService,
   LocationNotFoundError,
   LocationOwnershipError,
-  SlotNotFoundError,
 } from './provider.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
@@ -224,39 +223,6 @@ describe('ProviderService', () => {
       const result = await service.getSlots('prov-a', 'loc-1');
 
       expect(result).toEqual(slots);
-    });
-  });
-
-  describe('updateSlot', () => {
-    it('throws SlotNotFoundError when the slot does not exist', async () => {
-      slotRepo.findById.mockResolvedValue(null);
-
-      await expect(
-        service.updateSlot('prov-a', 'slot-missing', { start_time: new Date() })
-      ).rejects.toThrow(SlotNotFoundError);
-    });
-
-    it('throws LocationOwnershipError when the slot belongs to a location owned by a different provider', async () => {
-      slotRepo.findById.mockResolvedValue(makeSlot({ booking_location_id: 'loc-1' }));
-      locationRepo.findById.mockResolvedValue(makeLocation({ provider_id: 'prov-b' }));
-
-      await expect(
-        service.updateSlot('prov-a', 'slot-1', { start_time: new Date() })
-      ).rejects.toThrow(LocationOwnershipError);
-    });
-
-    it('returns the updated slot on success', async () => {
-      const slot = makeSlot({ booking_location_id: 'loc-1' });
-      const location = makeLocation({ provider_id: 'prov-a' });
-      const newTime = new Date('2030-06-01T10:00:00Z');
-      const updatedSlot = makeSlot({ start_time: newTime });
-      slotRepo.findById.mockResolvedValue(slot);
-      locationRepo.findById.mockResolvedValue(location);
-      slotRepo.update.mockResolvedValue(updatedSlot);
-
-      const result = await service.updateSlot('prov-a', 'slot-1', { start_time: newTime });
-
-      expect(result).toEqual(updatedSlot);
     });
   });
 

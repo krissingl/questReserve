@@ -5,7 +5,6 @@ import { ProviderLayout } from '@/layouts/ProviderLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AlreadyAuthRedirect } from '@/layouts/AlreadyAuthRedirect'
 import { CustomerHome } from '@/pages/CustomerHome'
-import { ProviderHome } from '@/pages/ProviderHome'
 import { AdminHome } from '@/pages/AdminHome'
 import { LoginPage } from '@/pages/LoginPage'
 import { CustomerLogin } from '@/pages/CustomerLogin/CustomerLogin'
@@ -18,6 +17,13 @@ import { MyBookings } from '@/pages/MyBookings/MyBookings'
 import { CustomerSettings } from '@/pages/CustomerSettings/CustomerSettings'
 import { PaymentStub } from '@/pages/PaymentStub/PaymentStub'
 import { About } from '@/pages/About/About'
+import { ProviderDashboard } from '@/pages/ProviderDashboard/ProviderDashboard'
+import { ProviderLocationNew } from '@/pages/ProviderLocationNew/ProviderLocationNew'
+import { ProviderLocationDetail } from '@/pages/ProviderLocationDetail/ProviderLocationDetail'
+import { ProviderLocationEdit } from '@/pages/ProviderLocationEdit/ProviderLocationEdit'
+import { ProviderAdventures } from '@/pages/ProviderAdventures/ProviderAdventures'
+import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
+import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
 
 export const router = createBrowserRouter([
   {
@@ -116,7 +122,35 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ProviderHome />,
+        element: <Navigate to="/provider/dashboard" replace />,
+      },
+      {
+        path: 'dashboard',
+        element: <ProviderDashboard />,
+      },
+      {
+        path: 'adventures',
+        element: <ProviderAdventures />,
+      },
+      {
+        path: 'locations/new',
+        element: <ProviderLocationNew />,
+      },
+      {
+        path: 'locations/:id',
+        element: <ProviderLocationDetail />,
+      },
+      {
+        path: 'locations/:id/edit',
+        element: <ProviderLocationEdit />,
+      },
+      {
+        path: 'bookings',
+        element: <ProviderBookings />,
+      },
+      {
+        path: 'account',
+        element: <ProviderAccount />,
       },
     ],
   },
@@ -129,5 +163,9 @@ export const router = createBrowserRouter([
         element: <AdminHome />,
       },
     ],
+  },
+  {
+    path: '*',
+    element: <Navigate to="/locations" replace />,
   },
 ])

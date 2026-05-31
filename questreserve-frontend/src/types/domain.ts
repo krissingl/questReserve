@@ -17,6 +17,11 @@ export interface TimeSlot {
   updated_at: string
 }
 
+export interface TimeSlotWithBooking extends TimeSlot {
+  booking_id: string | null
+  booking_status: BookingStatus | null
+}
+
 export interface BookingLocation {
   id: string
   provider_id: string
@@ -27,6 +32,16 @@ export interface BookingLocation {
   image_url: string | null
   created_at: string
   updated_at: string
+}
+
+export interface BookingLocationWithSlotCount extends BookingLocation {
+  slot_count: number
+}
+
+export interface ProviderDashboardStats {
+  total_adventures: number
+  open_slots: number
+  upcoming_bookings: number
 }
 
 export interface LocationImage {
@@ -49,4 +64,26 @@ export interface Booking {
   booking_location_id: string
   slot_start_time: string
   slot_end_time: string
+}
+
+export interface ProviderProfile {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  organization_name: string | null
+}
+
+export interface ProviderBooking {
+  id: string
+  time_slot_id: string
+  end_user_id: string
+  end_user_name: string | null
+  status: BookingStatus
+  created_at: string
+  updated_at: string
+  start_time: string
+  end_time: string
+  booking_location_id: string
+  location_name: string
 }

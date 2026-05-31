@@ -1,8 +1,9 @@
+import bcrypt from 'bcryptjs';
 import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, Difficulty, LocationImage, ProviderBookingView, TimeSlot } from '../types';
+import { BookingLocation, BookingLocationWithSlotCount, Difficulty, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -32,6 +33,13 @@ export class ImageNotFoundError extends Error {
   }
 }
 
+export class EmailConflictError extends Error {
+  constructor() {
+    super('An account with this email already exists');
+    this.name = 'EmailConflictError';
+  }
+}
+
 export interface CreateLocationInput {
   name: string;
   description?: string;
@@ -51,9 +59,17 @@ export interface CreateSlotInput {
   end_time: Date;
 }
 
-export interface UpdateSlotInput {
-  start_time?: Date;
-  end_time?: Date;
+export interface ProviderProfileView {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  organization_name: string | null;
+}
+
+export interface UpdateProfileInput {
+  email?: string;
+  password?: string;
 }
 
 export class ProviderService {
@@ -75,8 +91,44 @@ export class ProviderService {
     });
   }
 
-  async getLocations(providerId: string): Promise<BookingLocation[]> {
-    return this.locationRepo.findAllByProvider(providerId);
+  async getLocations(providerId: string): Promise<BookingLocationWithSlotCount[]> {
+    const locations = await this.locationRepo.findAllByProvider(providerId);
+    if (locations.length === 0) return [];
+    const locationIds = locations.map((l) => l.id);
+    const slotCounts = await this.knex('time_slot')
+      .whereIn('booking_location_id', locationIds)
+      .select('booking_location_id')
+      .count('id as count')
+      .groupBy('booking_location_id') as { booking_location_id: string; count: string | number }[];
+    const countMap = new Map(slotCounts.map((r) => [r.booking_location_id, Number(r.count)]));
+    return locations.map((l) => ({ ...l, slot_count: countMap.get(l.id) ?? 0 }));
+  }
+
+  async getDashboardStats(providerId: string): Promise<ProviderDashboardStats> {
+    const now = new Date();
+    const [adventuresResult, openSlotsResult, upcomingResult] = await Promise.all([
+      this.knex('booking_location').where({ provider_id: providerId }).count('id as count').first() as Promise<{ count: string | number }>,
+      this.knex('time_slot')
+        .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+        .where({ 'booking_location.provider_id': providerId })
+        .whereNotIn('time_slot.id', (qb) => {
+          qb.select('time_slot_id').from('booking').where({ status: 'BOOKED' });
+        })
+        .count('time_slot.id as count')
+        .first() as Promise<{ count: string | number }>,
+      this.knex('booking')
+        .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
+        .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+        .where({ 'booking_location.provider_id': providerId, 'booking.status': 'BOOKED' })
+        .where('time_slot.start_time', '>', now)
+        .count('booking.id as count')
+        .first() as Promise<{ count: string | number }>,
+    ]);
+    return {
+      total_adventures: Number(adventuresResult?.count ?? 0),
+      open_slots: Number(openSlotsResult?.count ?? 0),
+      upcoming_bookings: Number(upcomingResult?.count ?? 0),
+    };
   }
 
   async getLocation(providerId: string, locationId: string): Promise<BookingLocation> {
@@ -107,20 +159,21 @@ export class ProviderService {
     });
   }
 
-  async getSlots(providerId: string, locationId: string): Promise<TimeSlot[]> {
+  async getSlots(providerId: string, locationId: string): Promise<TimeSlotWithBooking[]> {
     await this.assertLocationOwnership(providerId, locationId);
-    return this.slotRepo.findAllByLocation(locationId);
-  }
-
-  async updateSlot(
-    providerId: string,
-    slotId: string,
-    data: UpdateSlotInput
-  ): Promise<TimeSlot> {
-    await this.assertSlotOwnership(providerId, slotId);
-    const updated = await this.slotRepo.update(slotId, data);
-    if (!updated) throw new SlotNotFoundError();
-    return updated;
+    const knex = this.knex;
+    const rows = await knex('time_slot')
+      .leftJoin('booking', function () {
+        this.on('booking.time_slot_id', '=', 'time_slot.id')
+            .andOn('booking.status', '=', knex.raw("'BOOKED'"));
+      })
+      .where({ 'time_slot.booking_location_id': locationId })
+      .select(
+        'time_slot.*',
+        'booking.id as booking_id',
+        'booking.status as booking_status',
+      );
+    return rows as TimeSlotWithBooking[];
   }
 
   async deleteSlot(providerId: string, slotId: string): Promise<void> {
@@ -172,11 +225,13 @@ export class ProviderService {
     const rows = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
       .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+      .leftJoin('end_user', 'booking.end_user_id', 'end_user.id')
       .where('booking_location.provider_id', providerId)
       .select(
         'booking.id',
         'booking.time_slot_id',
         'booking.end_user_id',
+        this.knex.raw("NULLIF(TRIM(CONCAT(COALESCE(end_user.first_name, ''), ' ', COALESCE(end_user.last_name, ''))), '') as end_user_name"),
         'booking.status',
         'booking.created_at',
         'booking.updated_at',
@@ -186,6 +241,33 @@ export class ProviderService {
         'booking_location.name as location_name'
       );
     return rows as ProviderBookingView[];
+  }
+
+  async getProfile(providerId: string): Promise<ProviderProfileView | null> {
+    const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
+    if (!provider) return null;
+    const { id, first_name, last_name, email, organization_name } = provider;
+    return { id, first_name, last_name, email, organization_name };
+  }
+
+  async updateProfile(providerId: string, input: UpdateProfileInput): Promise<ProviderProfileView | null> {
+    const updates: Partial<Pick<Provider, 'email' | 'password_hash'>> = {};
+
+    if (input.email !== undefined) {
+      const existing = await this.knex<Provider>('provider').where({ email: input.email }).whereNot({ id: providerId }).first();
+      if (existing) throw new EmailConflictError();
+      updates.email = input.email;
+    }
+
+    if (input.password !== undefined) {
+      updates.password_hash = await bcrypt.hash(input.password, 10);
+    }
+
+    const [updated] = await this.knex<Provider>('provider')
+      .where({ id: providerId })
+      .update({ ...updates, updated_at: new Date() })
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name']);
+    return updated ?? null;
   }
 
   private async assertLocationOwnership(

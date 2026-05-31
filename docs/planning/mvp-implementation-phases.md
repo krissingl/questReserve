@@ -85,7 +85,7 @@ Status : ✅ COMPLETE
 Full filtering implementation for the browse locations view, covering both guest and authenticated customer flows. Includes filter UI controls (difficulty, rules, and other relevant fields) and any supporting backend query changes needed to power them.
 
 ## Phase 10.4: Frontend — Location Images & Browse UI Redesign
-Status : IN PROGRESS
+Status : ✅ COMPLETE
 
 Two tightly coupled deliverables treated as one phase:
 
@@ -94,7 +94,7 @@ Two tightly coupled deliverables treated as one phase:
 **Browse UI Redesign** — Redesign the browse locations view from a grid of cards to a split-panel layout: list of locations on the left, expanded preview of the focused location on the right. The UI redesign is not meaningful without richer location data; the image gallery provides that context.
 
 ## Phase 11: Frontend — Provider Dashboard
-Status : NOT STARTED
+Status : In PROGRESS
 
 Manage locations, timeslots, view bookings and revenue.
 

@@ -2,7 +2,6 @@ import {
   ProviderService,
   LocationNotFoundError,
   LocationOwnershipError,
-  SlotNotFoundError,
 } from './provider.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
@@ -161,42 +160,6 @@ describe('ProviderService — integration', () => {
       const service = makeService();
 
       await expect(service.getSlots(intruder.id, location.id)).rejects.toThrow(LocationOwnershipError);
-    });
-  });
-
-  describe('updateSlot', () => {
-    it('updates a slot when the provider owns the parent location', async () => {
-      const provider = await createTestProvider(testKnex);
-      const location = await createTestLocation(testKnex, provider.id);
-      const slot = await createTestSlot(testKnex, location.id);
-      const service = makeService();
-      const newStart = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-
-      const updated = await service.updateSlot(provider.id, slot.id, { start_time: newStart });
-
-      expect(updated.id).toBe(slot.id);
-      expect(updated.start_time.getTime()).toBe(newStart.getTime());
-    });
-
-    it('throws SlotNotFoundError when the slot does not exist', async () => {
-      const provider = await createTestProvider(testKnex);
-      const service = makeService();
-
-      await expect(
-        service.updateSlot(provider.id, '00000000-0000-0000-0000-000000000000', { start_time: new Date() })
-      ).rejects.toThrow(SlotNotFoundError);
-    });
-
-    it('throws LocationOwnershipError when a different provider tries to update a slot', async () => {
-      const ownerProvider = await createTestProvider(testKnex);
-      const intruder = await createTestProvider(testKnex);
-      const location = await createTestLocation(testKnex, ownerProvider.id);
-      const slot = await createTestSlot(testKnex, location.id);
-      const service = makeService();
-
-      await expect(
-        service.updateSlot(intruder.id, slot.id, { start_time: new Date() })
-      ).rejects.toThrow(LocationOwnershipError);
     });
   });
 

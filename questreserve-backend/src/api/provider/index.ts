@@ -13,6 +13,7 @@ import {
   LocationOwnershipError,
   SlotNotFoundError,
   ImageNotFoundError,
+  EmailConflictError,
 } from '../../services/provider.service';
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
@@ -60,6 +61,8 @@ function getUser(req: Request): NonNullable<Request['user']> {
 function handleProviderError(err: unknown, res: Response, next: NextFunction): void {
   if (err instanceof UnauthenticatedError) {
     res.status(401).json({ error: err.message });
+  } else if (err instanceof EmailConflictError) {
+    res.status(409).json({ error: err.message });
   } else if (
     err instanceof LocationNotFoundError ||
     err instanceof LocationOwnershipError ||
@@ -73,6 +76,67 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
 }
 
 router.use(authenticate, requireRole('provider'));
+
+router.get('/dashboard/stats', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const stats = await providerService.getDashboardStats(getUser(req).sub);
+    res.json(stats);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const profile = await providerService.getProfile(getUser(req).sub);
+    if (!profile) { res.status(404).json({ error: 'Provider not found' }); return; }
+    res.json(profile);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/profile', async (req: Request, res: Response, next: NextFunction) => {
+  if (typeof req.body !== 'object' || req.body === null) {
+    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
+  }
+  const b = req.body as Record<string, unknown>;
+
+  if (b.email !== undefined) {
+    if (typeof b.email !== 'string' || b.email.trim() === '') {
+      res.status(400).json({ error: 'email must be a non-empty string' }); return;
+    }
+    const trimmedEmail = b.email.trim();
+    const atIndex = trimmedEmail.indexOf('@');
+    if (atIndex < 1 || !trimmedEmail.slice(atIndex + 1).includes('.') || trimmedEmail.endsWith('.')) {
+      res.status(400).json({ error: 'email must be a valid email address' }); return;
+    }
+  }
+
+  if (b.password !== undefined) {
+    if (typeof b.password !== 'string' || b.password.length < 8) {
+      res.status(400).json({ error: 'password must be at least 8 characters' }); return;
+    }
+    if (b.password.length > 72) {
+      res.status(400).json({ error: 'password must not exceed 72 characters' }); return;
+    }
+  }
+
+  if (b.email === undefined && b.password === undefined) {
+    res.status(400).json({ error: 'No valid fields to update' }); return;
+  }
+
+  try {
+    const updated = await providerService.updateProfile(getUser(req).sub, {
+      email: b.email !== undefined ? (b.email as string).trim() : undefined,
+      password: b.password !== undefined ? (b.password as string) : undefined,
+    });
+    if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
+    res.json(updated);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
 
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['name', 'difficulty', 'cancellation_policy']);
@@ -144,24 +208,6 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
   }
 });
 
-router.post('/locations/:id/image', (req: Request, res: Response, next: NextFunction) => {
-  upload.single('image')(req, res, async (uploadErr) => {
-    if (uploadErr instanceof MulterError) {
-      res.status(400).json({ error: uploadErr.message });
-      return;
-    }
-    if (uploadErr) { next(uploadErr); return; }
-    if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
-    try {
-      const imageUrl = `${PUBLIC_URL}/uploads/location-images/${req.file.filename}`;
-      await providerService.setLocationImage(getUser(req).sub, req.params.id, imageUrl);
-      res.json({ image_url: imageUrl });
-    } catch (err) {
-      fs.unlink(req.file.path, () => {});
-      handleProviderError(err, res, next);
-    }
-  });
-});
 
 router.post('/locations/:id/images', (req: Request, res: Response, next: NextFunction) => {
   upload.single('image')(req, res, async (uploadErr) => {
@@ -238,31 +284,6 @@ router.get('/locations/:locationId/slots', async (req: Request, res: Response, n
   }
 });
 
-router.patch('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
-  if (typeof req.body !== 'object' || req.body === null) {
-    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
-  }
-  const b = req.body as Record<string, unknown>;
-  const data: { start_time?: Date; end_time?: Date } = {};
-  if (b.start_time !== undefined) {
-    if (typeof b.start_time !== 'string') { res.status(400).json({ error: 'start_time must be a string' }); return; }
-    const d = new Date(b.start_time);
-    if (isNaN(d.getTime())) { res.status(400).json({ error: 'start_time must be a valid ISO date string' }); return; }
-    data.start_time = d;
-  }
-  if (b.end_time !== undefined) {
-    if (typeof b.end_time !== 'string') { res.status(400).json({ error: 'end_time must be a string' }); return; }
-    const d = new Date(b.end_time);
-    if (isNaN(d.getTime())) { res.status(400).json({ error: 'end_time must be a valid ISO date string' }); return; }
-    data.end_time = d;
-  }
-  try {
-    const slot = await providerService.updateSlot(getUser(req).sub, req.params.id, data);
-    res.json(slot);
-  } catch (err) {
-    handleProviderError(err, res, next);
-  }
-});
 
 router.delete('/slots/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
