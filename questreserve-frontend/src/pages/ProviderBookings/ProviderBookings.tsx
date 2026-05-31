@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 import type { ProviderBooking } from '@/types/domain'
 
@@ -168,7 +168,8 @@ export function ProviderBookings() {
   const { data: bookings, isLoading, error } = useMyProviderBookings()
   const [sortKey, setSortKey] = useState<SortKey>('slot_date')
 
-  const now = new Date()
+  const nowRef = useRef(new Date())
+  const now = nowRef.current
 
   const upcoming = bookings
     .filter((b) => b.status === 'BOOKED' && new Date(b.start_time) > now)

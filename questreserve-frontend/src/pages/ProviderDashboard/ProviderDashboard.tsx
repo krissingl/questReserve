@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyLocations } from '@/hooks/useMyLocations'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
@@ -216,7 +217,8 @@ export function ProviderDashboard() {
   const { data: locations, isLoading: locationsLoading } = useMyLocations()
   const { data: bookings } = useMyProviderBookings()
 
-  const now = new Date()
+  const nowRef = useRef(new Date())
+  const now = nowRef.current
   const upcomingBookings = bookings
     .filter((b) => b.status === 'BOOKED' && new Date(b.start_time) > now)
     .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
