@@ -25,6 +25,7 @@ import { ProviderAdventures } from '@/pages/ProviderAdventures/ProviderAdventure
 import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
 import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
 import { PublicProviderProfile } from '@/pages/PublicProviderProfile/PublicProviderProfile'
+import { ProviderCustomerProfile } from '@/pages/ProviderCustomerProfile/ProviderCustomerProfile'
 
 export const router = createBrowserRouter([
   {
@@ -162,6 +163,10 @@ export const router = createBrowserRouter([
       {
         path: 'account',
         element: <ProviderAccount />,
+      },
+      {
+        path: 'customers/:customerId',
+        element: <ProviderCustomerProfile />,
       },
     ],
   },

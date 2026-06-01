@@ -110,3 +110,24 @@ export interface ChangePasswordPayload {
 export async function changePassword(payload: ChangePasswordPayload): Promise<void> {
   await apiClient.patch('/auth/provider/password', payload)
 }
+
+export interface CustomerBookingSummary {
+  id: string
+  location_name: string
+  start_time: string
+  end_time: string
+  status: 'BOOKED' | 'CANCELLED'
+}
+
+export interface ProviderCustomerProfile {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  bookings: CustomerBookingSummary[]
+}
+
+export async function getProviderCustomer(customerId: string): Promise<ProviderCustomerProfile> {
+  const response = await apiClient.get<ProviderCustomerProfile>(`/provider/customers/${customerId}`)
+  return response.data
+}

@@ -3,7 +3,7 @@ import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, BookingLocationWithSlotCount, Difficulty, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, TimeSlot, TimeSlotWithBooking } from '../types';
+import { BookingLocation, BookingLocationWithSlotCount, BookingStatus, Difficulty, EndUser, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -79,6 +79,29 @@ export interface UpdateProfileInput {
 export interface ChangePasswordInput {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface CustomerBookingSummary {
+  id: string;
+  location_name: string;
+  start_time: string;
+  end_time: string;
+  status: BookingStatus;
+}
+
+export interface CustomerProfileView {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  bookings: CustomerBookingSummary[];
+}
+
+export class CustomerNotFoundError extends Error {
+  constructor() {
+    super('Customer not found');
+    this.name = 'CustomerNotFoundError';
+  }
 }
 
 export class IncorrectPasswordError extends Error {
@@ -296,6 +319,37 @@ export class ProviderService {
     await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ password_hash: newHash, updated_at: new Date() });
+  }
+
+  async getCustomerProfile(providerId: string, customerId: string): Promise<CustomerProfileView> {
+    const customer = await this.knex<EndUser>('end_user').where({ id: customerId }).first();
+    if (!customer) throw new CustomerNotFoundError();
+
+    const bookings = await this.knex('booking')
+      .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
+      .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+      .where({ 'booking.end_user_id': customerId, 'booking_location.provider_id': providerId })
+      .select(
+        'booking.id',
+        'booking_location.name as location_name',
+        'time_slot.start_time',
+        'time_slot.end_time',
+        'booking.status',
+      );
+
+    return {
+      id: customer.id,
+      first_name: customer.first_name,
+      last_name: customer.last_name,
+      email: customer.email,
+      bookings: bookings.map((b) => ({
+        id: b.id,
+        location_name: b.location_name,
+        start_time: b.start_time instanceof Date ? b.start_time.toISOString() : String(b.start_time),
+        end_time: b.end_time instanceof Date ? b.end_time.toISOString() : String(b.end_time),
+        status: b.status as BookingStatus,
+      })),
+    };
   }
 
   private async assertLocationOwnership(

@@ -14,6 +14,7 @@ import {
   SlotNotFoundError,
   ImageNotFoundError,
   EmailConflictError,
+  CustomerNotFoundError,
 } from '../../services/provider.service';
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
@@ -67,7 +68,8 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
     err instanceof LocationNotFoundError ||
     err instanceof LocationOwnershipError ||
     err instanceof SlotNotFoundError ||
-    err instanceof ImageNotFoundError
+    err instanceof ImageNotFoundError ||
+    err instanceof CustomerNotFoundError
   ) {
     res.status(404).json({ error: 'Not found' });
   } else {
@@ -255,6 +257,15 @@ router.get('/bookings', async (req: Request, res: Response, next: NextFunction) 
   try {
     const bookings = await providerService.getBookings(getUser(req).sub);
     res.json(bookings);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.get('/customers/:customerId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const profile = await providerService.getCustomerProfile(getUser(req).sub, req.params.customerId);
+    res.json(profile);
   } catch (err) {
     handleProviderError(err, res, next);
   }
