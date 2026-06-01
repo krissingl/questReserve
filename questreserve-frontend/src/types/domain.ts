@@ -32,6 +32,8 @@ export interface BookingLocation {
   image_url: string | null
   created_at: string
   updated_at: string
+  provider_first_name?: string
+  provider_last_name?: string
 }
 
 export interface BookingLocationWithSlotCount extends BookingLocation {

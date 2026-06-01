@@ -73,7 +73,7 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
 
 publicRouter.get('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const location = await customerService.getLocation(req.params.id);
+    const location = await customerService.getLocationWithProvider(req.params.id);
     if (!location) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(location);
   } catch (err) {

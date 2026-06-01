@@ -62,6 +62,10 @@ export class CustomerService {
     return this.locationRepo.findById(locationId);
   }
 
+  async getLocationWithProvider(locationId: string): Promise<(BookingLocation & { provider_first_name: string; provider_last_name: string }) | null> {
+    return this.locationRepo.findByIdWithProvider(locationId);
+  }
+
   async getLocationImages(locationId: string): Promise<LocationImage[]> {
     const location = await this.locationRepo.findById(locationId);
     if (!location) throw new LocationNotFoundError();
