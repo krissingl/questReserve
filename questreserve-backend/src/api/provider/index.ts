@@ -113,23 +113,15 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
     }
   }
 
-  if (b.password !== undefined) {
-    if (typeof b.password !== 'string' || b.password.length < 8) {
-      res.status(400).json({ error: 'password must be at least 8 characters' }); return;
-    }
-    if (b.password.length > 72) {
-      res.status(400).json({ error: 'password must not exceed 72 characters' }); return;
-    }
-  }
-
-  if (b.email === undefined && b.password === undefined) {
+  const { first_name, last_name, organization_name } = b as Record<string, unknown>;
+  const hasUpdate = b.email !== undefined || first_name !== undefined || last_name !== undefined || organization_name !== undefined;
+  if (!hasUpdate) {
     res.status(400).json({ error: 'No valid fields to update' }); return;
   }
 
   try {
     const updated = await providerService.updateProfile(getUser(req).sub, {
       email: b.email !== undefined ? (b.email as string).trim() : undefined,
-      password: b.password !== undefined ? (b.password as string) : undefined,
     });
     if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
     res.json(updated);

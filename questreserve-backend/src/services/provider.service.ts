@@ -71,7 +71,18 @@ export interface ProviderProfileView {
 
 export interface UpdateProfileInput {
   email?: string;
-  password?: string;
+}
+
+export interface ChangePasswordInput {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export class IncorrectPasswordError extends Error {
+  constructor() {
+    super('Current password is incorrect');
+    this.name = 'IncorrectPasswordError';
+  }
 }
 
 export class ProviderService {
@@ -253,7 +264,7 @@ export class ProviderService {
   }
 
   async updateProfile(providerId: string, input: UpdateProfileInput): Promise<ProviderProfileView | null> {
-    const updates: Partial<Pick<Provider, 'email' | 'password_hash'>> = {};
+    const updates: Partial<Pick<Provider, 'email'>> = {};
 
     if (input.email !== undefined) {
       const existing = await this.knex<Provider>('provider').where({ email: input.email }).whereNot({ id: providerId }).first();
@@ -261,15 +272,22 @@ export class ProviderService {
       updates.email = input.email;
     }
 
-    if (input.password !== undefined) {
-      updates.password_hash = await bcrypt.hash(input.password, 10);
-    }
-
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ ...updates, updated_at: new Date() })
-      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name']);
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status']);
     return updated ?? null;
+  }
+
+  async changePassword(providerId: string, input: ChangePasswordInput): Promise<void> {
+    const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
+    if (!provider) throw new Error('Provider not found');
+    const match = await bcrypt.compare(input.currentPassword, provider.password_hash);
+    if (!match) throw new IncorrectPasswordError();
+    const newHash = await bcrypt.hash(input.newPassword, 10);
+    await this.knex<Provider>('provider')
+      .where({ id: providerId })
+      .update({ password_hash: newHash, updated_at: new Date() });
   }
 
   private async assertLocationOwnership(

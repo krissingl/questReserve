@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { updateMyProfile } from '@/api/provider.api'
+import { updateMyProfile, changePassword } from '@/api/provider.api'
 import type { ProviderLayoutContext } from '@/layouts/ProviderLayout'
 
 const inputStyle = {
@@ -101,34 +101,70 @@ function UpdateEmailForm({ currentEmail, onSuccess }: { currentEmail: string; on
   )
 }
 
-function UpdatePasswordForm() {
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
+function ChangePasswordSection() {
+  const [open, setOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrent, setShowCurrent] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
-    if (password !== confirm) { setError('Passwords do not match.'); return }
-    setSubmitting(true)
+  function handleOpen() {
+    setOpen(true)
+    setSuccess(false)
+    setError(null)
+  }
+
+  function handleCancel() {
+    setOpen(false)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
     setError(null)
     setSuccess(false)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setError('New Password and Confirm New Password do not match.')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
     try {
-      await updateMyProfile({ password })
+      await changePassword({ currentPassword, newPassword })
       setSuccess(true)
-      setPassword('')
-      setConfirm('')
+      setOpen(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update password.')
+      setError(err instanceof Error ? err.message : 'Failed to change password.')
     } finally {
       setSubmitting(false)
     }
   }
 
+  const toggleButtonStyle = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    fontSize: 'var(--text-sm)',
+    color: 'rgb(var(--muted-foreground))',
+    position: 'absolute' as const,
+    right: '0.75rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+  }
+
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <h2
         style={{
           fontFamily: 'var(--font-heading)',
@@ -138,59 +174,124 @@ function UpdatePasswordForm() {
           marginBottom: '1rem',
         }}
       >
-        Update Password
+        Password
       </h2>
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="account-password" style={labelStyle}>New Password</label>
-        <input
-          id="account-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          style={inputStyle}
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="account-password-confirm" style={labelStyle}>Confirm Password</label>
-        <input
-          id="account-password-confirm"
-          type="password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          required
-          style={inputStyle}
-        />
-      </div>
-      {error && (
-        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>
-          {error}
+      {success && !open && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>
+          Password changed successfully.
         </p>
       )}
-      {success && (
-        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--success, 34 197 94))' }}>
-          Password updated successfully.
-        </p>
+      {!open ? (
+        <button
+          type="button"
+          onClick={handleOpen}
+          style={{
+            padding: '0.5rem 1.25rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Change Password
+        </button>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="current-password" style={labelStyle}>Current Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="current-password"
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+                style={{ ...inputStyle, paddingRight: '3.5rem' }}
+              />
+              <button type="button" onClick={() => setShowCurrent((v) => !v)} style={toggleButtonStyle} aria-label={showCurrent ? 'Hide' : 'Show'}>
+                {showCurrent ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="new-password" style={labelStyle}>New Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="new-password"
+                type={showNew ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+                style={{ ...inputStyle, paddingRight: '3.5rem' }}
+              />
+              <button type="button" onClick={() => setShowNew((v) => !v)} style={toggleButtonStyle} aria-label={showNew ? 'Hide' : 'Show'}>
+                {showNew ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="confirm-new-password" style={labelStyle}>Confirm New Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="confirm-new-password"
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                style={{ ...inputStyle, paddingRight: '3.5rem' }}
+              />
+              <button type="button" onClick={() => setShowConfirm((v) => !v)} style={toggleButtonStyle} aria-label={showConfirm ? 'Hide' : 'Show'}>
+                {showConfirm ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          {error && (
+            <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>
+              {error}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'rgb(var(--accent))',
+                color: 'rgb(var(--accent-foreground))',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)',
+                border: 'none',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                opacity: submitting ? 0.6 : 1,
+              }}
+            >
+              {submitting ? 'Saving…' : 'Save Password'}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'transparent',
+                color: 'rgb(var(--muted-foreground))',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-regular)',
+                border: '1px solid rgb(var(--border))',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       )}
-      <button
-        type="submit"
-        disabled={submitting}
-        style={{
-          padding: '0.5rem 1.25rem',
-          borderRadius: 'var(--radius)',
-          backgroundColor: 'rgb(var(--accent))',
-          color: 'rgb(var(--accent-foreground))',
-          fontSize: 'var(--text-sm)',
-          fontWeight: 'var(--weight-semibold)',
-          border: 'none',
-          cursor: submitting ? 'not-allowed' : 'pointer',
-          opacity: submitting ? 0.6 : 1,
-        }}
-      >
-        {submitting ? 'Saving…' : 'Save Password'}
-      </button>
-    </form>
+    </div>
   )
 }
 
@@ -344,7 +445,7 @@ export function ProviderAccount() {
       </div>
 
       <div style={sectionStyle}>
-        <UpdatePasswordForm />
+        <ChangePasswordSection />
       </div>
     </div>
   )

@@ -92,10 +92,21 @@ export async function getMyProfile(): Promise<ProviderProfile> {
 
 export interface UpdateProfilePayload {
   email?: string
-  password?: string
+  first_name?: string
+  last_name?: string
+  organization_name?: string
 }
 
 export async function updateMyProfile(payload: UpdateProfilePayload): Promise<ProviderProfile> {
   const response = await apiClient.patch<ProviderProfile>('/provider/profile', payload)
   return response.data
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string
+  newPassword: string
+}
+
+export async function changePassword(payload: ChangePasswordPayload): Promise<void> {
+  await apiClient.patch('/auth/provider/password', payload)
 }
