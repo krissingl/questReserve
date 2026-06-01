@@ -239,7 +239,7 @@ export function ProviderAccount() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
       <h1
         style={{
           fontFamily: 'var(--font-heading)',
