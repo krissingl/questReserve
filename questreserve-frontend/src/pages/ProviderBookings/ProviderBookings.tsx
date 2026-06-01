@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 import type { ProviderBooking } from '@/types/domain'
 import { formatDateTime } from '@/utils/format'
@@ -24,7 +25,10 @@ interface BookingCardProps {
 
 function BookingCard({ booking }: BookingCardProps) {
   const colours = statusColours[booking.status] ?? statusColours.CANCELLED
-  const customerLabel = booking.end_user_name?.trim() || ''
+  const hasName = booking.end_user_first_name && booking.end_user_last_name
+  const customerFullName = hasName
+    ? `${booking.end_user_first_name} ${booking.end_user_last_name}`
+    : booking.end_user_id
 
   return (
     <div
@@ -85,7 +89,12 @@ function BookingCard({ booking }: BookingCardProps) {
         </span>
         <span>
           <strong style={{ color: 'rgb(var(--foreground))' }}>Customer:</strong>{' '}
-          {customerLabel}
+          <Link
+            to={`/provider/customers/${booking.end_user_id}`}
+            style={{ color: 'rgb(var(--accent))', textDecoration: 'none', fontWeight: 'var(--weight-medium)' }}
+          >
+            {customerFullName}
+          </Link>
         </span>
         <span>
           <strong style={{ color: 'rgb(var(--foreground))' }}>Booked on:</strong>{' '}

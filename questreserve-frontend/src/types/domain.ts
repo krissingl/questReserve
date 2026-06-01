@@ -84,6 +84,8 @@ export interface ProviderBooking {
   time_slot_id: string
   end_user_id: string
   end_user_name: string | null
+  end_user_first_name: string | null
+  end_user_last_name: string | null
   status: BookingStatus
   created_at: string
   updated_at: string
