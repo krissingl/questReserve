@@ -71,6 +71,9 @@ export interface ProviderProfileView {
 
 export interface UpdateProfileInput {
   email?: string;
+  first_name?: string;
+  last_name?: string;
+  organization_name?: string | null;
 }
 
 export interface ChangePasswordInput {
@@ -264,13 +267,16 @@ export class ProviderService {
   }
 
   async updateProfile(providerId: string, input: UpdateProfileInput): Promise<ProviderProfileView | null> {
-    const updates: Partial<Pick<Provider, 'email'>> = {};
+    const updates: Partial<Pick<Provider, 'email' | 'first_name' | 'last_name' | 'organization_name'>> = {};
 
     if (input.email !== undefined) {
       const existing = await this.knex<Provider>('provider').where({ email: input.email }).whereNot({ id: providerId }).first();
       if (existing) throw new EmailConflictError();
       updates.email = input.email;
     }
+    if (input.first_name !== undefined) updates.first_name = input.first_name;
+    if (input.last_name !== undefined) updates.last_name = input.last_name;
+    if ('organization_name' in input) updates.organization_name = input.organization_name ?? null;
 
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })

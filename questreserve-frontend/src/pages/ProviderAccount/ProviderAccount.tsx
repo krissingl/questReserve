@@ -295,6 +295,120 @@ function ChangePasswordSection() {
   )
 }
 
+function UpdateProfileForm({
+  initialFirstName,
+  initialLastName,
+  initialOrgName,
+  onSuccess,
+}: {
+  initialFirstName: string
+  initialLastName: string
+  initialOrgName: string
+  onSuccess: () => void
+}) {
+  const [firstName, setFirstName] = useState(initialFirstName)
+  const [lastName, setLastName] = useState(initialLastName)
+  const [orgName, setOrgName] = useState(initialOrgName)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!firstName.trim()) { setValidationError('First name is required.'); return }
+    if (!lastName.trim()) { setValidationError('Last name is required.'); return }
+    setValidationError(null)
+    setSubmitting(true)
+    setError(null)
+    setSuccess(false)
+    try {
+      await updateMyProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        organization_name: orgName.trim() || undefined,
+      })
+      setSuccess(true)
+      onSuccess()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
+      <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'rgb(var(--foreground))', marginBottom: '0.75rem' }}>
+        Update Profile
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+        <div>
+          <label htmlFor="profile-first-name" style={labelStyle}>First Name</label>
+          <input
+            id="profile-first-name"
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <label htmlFor="profile-last-name" style={labelStyle}>Last Name</label>
+          <input
+            id="profile-last-name"
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            style={inputStyle}
+          />
+        </div>
+      </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="profile-org-name" style={labelStyle}>
+          Organization Name{' '}
+          <span style={{ fontSize: '0.75rem', fontWeight: 'var(--weight-regular)', color: 'rgb(var(--muted-foreground))' }}>(optional)</span>
+        </label>
+        <input
+          id="profile-org-name"
+          type="text"
+          value={orgName}
+          onChange={(e) => setOrgName(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+      {validationError && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{validationError}</p>
+      )}
+      {error && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>
+      )}
+      {success && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>Profile updated.</p>
+      )}
+      <button
+        type="submit"
+        disabled={submitting}
+        style={{
+          padding: '0.5rem 1.25rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--accent))',
+          color: 'rgb(var(--accent-foreground))',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--weight-semibold)',
+          border: 'none',
+          cursor: submitting ? 'not-allowed' : 'pointer',
+          opacity: submitting ? 0.6 : 1,
+        }}
+      >
+        {submitting ? 'Saving…' : 'Update Profile'}
+      </button>
+    </form>
+  )
+}
+
 const sectionStyle = {
   padding: '1.5rem',
   borderRadius: 'var(--radius)',
@@ -419,25 +533,12 @@ export function ProviderAccount() {
           </div>
         </div>
 
-        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '0.35rem 0.9rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid rgb(var(--border))',
-              fontSize: 'var(--text-sm)',
-              color: 'rgb(var(--muted-foreground))',
-              cursor: 'not-allowed',
-              userSelect: 'none',
-            }}
-          >
-            Update Profile
-          </span>
-          <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'rgb(var(--muted-foreground))' }}>
-            Profile editing (name, organization) is coming in a future update.
-          </p>
-        </div>
+        <UpdateProfileForm
+          initialFirstName={profile.first_name}
+          initialLastName={profile.last_name}
+          initialOrgName={profile.organization_name ?? ''}
+          onSuccess={refetchProfile}
+        />
       </div>
 
       <div style={sectionStyle}>

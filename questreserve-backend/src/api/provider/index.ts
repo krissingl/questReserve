@@ -113,7 +113,17 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
     }
   }
 
-  const { first_name, last_name, organization_name } = b as Record<string, unknown>;
+  const { first_name, last_name, organization_name } = b;
+  if (first_name !== undefined && (typeof first_name !== 'string' || (first_name as string).trim() === '')) {
+    res.status(400).json({ error: 'first_name must be a non-empty string' }); return;
+  }
+  if (last_name !== undefined && (typeof last_name !== 'string' || (last_name as string).trim() === '')) {
+    res.status(400).json({ error: 'last_name must be a non-empty string' }); return;
+  }
+  if (organization_name !== undefined && organization_name !== null && typeof organization_name !== 'string') {
+    res.status(400).json({ error: 'organization_name must be a string or null' }); return;
+  }
+
   const hasUpdate = b.email !== undefined || first_name !== undefined || last_name !== undefined || organization_name !== undefined;
   if (!hasUpdate) {
     res.status(400).json({ error: 'No valid fields to update' }); return;
@@ -122,6 +132,9 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
   try {
     const updated = await providerService.updateProfile(getUser(req).sub, {
       email: b.email !== undefined ? (b.email as string).trim() : undefined,
+      first_name: first_name !== undefined ? (first_name as string).trim() : undefined,
+      last_name: last_name !== undefined ? (last_name as string).trim() : undefined,
+      organization_name: organization_name !== undefined ? (organization_name as string | null) : undefined,
     });
     if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
     res.json(updated);
