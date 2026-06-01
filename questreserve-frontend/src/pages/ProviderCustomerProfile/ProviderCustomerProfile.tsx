@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { getProviderCustomer } from '@/api/provider.api'
 import type { ProviderCustomerProfile as ProviderCustomerProfileData } from '@/api/provider.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
+import { MessageThread } from '@/components/MessageThread/MessageThread'
 
 const statusColours: Record<string, { bg: string; text: string }> = {
   BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
@@ -140,9 +141,12 @@ export function ProviderCustomerProfile() {
                         {b.status}
                       </span>
                     </div>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '1rem' }}>
                       {formatDateRange(b.start_time, b.end_time)}
                     </p>
+                    <div style={{ paddingTop: '0.75rem', borderTop: '1px solid rgb(var(--border))' }}>
+                      <MessageThread bookingId={b.id} />
+                    </div>
                   </div>
                 )
               })}

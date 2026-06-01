@@ -131,3 +131,27 @@ export async function getProviderCustomer(customerId: string): Promise<ProviderC
   const response = await apiClient.get<ProviderCustomerProfile>(`/provider/customers/${customerId}`)
   return response.data
 }
+
+export interface Message {
+  id: string
+  booking_id: string
+  sender_id: string
+  sender_type: 'provider' | 'customer'
+  body: string
+  created_at: string
+  read_at: string | null
+}
+
+export async function getMessages(bookingId: string): Promise<Message[]> {
+  const response = await apiClient.get<Message[]>(`/messages?bookingId=${encodeURIComponent(bookingId)}`)
+  return response.data
+}
+
+export async function sendMessage(bookingId: string, body: string): Promise<Message> {
+  const response = await apiClient.post<Message>('/messages', { bookingId, body })
+  return response.data
+}
+
+export async function markMessageRead(messageId: string): Promise<void> {
+  await apiClient.patch(`/messages/${messageId}/read`)
+}
