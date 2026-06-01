@@ -279,6 +279,45 @@ export function ProviderAccount() {
           )}
         </dl>
 
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Plan</span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '0.2rem 0.7rem',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)',
+                backgroundColor: 'rgb(var(--card))',
+                border: '1px solid rgb(var(--accent))',
+                color: 'rgb(var(--accent))',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {profile.plan}
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '0.2rem 0.7rem',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)',
+                backgroundColor: 'rgb(var(--card))',
+                border: profile.status === 'ACTIVE' ? '1px solid rgb(var(--accent))' : '1px solid rgb(180 83 9)',
+                color: profile.status === 'ACTIVE' ? 'rgb(var(--accent))' : 'rgb(180 83 9)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {profile.status}
+            </span>
+          </div>
+        </div>
+
         <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
           <span
             style={{

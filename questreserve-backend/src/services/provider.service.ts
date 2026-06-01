@@ -3,7 +3,7 @@ import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, BookingLocationWithSlotCount, Difficulty, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, TimeSlot, TimeSlotWithBooking } from '../types';
+import { BookingLocation, BookingLocationWithSlotCount, Difficulty, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -65,6 +65,8 @@ export interface ProviderProfileView {
   last_name: string;
   email: string;
   organization_name: string | null;
+  plan: ProviderPlan;
+  status: ProviderStatus;
 }
 
 export interface UpdateProfileInput {
@@ -246,8 +248,8 @@ export class ProviderService {
   async getProfile(providerId: string): Promise<ProviderProfileView | null> {
     const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
     if (!provider) return null;
-    const { id, first_name, last_name, email, organization_name } = provider;
-    return { id, first_name, last_name, email, organization_name };
+    const { id, first_name, last_name, email, organization_name, plan, status } = provider;
+    return { id, first_name, last_name, email, organization_name, plan, status };
   }
 
   async updateProfile(providerId: string, input: UpdateProfileInput): Promise<ProviderProfileView | null> {

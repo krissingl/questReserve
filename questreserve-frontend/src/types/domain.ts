@@ -66,12 +66,17 @@ export interface Booking {
   slot_end_time: string
 }
 
+export type ProviderPlan = 'FREE' | 'STANDARD' | 'PREMIUM'
+export type ProviderStatus = 'ACTIVE' | 'SUSPENDED'
+
 export interface ProviderProfile {
   id: string
   first_name: string
   last_name: string
   email: string
   organization_name: string | null
+  plan: ProviderPlan
+  status: ProviderStatus
 }
 
 export interface ProviderBooking {
