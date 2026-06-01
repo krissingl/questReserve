@@ -24,6 +24,7 @@ import { ProviderLocationEdit } from '@/pages/ProviderLocationEdit/ProviderLocat
 import { ProviderAdventures } from '@/pages/ProviderAdventures/ProviderAdventures'
 import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
 import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
+import { PublicProviderProfile } from '@/pages/PublicProviderProfile/PublicProviderProfile'
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,16 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <About />,
+      },
+    ],
+  },
+  {
+    path: '/providers/:providerId/profile',
+    element: <GuestLayout />,
+    children: [
+      {
+        index: true,
+        element: <PublicProviderProfile />,
       },
     ],
   },
