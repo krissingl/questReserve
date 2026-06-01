@@ -29,6 +29,7 @@ export function AvatarIcon({ firstName, lastName, size = 'md' }: AvatarIconProps
         fontSize,
         fontWeight: 'var(--weight-bold)',
         letterSpacing: '0.04em',
+        lineHeight: 1,
         flexShrink: 0,
         userSelect: 'none',
       }}
