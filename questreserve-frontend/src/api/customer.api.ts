@@ -1,6 +1,28 @@
 import { apiClient } from './client'
 import type { BookingLocation, LocationImage, Booking, TimeSlot, LocationFilters } from '@/types/domain'
 
+export interface CustomerProfile {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+}
+
+export async function getMyCustomerProfile(): Promise<CustomerProfile> {
+  const response = await apiClient.get<CustomerProfile>('/customer/profile')
+  return response.data
+}
+
+export interface UpdateCustomerProfilePayload {
+  first_name?: string
+  last_name?: string
+}
+
+export async function updateMyCustomerProfile(payload: UpdateCustomerProfilePayload): Promise<CustomerProfile> {
+  const response = await apiClient.patch<CustomerProfile>('/customer/profile', payload)
+  return response.data
+}
+
 export async function getBookingLocations(filters?: LocationFilters): Promise<BookingLocation[]> {
   const params: Record<string, string> = {}
   if (filters?.difficulty) {
