@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { ProviderBooking } from '@/types/domain'
 import { formatDateTime } from '@/utils/format'
 
@@ -87,12 +88,19 @@ function BookingCard({ booking }: BookingCardProps) {
           <strong style={{ color: 'rgb(var(--foreground))' }}>Slot:</strong>{' '}
           {formatDateTime(booking.start_time)}
         </span>
-        <span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
           <strong style={{ color: 'rgb(var(--foreground))' }}>Customer:</strong>{' '}
           <Link
             to={`/provider/customers/${booking.end_user_id}`}
-            style={{ color: 'rgb(var(--accent))', textDecoration: 'none', fontWeight: 'var(--weight-medium)' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'rgb(var(--accent))', textDecoration: 'none', fontWeight: 'var(--weight-medium)' }}
           >
+            {hasName && (
+              <AvatarIcon
+                firstName={booking.end_user_first_name!}
+                lastName={booking.end_user_last_name!}
+                size="sm"
+              />
+            )}
             {customerFullName}
           </Link>
         </span>

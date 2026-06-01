@@ -1,7 +1,8 @@
-import { NavLink, Navigate, Outlet } from 'react-router-dom'
+import { NavLink, Link, Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useMyProfile } from '@/hooks/useMyProfile'
 import { SiteFooter } from '@/components/SiteFooter/SiteFooter'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { ProviderProfile } from '@/types/domain'
 
 interface ProviderNavProps {
@@ -62,15 +63,21 @@ function ProviderNav({ profile }: ProviderNavProps) {
       </div>
 
       {profile && (
-        <span
+        <Link
+          to="/provider/account"
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
             fontSize: 'var(--text-sm)',
             color: 'rgb(var(--muted-foreground))',
             marginRight: '1.25rem',
+            textDecoration: 'none',
           }}
         >
-          {profile.first_name} {profile.last_name}
-        </span>
+          <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="sm" />
+          <span>{profile.first_name} {profile.last_name}</span>
+        </Link>
       )}
 
       <button

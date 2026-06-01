@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getProviderCustomer } from '@/api/provider.api'
 import type { ProviderCustomerProfile as ProviderCustomerProfileData } from '@/api/provider.api'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 
 const statusColours: Record<string, { bg: string; text: string }> = {
   BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
@@ -63,21 +64,24 @@ export function ProviderCustomerProfile() {
 
       {!loading && !error && profile && (
         <>
-          <div style={{ marginBottom: '2rem' }}>
-            <h1
-              style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1.75rem',
-                fontWeight: 'var(--weight-bold)',
-                color: 'rgb(var(--foreground))',
-                marginBottom: '0.25rem',
-              }}
-            >
-              {profile.first_name} {profile.last_name}
-            </h1>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
-              {profile.email}
-            </p>
+          <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" />
+            <div>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-heading)',
+                  fontSize: '1.75rem',
+                  fontWeight: 'var(--weight-bold)',
+                  color: 'rgb(var(--foreground))',
+                  marginBottom: '0.25rem',
+                }}
+              >
+                {profile.first_name} {profile.last_name}
+              </h1>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+                {profile.email}
+              </p>
+            </div>
           </div>
 
           <h2
