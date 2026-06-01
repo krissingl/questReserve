@@ -20,6 +20,7 @@ function fixedDate(year: number, month: number, day: number, hour: number): Date
 
 const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:3001";
 const UPLOADS_DIR = path.resolve(__dirname, "../../../uploads", "location-images");
+const PROFILE_PICS_DIR = path.resolve(__dirname, "../../../uploads", "profile-pictures");
 
 interface FileCopyJob {
   src: string;
@@ -37,6 +38,17 @@ function planImageCopy(srcPath: string, locationId: string, index: number): File
     destDir,
     destPath: path.join(destDir, filename),
     url: `${BACKEND_PUBLIC_URL}/uploads/location-images/${locationId}/${filename}`,
+  };
+}
+
+function planProfilePicCopy(srcPath: string, slug: string): FileCopyJob {
+  const ext = path.extname(srcPath);
+  const filename = `${slug}${ext}`;
+  return {
+    src: srcPath,
+    destDir: PROFILE_PICS_DIR,
+    destPath: path.join(PROFILE_PICS_DIR, filename),
+    url: `${BACKEND_PUBLIC_URL}/uploads/profile-pictures/${filename}`,
   };
 }
 
@@ -67,6 +79,37 @@ const LOCATION_IMAGE_FOLDERS: Record<string, string> = {
   "10c00012-0000-0000-0000-000000000000": "DragonRoostCavern",
 };
 
+const PROVIDER_PICTURES: Record<string, string> = {
+  [FIXED_PROVIDER_ID]: "strahd",
+  "cccccccc-cccc-cccc-cccc-cccccccccccc": "",
+  "dddddddd-dddd-dddd-dddd-dddddddddddd": "smaug",
+  "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee": "vecna",
+  "ffffffff-ffff-ffff-ffff-ffffffffffff": "",
+  "00000000-ffff-0000-ffff-000000000000": "gohma",
+  "a1a1a1a1-0000-0000-0000-000000000000": "godrickGrafted",
+  "b2b2b2b2-0000-0000-0000-000000000000": "balrog",
+};
+
+const CUSTOMER_PICTURES: Record<string, string> = {
+  [FIXED_END_USER_ID]: "laiostouden",
+  "11111111-2222-3333-4444-555555555555": "bilbobaggins",
+  "22222222-3333-4444-5555-666666666666": "geraltofrivia",
+  "33333333-4444-5555-6666-777777777777": "ciriofcintra",
+  "44444444-5555-6666-7777-888888888888": "navithefairy",
+  "55555555-6666-7777-8888-999999999999": "tatlthefairy",
+  "66666666-7777-8888-9999-000000000000": "trevorbelmont",
+  "77777777-8888-9999-0000-111111111111": "alucardtepes",
+};
+
+function findProfilePicFile(folder: string, slug: string): string | null {
+  if (!slug) return null;
+  const dir = path.join(ASSETS_DIR, folder);
+  if (!fs.existsSync(dir)) return null;
+  const files = fs.readdirSync(dir);
+  const match = files.find((f) => f.startsWith(slug) && /\.(jpg|jpeg|png|webp)$/i.test(f));
+  return match ? path.join(dir, match) : null;
+}
+
 export async function seed(knex: Knex): Promise<void> {
   const hash = await bcrypt.hash(SHARED_PASSWORD, SALT_ROUNDS);
 
@@ -80,6 +123,31 @@ export async function seed(knex: Knex): Promise<void> {
       copyJobs.push(job);
       return job.url;
     });
+  }
+
+  // Plan provider and customer profile picture copies
+  const providerPictureUrls: Record<string, string | null> = {};
+  for (const [id, slug] of Object.entries(PROVIDER_PICTURES)) {
+    const src = findProfilePicFile("providers", slug);
+    if (src) {
+      const job = planProfilePicCopy(src, slug);
+      copyJobs.push(job);
+      providerPictureUrls[id] = job.url;
+    } else {
+      providerPictureUrls[id] = null;
+    }
+  }
+
+  const customerPictureUrls: Record<string, string | null> = {};
+  for (const [id, slug] of Object.entries(CUSTOMER_PICTURES)) {
+    const src = findProfilePicFile("customers", slug);
+    if (src) {
+      const job = planProfilePicCopy(src, slug);
+      copyJobs.push(job);
+      customerPictureUrls[id] = job.url;
+    } else {
+      customerPictureUrls[id] = null;
+    }
   }
 
   await knex.transaction(async (trx) => {
@@ -135,6 +203,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Barovia Experiences",
         plan: "PREMIUM",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls[FIXED_PROVIDER_ID] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -147,6 +216,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Undermountain Corp",
         plan: "STANDARD",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls["cccccccc-cccc-cccc-cccc-cccccccccccc"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -159,6 +229,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: null,
         plan: "FREE",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls["dddddddd-dddd-dddd-dddd-dddddddddddd"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -171,6 +242,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Whispered Tombs LLC",
         plan: "STANDARD",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -184,6 +256,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Castlevania Experiences",
         plan: "PREMIUM",
         status: "SUSPENDED",
+        profile_picture_url: providerPictureUrls["ffffffff-ffff-ffff-ffff-ffffffffffff"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -196,6 +269,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Ganon's Forces",
         plan: "PREMIUM",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls["00000000-ffff-0000-ffff-000000000000"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -208,6 +282,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Stormveil Castle",
         plan: "STANDARD",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls["a1a1a1a1-0000-0000-0000-000000000000"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -220,6 +295,7 @@ export async function seed(knex: Knex): Promise<void> {
         organization_name: "Khazad-dûm Expeditions",
         plan: "PREMIUM",
         status: "ACTIVE",
+        profile_picture_url: providerPictureUrls["b2b2b2b2-0000-0000-0000-000000000000"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -234,6 +310,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "laios.touden@yohaa.com",
         password_hash: hash,
         role: "REGULAR",
+        profile_picture_url: customerPictureUrls[FIXED_END_USER_ID] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -244,6 +321,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "underhill111@aoi.com",
         password_hash: hash,
         role: "REGULAR",
+        profile_picture_url: customerPictureUrls["11111111-2222-3333-4444-555555555555"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -254,6 +332,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "geralt_riv@witcherscorp.com",
         password_hash: hash,
         role: "REGULAR",
+        profile_picture_url: customerPictureUrls["22222222-3333-4444-5555-666666666666"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -264,6 +343,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "ciri.cintra@witcherscorp.com",
         password_hash: hash,
         role: "PREMIERE",
+        profile_picture_url: customerPictureUrls["33333333-4444-5555-6666-777777777777"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -274,6 +354,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "navi@kokiri-forest.hyrule",
         password_hash: hash,
         role: "PREMIERE",
+        profile_picture_url: customerPictureUrls["44444444-5555-6666-7777-888888888888"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -284,6 +365,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "tatltale231@yohaa.com",
         password_hash: hash,
         role: "PREMIERE",
+        profile_picture_url: customerPictureUrls["55555555-6666-7777-8888-999999999999"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -294,6 +376,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "trevor@belmont-order.net",
         password_hash: hash,
         role: "CORPORATE",
+        profile_picture_url: customerPictureUrls["66666666-7777-8888-9999-000000000000"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -304,6 +387,7 @@ export async function seed(knex: Knex): Promise<void> {
         email: "alucard@castlevania.net",
         password_hash: hash,
         role: "CORPORATE",
+        profile_picture_url: customerPictureUrls["77777777-8888-9999-0000-111111111111"] ?? null,
         created_at: trx.fn.now(),
         updated_at: trx.fn.now(),
       },
@@ -585,6 +669,7 @@ export async function seed(knex: Knex): Promise<void> {
   });
 
   // Execute file copies only after the transaction commits successfully
+  fs.mkdirSync(PROFILE_PICS_DIR, { recursive: true });
   for (const { src, destDir, destPath } of copyJobs) {
     fs.mkdirSync(destDir, { recursive: true });
     fs.copyFileSync(src, destPath);
