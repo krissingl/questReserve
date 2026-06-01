@@ -111,6 +111,17 @@ export async function changePassword(payload: ChangePasswordPayload): Promise<vo
   await apiClient.patch('/auth/provider/password', payload)
 }
 
+export async function uploadProviderProfilePicture(file: File): Promise<ProviderProfile> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post<ProviderProfile>(
+    '/provider/profile/picture',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return response.data
+}
+
 export interface CustomerBookingSummary {
   id: string
   location_name: string

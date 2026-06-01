@@ -67,6 +67,7 @@ export interface ProviderProfileView {
   organization_name: string | null;
   plan: ProviderPlan;
   status: ProviderStatus;
+  profile_picture_url: string | null;
 }
 
 export interface UpdateProfileInput {
@@ -287,8 +288,8 @@ export class ProviderService {
   async getProfile(providerId: string): Promise<ProviderProfileView | null> {
     const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
     if (!provider) return null;
-    const { id, first_name, last_name, email, organization_name, plan, status } = provider;
-    return { id, first_name, last_name, email, organization_name, plan, status };
+    const { id, first_name, last_name, email, organization_name, plan, status, profile_picture_url } = provider;
+    return { id, first_name, last_name, email, organization_name, plan, status, profile_picture_url: profile_picture_url ?? null };
   }
 
   async updateProfile(providerId: string, input: UpdateProfileInput): Promise<ProviderProfileView | null> {
@@ -306,7 +307,15 @@ export class ProviderService {
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ ...updates, updated_at: new Date() })
-      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status']);
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status', 'profile_picture_url']);
+    return updated ?? null;
+  }
+
+  async setProfilePicture(providerId: string, url: string): Promise<ProviderProfileView | null> {
+    const [updated] = await this.knex<Provider>('provider')
+      .where({ id: providerId })
+      .update({ profile_picture_url: url, updated_at: new Date() })
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status', 'profile_picture_url']);
     return updated ?? null;
   }
 

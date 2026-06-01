@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { updateMyProfile, changePassword } from '@/api/provider.api'
+import { updateMyProfile, changePassword, uploadProviderProfilePicture } from '@/api/provider.api'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { ProviderLayoutContext } from '@/layouts/ProviderLayout'
 
 const inputStyle = {
@@ -409,6 +410,85 @@ function UpdateProfileForm({
   )
 }
 
+function ProfilePictureSection({
+  currentUrl,
+  firstName,
+  lastName,
+  onSuccess,
+}: {
+  currentUrl: string | null
+  firstName: string
+  lastName: string
+  onSuccess: () => void
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError(null)
+    setSuccess(false)
+    try {
+      await uploadProviderProfilePicture(file)
+      setSuccess(true)
+      onSuccess()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failed.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+      {currentUrl ? (
+        <img
+          src={currentUrl}
+          alt="Profile"
+          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
+        />
+      ) : (
+        <AvatarIcon firstName={firstName} lastName={lastName} size="md" />
+      )}
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          id="provider-profile-pic-input"
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            padding: '0.4rem 1rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: uploading ? 'not-allowed' : 'pointer',
+            opacity: uploading ? 0.6 : 1,
+          }}
+        >
+          {uploading ? 'Uploading…' : currentUrl ? 'Change Photo' : 'Upload Photo'}
+        </button>
+        {error && <p style={{ marginTop: '0.4rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>}
+        {success && <p style={{ marginTop: '0.4rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>Photo updated.</p>}
+      </div>
+    </div>
+  )
+}
+
 const sectionStyle = {
   padding: '1.5rem',
   borderRadius: 'var(--radius)',
@@ -531,6 +611,18 @@ export function ProviderAccount() {
               {profile.status}
             </span>
           </div>
+        </div>
+
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'rgb(var(--foreground))', marginBottom: '0.75rem' }}>
+            Profile Photo
+          </h3>
+          <ProfilePictureSection
+            currentUrl={profile.profile_picture_url ?? null}
+            firstName={profile.first_name}
+            lastName={profile.last_name}
+            onSuccess={refetchProfile}
+          />
         </div>
 
         <UpdateProfileForm

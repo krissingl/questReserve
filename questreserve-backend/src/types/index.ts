@@ -25,6 +25,7 @@ export interface Provider {
   organization_name: string | null;
   plan: ProviderPlan;
   status: ProviderStatus;
+  profile_picture_url: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -36,6 +37,7 @@ export interface EndUser {
   email: string;
   password_hash: string;
   role: EndUserRole;
+  profile_picture_url: string | null;
   created_at: Date;
   updated_at: Date;
 }

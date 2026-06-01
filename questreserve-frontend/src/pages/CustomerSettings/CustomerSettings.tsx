@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { getMyCustomerProfile, updateMyCustomerProfile } from '@/api/customer.api'
+import { useState, useEffect, useRef } from 'react'
+import { getMyCustomerProfile, updateMyCustomerProfile, uploadCustomerProfilePicture } from '@/api/customer.api'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { CustomerProfile } from '@/api/customer.api'
 
 const inputStyle = {
@@ -30,7 +31,86 @@ const sectionStyle = {
   marginBottom: '1.5rem',
 }
 
-function UpdateProfileSection() {
+function ProfilePictureSection({
+  currentUrl,
+  firstName,
+  lastName,
+  onSuccess,
+}: {
+  currentUrl: string | null
+  firstName: string
+  lastName: string
+  onSuccess: (updated: CustomerProfile) => void
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setError(null)
+    setSuccess(false)
+    try {
+      const updated = await uploadCustomerProfilePicture(file)
+      setSuccess(true)
+      onSuccess(updated)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Upload failed.')
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgb(var(--border))' }}>
+      {currentUrl ? (
+        <img
+          src={currentUrl}
+          alt="Profile"
+          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
+        />
+      ) : (
+        <AvatarIcon firstName={firstName} lastName={lastName} size="md" />
+      )}
+      <div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          id="customer-profile-pic-input"
+        />
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          style={{
+            padding: '0.4rem 1rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: uploading ? 'not-allowed' : 'pointer',
+            opacity: uploading ? 0.6 : 1,
+          }}
+        >
+          {uploading ? 'Uploading…' : currentUrl ? 'Change Photo' : 'Upload Photo'}
+        </button>
+        {error && <p style={{ marginTop: '0.4rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>}
+        {success && <p style={{ marginTop: '0.4rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>Photo updated.</p>}
+      </div>
+    </div>
+  )
+}
+
+function ProfileSection() {
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [firstName, setFirstName] = useState('')
@@ -52,6 +132,10 @@ function UpdateProfileSection() {
         setLoading(false)
       })
   }, [])
+
+  function handlePictureSuccess(updated: CustomerProfile) {
+    setProfile(updated)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -85,6 +169,15 @@ function UpdateProfileSection() {
 
   return (
     <>
+      {profile && (
+        <ProfilePictureSection
+          currentUrl={profile.profile_picture_url}
+          firstName={profile.first_name}
+          lastName={profile.last_name}
+          onSuccess={handlePictureSuccess}
+        />
+      )}
+
       {profile && (
         <dl style={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '0.5rem 1.5rem', fontSize: 'var(--text-sm)', marginBottom: '1.25rem' }}>
           <dt style={{ color: 'rgb(var(--muted-foreground))', fontWeight: 'var(--weight-medium)' }}>Name</dt>
@@ -175,7 +268,7 @@ export function CustomerSettings() {
         >
           Profile
         </h2>
-        <UpdateProfileSection />
+        <ProfileSection />
       </div>
 
       <div style={sectionStyle}>

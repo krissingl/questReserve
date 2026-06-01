@@ -6,6 +6,7 @@ export interface CustomerProfile {
   first_name: string
   last_name: string
   email: string
+  profile_picture_url: string | null
 }
 
 export async function getMyCustomerProfile(): Promise<CustomerProfile> {
@@ -20,6 +21,17 @@ export interface UpdateCustomerProfilePayload {
 
 export async function updateMyCustomerProfile(payload: UpdateCustomerProfilePayload): Promise<CustomerProfile> {
   const response = await apiClient.patch<CustomerProfile>('/customer/profile', payload)
+  return response.data
+}
+
+export async function uploadCustomerProfilePicture(file: File): Promise<CustomerProfile> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post<CustomerProfile>(
+    '/customer/profile/picture',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
   return response.data
 }
 

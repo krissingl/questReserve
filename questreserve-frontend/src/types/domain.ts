@@ -79,6 +79,7 @@ export interface ProviderProfile {
   organization_name: string | null
   plan: ProviderPlan
   status: ProviderStatus
+  profile_picture_url: string | null
 }
 
 export interface ProviderBooking {

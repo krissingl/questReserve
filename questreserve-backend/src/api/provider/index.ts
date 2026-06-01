@@ -22,6 +22,7 @@ import { UnauthenticatedError } from '../../utils/errors';
 
 const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'location-images');
+const PROFILE_PICS_DIR = path.join(process.cwd(), 'uploads', 'profile-pictures');
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
 
 const upload = multer({
@@ -29,6 +30,27 @@ const upload = multer({
     destination: (_req, _file, cb) => {
       fs.mkdirSync(UPLOADS_DIR, { recursive: true });
       cb(null, UPLOADS_DIR);
+    },
+    filename: (_req, file, cb) => {
+      const ext = `.${file.mimetype.split('/')[1]}`;
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ACCEPTED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+    }
+  },
+});
+
+const uploadProfilePic = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      fs.mkdirSync(PROFILE_PICS_DIR, { recursive: true });
+      cb(null, PROFILE_PICS_DIR);
     },
     filename: (_req, file, cb) => {
       const ext = `.${file.mimetype.split('/')[1]}`;
@@ -143,6 +165,26 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
   } catch (err) {
     handleProviderError(err, res, next);
   }
+});
+
+router.post('/profile/picture', (req: Request, res: Response, next: NextFunction) => {
+  uploadProfilePic.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr instanceof MulterError) {
+      res.status(400).json({ error: uploadErr.message });
+      return;
+    }
+    if (uploadErr) { next(uploadErr); return; }
+    if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
+    try {
+      const imageUrl = `${PUBLIC_URL}/uploads/profile-pictures/${req.file.filename}`;
+      const updated = await providerService.setProfilePicture(getUser(req).sub, imageUrl);
+      if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
+      res.json(updated);
+    } catch (err) {
+      fs.unlink(req.file.path, () => {});
+      next(err);
+    }
+  });
 });
 
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {

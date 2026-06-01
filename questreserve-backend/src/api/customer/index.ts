@@ -1,4 +1,7 @@
+import fs from 'fs';
+import path from 'path';
 import { Router, Request, Response, NextFunction } from 'express';
+import multer, { MulterError } from 'multer';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
@@ -17,6 +20,31 @@ import {
 import { Booking, Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
+
+const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const PROFILE_PICS_DIR = path.join(process.cwd(), 'uploads', 'profile-pictures');
+const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
+
+const uploadProfilePic = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => {
+      fs.mkdirSync(PROFILE_PICS_DIR, { recursive: true });
+      cb(null, PROFILE_PICS_DIR);
+    },
+    filename: (_req, file, cb) => {
+      const ext = `.${file.mimetype.split('/')[1]}`;
+      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ACCEPTED_MIME_TYPES.has(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
+    }
+  },
+});
 
 const router = Router();
 const publicRouter = Router();
@@ -111,7 +139,7 @@ protectedRouter.use(authenticate, requireRole('end_user'));
 protectedRouter.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getUser(req);
-    const row = await db('end_user').where({ id: user.sub }).select('id', 'first_name', 'last_name', 'email').first();
+    const row = await db('end_user').where({ id: user.sub }).select('id', 'first_name', 'last_name', 'email', 'profile_picture_url').first();
     if (!row) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(row);
   } catch (err) {
@@ -142,12 +170,36 @@ protectedRouter.patch('/profile', async (req: Request, res: Response, next: Next
     const [updated] = await db('end_user')
       .where({ id: user.sub })
       .update(updates)
-      .returning(['id', 'first_name', 'last_name', 'email']);
+      .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url']);
     if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(updated);
   } catch (err) {
     next(err);
   }
+});
+
+protectedRouter.post('/profile/picture', (req: Request, res: Response, next: NextFunction) => {
+  uploadProfilePic.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr instanceof MulterError) {
+      res.status(400).json({ error: uploadErr.message });
+      return;
+    }
+    if (uploadErr) { next(uploadErr); return; }
+    if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
+    try {
+      const user = getUser(req);
+      const imageUrl = `${PUBLIC_URL}/uploads/profile-pictures/${req.file.filename}`;
+      const [updated] = await db('end_user')
+        .where({ id: user.sub })
+        .update({ profile_picture_url: imageUrl, updated_at: new Date() })
+        .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url']);
+      if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
+      res.json(updated);
+    } catch (err) {
+      fs.unlink(req.file.path, () => {});
+      next(err);
+    }
+  });
 });
 
 protectedRouter.post('/bookings', async (req: Request, res: Response, next: NextFunction) => {
