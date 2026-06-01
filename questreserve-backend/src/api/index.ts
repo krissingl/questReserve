@@ -4,6 +4,7 @@ import protectedRouter from './protected';
 import providerRouter from './provider';
 import customerRouter from './customer';
 import adminRouter from './admin';
+import publicRouter from './public';
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use('/protected', protectedRouter);
 router.use('/provider', providerRouter);
 router.use('/customer', customerRouter);
 router.use('/admin', adminRouter);
+router.use(publicRouter);
 
 export default router;
