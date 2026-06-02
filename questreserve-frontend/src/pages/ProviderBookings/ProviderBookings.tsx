@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 import { useInbox } from '@/hooks/useInbox'
@@ -260,15 +260,17 @@ export function ProviderBookings() {
         : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
 
-  const selectStyle = {
-    padding: '0.35rem 0.75rem',
+  const selectStyle: React.CSSProperties = {
+    height: '2rem',
+    paddingTop: 0,
+    paddingBottom: 0,
+    paddingLeft: '0.6rem',
+    paddingRight: '0.6rem',
     borderRadius: 'var(--radius)',
     border: '1px solid rgb(var(--border))',
     backgroundColor: 'rgb(var(--background))',
     color: 'rgb(var(--foreground))',
     fontSize: 'var(--text-sm)',
-    lineHeight: '1.5',
-    verticalAlign: 'middle',
     cursor: 'pointer',
   }
 
