@@ -145,7 +145,7 @@ export function ProviderCustomerProfile() {
                       {formatDateRange(b.start_time, b.end_time)}
                     </p>
                     <div style={{ paddingTop: '0.75rem', borderTop: '1px solid rgb(var(--border))' }}>
-                      <MessageThread bookingId={b.id} />
+                      <MessageThread bookingId={b.id} perspective="provider" otherName={`${profile.first_name} ${profile.last_name}`} />
                     </div>
                   </div>
                 )
