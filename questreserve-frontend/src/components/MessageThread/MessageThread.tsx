@@ -5,13 +5,14 @@ import type { Message } from '@/api/provider.api'
 interface MessageThreadProps {
   bookingId: string
   perspective?: 'provider' | 'customer'
+  otherName?: string
 }
 
 function formatTimestamp(isoString: string): string {
   return new Date(isoString).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
 }
 
-export function MessageThread({ bookingId, perspective = 'provider' }: MessageThreadProps) {
+export function MessageThread({ bookingId, perspective = 'provider', otherName }: MessageThreadProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [body, setBody] = useState('')
@@ -97,7 +98,7 @@ export function MessageThread({ bookingId, perspective = 'provider' }: MessageTh
                 }}
               >
                 <p style={{ fontSize: '0.7rem', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--muted-foreground))', marginBottom: '0.2rem' }}>
-                  {isMe ? 'You' : (perspective === 'customer' ? 'Provider' : 'Customer')}
+                  {isMe ? 'You' : (otherName ?? (perspective === 'customer' ? 'Provider' : 'Customer'))}
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', margin: 0 }}>
                   {m.body}

@@ -174,6 +174,8 @@ export interface InboxEntry {
   last_message_body: string
   last_message_at: string
   unread_count: number
+  other_first_name: string
+  other_last_name: string
 }
 
 export async function getInbox(): Promise<InboxEntry[]> {

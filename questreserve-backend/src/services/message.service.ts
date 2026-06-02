@@ -118,6 +118,8 @@ export class MessageService {
     last_message_body: string;
     last_message_at: Date;
     unread_count: number;
+    other_first_name: string;
+    other_last_name: string;
   }>> {
     const userType = tokenTypeToSenderType(userTokenType);
     return this.messageRepo.findInboxForUser(userId, userType);

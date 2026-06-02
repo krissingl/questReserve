@@ -50,23 +50,38 @@ export class MessageRepository {
     last_message_body: string;
     last_message_at: Date;
     unread_count: number;
+    other_first_name: string;
+    other_last_name: string;
   }>> {
     const otherType = userType === 'provider' ? 'customer' : 'provider';
 
-    const rows = await this.knex('message')
+    const query = this.knex('message')
       .join('booking', 'message.booking_id', 'booking.id')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
       .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
       .where(userType === 'customer'
         ? { 'booking.end_user_id': userId }
         : { 'booking_location.provider_id': userId }
-      )
+      );
+
+    if (userType === 'customer') {
+      query.join('provider', 'booking_location.provider_id', 'provider.id');
+    } else {
+      query.join('end_user', 'booking.end_user_id', 'end_user.id');
+    }
+
+    const otherFirstNameCol = userType === 'customer' ? 'provider.first_name' : 'end_user.first_name';
+    const otherLastNameCol = userType === 'customer' ? 'provider.last_name' : 'end_user.last_name';
+
+    const rows = await query
       .select(
         'booking.id as booking_id',
         'booking_location.name as location_name',
         this.knex.raw('MAX(message.created_at) as last_message_at'),
         this.knex.raw(`COUNT(CASE WHEN message.sender_type = ? AND message.read_at IS NULL THEN 1 END) as unread_count`, [otherType]),
         this.knex.raw(`(array_agg(message.body ORDER BY message.created_at DESC))[1] as last_message_body`),
+        this.knex.raw(`MAX(??) as other_first_name`, [otherFirstNameCol]),
+        this.knex.raw(`MAX(??) as other_last_name`, [otherLastNameCol]),
       )
       .groupBy('booking.id', 'booking_location.name')
       .orderBy('last_message_at', 'desc');
@@ -77,6 +92,8 @@ export class MessageRepository {
       last_message_body: r.last_message_body,
       last_message_at: r.last_message_at,
       unread_count: Number(r.unread_count),
+      other_first_name: r.other_first_name,
+      other_last_name: r.other_last_name,
     }));
   }
 }
