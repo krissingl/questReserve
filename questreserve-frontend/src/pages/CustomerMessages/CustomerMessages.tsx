@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ChevronDown } from 'lucide-react'
 import { getInbox } from '@/api/provider.api'
 import { MessageThread } from '@/components/MessageThread/MessageThread'
 import type { InboxEntry } from '@/api/provider.api'
@@ -162,18 +163,16 @@ export function CustomerMessages() {
                   <span style={{ fontSize: '0.7rem', color: 'rgb(var(--muted-foreground))' }}>
                     {formatRelativeTime(entry.last_message_at)}
                   </span>
-                  <span
+                  <ChevronDown
                     aria-hidden="true"
+                    size={18}
                     style={{
-                      fontSize: '0.75rem',
                       color: 'rgb(var(--muted-foreground))',
                       transition: 'transform 0.2s ease',
                       transform: openBookingId === entry.booking_id ? 'rotate(180deg)' : 'rotate(0deg)',
-                      display: 'inline-block',
+                      flexShrink: 0,
                     }}
-                  >
-                    &#8964;
-                  </span>
+                  />
                 </div>
               </button>
 
