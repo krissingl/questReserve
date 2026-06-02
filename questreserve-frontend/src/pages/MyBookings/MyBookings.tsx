@@ -156,16 +156,17 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
           type="button"
           onClick={() => setShowMessages((v) => !v)}
           style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
+            padding: '0.375rem 0.875rem',
+            borderRadius: 'var(--radius)',
+            border: '1px solid rgb(var(--accent) / 0.5)',
+            backgroundColor: showMessages ? 'rgb(var(--accent) / 0.12)' : 'transparent',
             cursor: 'pointer',
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-medium)',
             color: 'rgb(var(--accent))',
           }}
         >
-          {showMessages ? 'Hide Messages' : 'Messages'}
+          {showMessages ? 'Hide Messages' : 'Message Provider'}
         </button>
         {showMessages && (
           <div style={{ marginTop: '0.75rem' }}>

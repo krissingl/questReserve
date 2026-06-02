@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getInbox } from '@/api/provider.api'
 import { MessageThread } from '@/components/MessageThread/MessageThread'
 import type { InboxEntry } from '@/api/provider.api'
@@ -62,9 +63,26 @@ export function CustomerMessages() {
       )}
 
       {!loading && !error && inbox.length === 0 && (
-        <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
-          No messages yet. Book an adventure and start a conversation with your provider.
-        </p>
+        <div>
+          <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>
+            No messages yet.
+          </p>
+          <Link
+            to="/customer/bookings"
+            style={{
+              display: 'inline-block',
+              padding: '0.4rem 1rem',
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'rgb(var(--accent))',
+              color: 'rgb(var(--accent-foreground))',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-semibold)',
+              textDecoration: 'none',
+            }}
+          >
+            Go to My Bookings to message a provider
+          </Link>
+        </div>
       )}
 
       {!loading && !error && inbox.length > 0 && (
