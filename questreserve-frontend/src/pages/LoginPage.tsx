@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { CrossRoleLink } from '@/components/CrossRoleLink'
 import { Button } from '@/components/ui/button'
 import logoLockup from '@/assets/logo-primary-white-gold.svg'
@@ -71,6 +72,20 @@ export function LoginPage() {
           </CrossRoleLink>
         </div>
       </div>
+
+      <p
+        className="text-sm"
+        style={{ color: 'rgb(var(--muted-foreground))' }}
+      >
+        Just browsing?{' '}
+        <Link
+          to="/locations"
+          className="underline-offset-4 hover:underline"
+          style={{ color: 'rgb(var(--accent))' }}
+        >
+          Browse Adventures
+        </Link>
+      </p>
     </main>
   )
 }
