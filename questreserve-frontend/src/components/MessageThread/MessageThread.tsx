@@ -102,7 +102,7 @@ export function MessageThread({ bookingId, perspective = 'provider' }: MessageTh
                 <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', margin: 0 }}>
                   {m.body}
                 </p>
-                <p style={{ fontSize: '0.65rem', color: 'rgb(var(--muted-foreground))', marginTop: '0.25rem', textAlign: isProvider ? 'right' : 'left' }}>
+                <p style={{ fontSize: '0.65rem', color: 'rgb(var(--muted-foreground))', marginTop: '0.25rem', textAlign: isMe ? 'right' : 'left' }}>
                   {formatTimestamp(m.created_at)}
                 </p>
               </div>
