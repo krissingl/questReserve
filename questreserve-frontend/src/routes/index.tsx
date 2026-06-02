@@ -27,15 +27,18 @@ import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
 import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
 import { PublicProviderProfile } from '@/pages/PublicProviderProfile/PublicProviderProfile'
 import { ProviderCustomerProfile } from '@/pages/ProviderCustomerProfile/ProviderCustomerProfile'
+import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/locations" replace />,
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/locations',
     element: <GuestLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -50,6 +53,7 @@ export const router = createBrowserRouter([
   {
     path: '/about',
     element: <GuestLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -60,6 +64,7 @@ export const router = createBrowserRouter([
   {
     path: '/providers/:providerId/profile',
     element: <GuestLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -74,6 +79,7 @@ export const router = createBrowserRouter([
         <LoginPage />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/customer/login',
@@ -82,6 +88,7 @@ export const router = createBrowserRouter([
         <CustomerLogin />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/customer/register',
@@ -90,6 +97,7 @@ export const router = createBrowserRouter([
         <CustomerRegister />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/provider/login',
@@ -98,6 +106,7 @@ export const router = createBrowserRouter([
         <ProviderLogin />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/provider/register',
@@ -106,10 +115,12 @@ export const router = createBrowserRouter([
         <ProviderRegister />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/customer',
     element: <CustomerLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -136,6 +147,7 @@ export const router = createBrowserRouter([
   {
     path: '/provider',
     element: <ProviderLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -178,6 +190,7 @@ export const router = createBrowserRouter([
   {
     path: '/admin',
     element: <AdminLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
