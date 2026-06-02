@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
+import { useInbox } from '@/hooks/useInbox'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { ProviderBooking } from '@/types/domain'
 import { formatDateTime } from '@/utils/format'
@@ -22,9 +23,10 @@ const statusColours: Record<string, { bg: string; text: string }> = {
 
 interface BookingCardProps {
   booking: ProviderBooking
+  unreadCount: number
 }
 
-function BookingCard({ booking }: BookingCardProps) {
+function BookingCard({ booking, unreadCount }: BookingCardProps) {
   const colours = statusColours[booking.status] ?? statusColours.CANCELLED
   const hasName = booking.end_user_first_name && booking.end_user_last_name
   const customerFullName = hasName
@@ -37,7 +39,9 @@ function BookingCard({ booking }: BookingCardProps) {
         padding: '1rem 1.25rem',
         borderRadius: 'var(--radius)',
         backgroundColor: 'rgb(var(--card))',
-        boxShadow: 'var(--shadow-card)',
+        boxShadow: unreadCount > 0
+          ? '0 0 0 2px rgb(var(--accent))'
+          : 'var(--shadow-card)',
       }}
     >
       <div
@@ -59,20 +63,40 @@ function BookingCard({ booking }: BookingCardProps) {
         >
           {booking.location_name}
         </span>
-        <span
-          style={{
-            flexShrink: 0,
-            display: 'inline-block',
-            padding: '0.15rem 0.6rem',
-            borderRadius: 'var(--radius-pill)',
-            fontSize: '0.7rem',
-            fontWeight: 'var(--weight-medium)',
-            backgroundColor: colours.bg,
-            color: colours.text,
-          }}
-        >
-          {booking.status}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+          {unreadCount > 0 && (
+            <span
+              style={{
+                display: 'inline-block',
+                minWidth: '18px',
+                height: '18px',
+                borderRadius: 'var(--radius-pill)',
+                backgroundColor: 'rgb(var(--accent))',
+                color: 'rgb(var(--accent-foreground))',
+                fontSize: '0.65rem',
+                fontWeight: 'var(--weight-bold)',
+                textAlign: 'center',
+                lineHeight: '18px',
+                padding: '0 5px',
+              }}
+            >
+              {unreadCount} new
+            </span>
+          )}
+          <span
+            style={{
+              display: 'inline-block',
+              padding: '0.15rem 0.6rem',
+              borderRadius: 'var(--radius-pill)',
+              fontSize: '0.7rem',
+              fontWeight: 'var(--weight-medium)',
+              backgroundColor: colours.bg,
+              color: colours.text,
+            }}
+          >
+            {booking.status}
+          </span>
+        </div>
       </div>
 
       <div
@@ -142,9 +166,10 @@ interface BookingSectionProps {
   title: string
   bookings: ProviderBooking[]
   emptyMessage: string
+  unreadMap: Record<string, number>
 }
 
-function BookingSection({ title, bookings, emptyMessage }: BookingSectionProps) {
+function BookingSection({ title, bookings, emptyMessage, unreadMap }: BookingSectionProps) {
   return (
     <div style={{ marginBottom: '2rem' }}>
       <h2
@@ -169,7 +194,7 @@ function BookingSection({ title, bookings, emptyMessage }: BookingSectionProps) 
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {bookings.map((b) => (
-            <BookingCard key={b.id} booking={b} />
+            <BookingCard key={b.id} booking={b} unreadCount={unreadMap[b.id] ?? 0} />
           ))}
         </div>
       )}
@@ -179,7 +204,15 @@ function BookingSection({ title, bookings, emptyMessage }: BookingSectionProps) 
 
 export function ProviderBookings() {
   const { data: bookings, isLoading, error } = useMyProviderBookings()
+  const { data: inbox } = useInbox()
   const [sortKey, setSortKey] = useState<SortKey>('slot_date')
+
+  const unreadMap: Record<string, number> = {}
+  inbox.forEach((entry) => {
+    if (entry.unread_count > 0) {
+      unreadMap[entry.booking_id] = entry.unread_count
+    }
+  })
 
   const nowRef = useRef(new Date())
   const now = nowRef.current
@@ -279,16 +312,19 @@ export function ProviderBookings() {
             title="Upcoming"
             bookings={upcoming}
             emptyMessage="No upcoming bookings."
+            unreadMap={unreadMap}
           />
           <BookingSection
             title="Cancelled"
             bookings={cancelled}
             emptyMessage="No cancelled bookings."
+            unreadMap={unreadMap}
           />
           <BookingSection
             title="Past"
             bookings={past}
             emptyMessage="No past bookings."
+            unreadMap={unreadMap}
           />
         </>
       )}
