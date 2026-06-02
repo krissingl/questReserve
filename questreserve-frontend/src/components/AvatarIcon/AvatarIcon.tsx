@@ -25,7 +25,7 @@ export function AvatarIcon({ firstName, lastName, size = 'md', pictureUrl }: Ava
           overflow: 'hidden',
           flexShrink: 0,
           verticalAlign: 'middle',
-          border: '1px solid rgb(var(--accent))',
+          border: '2px solid rgb(var(--accent))',
         }}
         aria-hidden="true"
       >
