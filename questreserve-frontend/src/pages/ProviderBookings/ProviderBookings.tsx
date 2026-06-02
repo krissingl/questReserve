@@ -135,6 +135,25 @@ function BookingCard({ booking, unreadCount }: BookingCardProps) {
           </Link>
         </span>
       </div>
+
+      <div style={{ marginTop: '0.875rem', paddingTop: '0.875rem', borderTop: '1px solid rgb(var(--border))' }}>
+        <Link
+          to={`/provider/messages/${booking.id}`}
+          style={{
+            display: 'inline-block',
+            padding: '0.3rem 0.8rem',
+            borderRadius: 'var(--radius)',
+            border: '1px solid rgb(var(--accent) / 0.5)',
+            backgroundColor: 'transparent',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-medium)',
+            color: 'rgb(var(--accent))',
+            textDecoration: 'none',
+          }}
+        >
+          View Message
+        </Link>
+      </div>
     </div>
   )
 }
