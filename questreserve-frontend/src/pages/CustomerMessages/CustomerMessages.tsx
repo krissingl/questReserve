@@ -158,9 +158,23 @@ export function CustomerMessages() {
                     {entry.last_message_body}
                   </p>
                 </div>
-                <span style={{ fontSize: '0.7rem', color: 'rgb(var(--muted-foreground))', flexShrink: 0 }}>
-                  {formatRelativeTime(entry.last_message_at)}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                  <span style={{ fontSize: '0.7rem', color: 'rgb(var(--muted-foreground))' }}>
+                    {formatRelativeTime(entry.last_message_at)}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      fontSize: '0.75rem',
+                      color: 'rgb(var(--muted-foreground))',
+                      transition: 'transform 0.2s ease',
+                      transform: openBookingId === entry.booking_id ? 'rotate(180deg)' : 'rotate(0deg)',
+                      display: 'inline-block',
+                    }}
+                  >
+                    &#8964;
+                  </span>
+                </div>
               </button>
 
               {openBookingId === entry.booking_id && (
