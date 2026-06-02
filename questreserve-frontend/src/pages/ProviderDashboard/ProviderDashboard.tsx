@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useMyLocations } from '@/hooks/useMyLocations'
 import { useDashboardStats } from '@/hooks/useDashboardStats'
 import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
+import { useInbox } from '@/hooks/useInbox'
 import type { BookingLocationWithSlotCount, ProviderBooking } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 import { formatDateTime } from '@/utils/format'
@@ -200,6 +201,7 @@ export function ProviderDashboard() {
   const { data: stats, isLoading: statsLoading, error: statsError } = useDashboardStats()
   const { data: locations, isLoading: locationsLoading } = useMyLocations()
   const { data: bookings } = useMyProviderBookings()
+  const { data: inbox } = useInbox()
 
   const nowRef = useRef(new Date())
   const now = nowRef.current
@@ -208,8 +210,55 @@ export function ProviderDashboard() {
     .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
     .slice(0, 5)
 
+  const totalUnread = inbox.reduce((sum, entry) => sum + entry.unread_count, 0)
+
   return (
     <div style={{ padding: '2rem', maxWidth: '1100px', margin: '0 auto', width: '90%' }}>
+
+      {totalUnread > 0 && (
+        <Link
+          to="/provider/bookings"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '0.875rem 1.25rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent) / 0.12)',
+            border: '1px solid rgb(var(--accent) / 0.35)',
+            marginBottom: '1.5rem',
+            textDecoration: 'none',
+          }}
+        >
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minWidth: '24px',
+              height: '24px',
+              borderRadius: 'var(--radius-pill)',
+              backgroundColor: 'rgb(var(--accent))',
+              color: 'rgb(var(--accent-foreground))',
+              fontSize: '0.75rem',
+              fontWeight: 'var(--weight-bold)',
+              padding: '0 6px',
+              flexShrink: 0,
+            }}
+          >
+            {totalUnread}
+          </span>
+          <span
+            style={{
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-semibold)',
+              color: 'rgb(var(--accent))',
+            }}
+          >
+            {totalUnread === 1 ? '1 unread message' : `${totalUnread} unread messages`} — Go to Bookings to reply
+          </span>
+        </Link>
+      )}
 
       <div
         style={{
