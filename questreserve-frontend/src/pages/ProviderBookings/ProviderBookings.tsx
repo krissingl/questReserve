@@ -89,6 +89,10 @@ function BookingCard({ booking }: BookingCardProps) {
           <strong style={{ color: 'rgb(var(--foreground))' }}>Slot:</strong>{' '}
           {formatDateTime(booking.start_time)}
         </span>
+        <span>
+          <strong style={{ color: 'rgb(var(--foreground))' }}>Booked on:</strong>{' '}
+          {formatDate(booking.created_at)}
+        </span>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
           <strong style={{ color: 'rgb(var(--foreground))' }}>Customer:</strong>{' '}
           <Link
@@ -105,10 +109,6 @@ function BookingCard({ booking }: BookingCardProps) {
             )}
             {customerFullName}
           </Link>
-        </span>
-        <span>
-          <strong style={{ color: 'rgb(var(--foreground))' }}>Booked on:</strong>{' '}
-          {formatDate(booking.created_at)}
         </span>
       </div>
     </div>
