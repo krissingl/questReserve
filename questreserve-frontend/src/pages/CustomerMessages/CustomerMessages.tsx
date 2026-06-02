@@ -180,7 +180,15 @@ export function CustomerMessages() {
               {openBookingId === entry.booking_id && (
                 <div style={{ padding: '0 1.25rem 1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
                   <div style={{ paddingTop: '0.75rem' }}>
-                    <MessageThread bookingId={entry.booking_id} perspective="customer" otherName={`${entry.other_first_name} ${entry.other_last_name}`} />
+                    <MessageThread
+                      bookingId={entry.booking_id}
+                      perspective="customer"
+                      otherName={
+                        entry.other_first_name || entry.other_last_name
+                          ? [entry.other_first_name, entry.other_last_name].filter(Boolean).join(' ')
+                          : undefined
+                      }
+                    />
                   </div>
                 </div>
               )}
