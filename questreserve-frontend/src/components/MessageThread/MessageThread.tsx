@@ -4,19 +4,23 @@ import type { Message } from '@/api/provider.api'
 
 interface MessageThreadProps {
   bookingId: string
+  perspective?: 'provider' | 'customer'
 }
 
 function formatTimestamp(isoString: string): string {
   return new Date(isoString).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
 }
 
-export function MessageThread({ bookingId }: MessageThreadProps) {
+export function MessageThread({ bookingId, perspective = 'provider' }: MessageThreadProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
   const [body, setBody] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
   const markedRef = useRef(false)
+
+  const mySenderType = perspective
+  const otherSenderType = perspective === 'provider' ? 'customer' : 'provider'
 
   useEffect(() => {
     markedRef.current = false
@@ -27,7 +31,7 @@ export function MessageThread({ bookingId }: MessageThreadProps) {
         setLoading(false)
         if (!markedRef.current) {
           markedRef.current = true
-          const unread = data.filter((m) => m.sender_type === 'customer' && m.read_at === null)
+          const unread = data.filter((m) => m.sender_type === otherSenderType && m.read_at === null)
           unread.forEach((m) => {
             markMessageRead(m.id).catch(() => {})
           })
@@ -36,7 +40,7 @@ export function MessageThread({ bookingId }: MessageThreadProps) {
       .catch(() => {
         setLoading(false)
       })
-  }, [bookingId])
+  }, [bookingId, otherSenderType])
 
   async function handleSend(e: React.FormEvent) {
     e.preventDefault()
@@ -79,21 +83,21 @@ export function MessageThread({ bookingId }: MessageThreadProps) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
           {messages.map((m) => {
-            const isProvider = m.sender_type === 'provider'
+            const isMe = m.sender_type === mySenderType
             return (
               <div
                 key={m.id}
                 style={{
-                  alignSelf: isProvider ? 'flex-end' : 'flex-start',
+                  alignSelf: isMe ? 'flex-end' : 'flex-start',
                   maxWidth: '75%',
                   padding: '0.5rem 0.75rem',
                   borderRadius: 'var(--radius)',
-                  backgroundColor: isProvider ? 'rgb(var(--accent) / 0.15)' : 'rgb(var(--card))',
-                  border: isProvider ? '1px solid rgb(var(--accent) / 0.3)' : '1px solid rgb(var(--border))',
+                  backgroundColor: isMe ? 'rgb(var(--accent) / 0.15)' : 'rgb(var(--card))',
+                  border: isMe ? '1px solid rgb(var(--accent) / 0.3)' : '1px solid rgb(var(--border))',
                 }}
               >
                 <p style={{ fontSize: '0.7rem', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--muted-foreground))', marginBottom: '0.2rem' }}>
-                  {isProvider ? 'You' : 'Customer'}
+                  {isMe ? 'You' : (perspective === 'customer' ? 'Provider' : 'Customer')}
                 </p>
                 <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', margin: 0 }}>
                   {m.body}

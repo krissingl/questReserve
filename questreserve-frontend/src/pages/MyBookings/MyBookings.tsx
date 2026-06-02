@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
 import { useCancelBooking } from '@/hooks/useCancelBooking'
 import { StatusBadge } from '@/components/StatusBadge'
+import { MessageThread } from '@/components/MessageThread/MessageThread'
 import { isExpired, isCancellable } from '@/utils/bookingUtils'
 import { formatSlotTime } from '@/utils/formatSlotTime'
 import type { Booking } from '@/types/domain'
@@ -22,6 +23,7 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
   const { cancelBooking, isLoading: cancelling } = useCancelBooking()
   const [confirming, setConfirming] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
+  const [showMessages, setShowMessages] = useState(false)
 
   const handleConfirmCancel = async () => {
     try {
@@ -148,6 +150,29 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgb(var(--border))' }}>
+        <button
+          type="button"
+          onClick={() => setShowMessages((v) => !v)}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            cursor: 'pointer',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-medium)',
+            color: 'rgb(var(--accent))',
+          }}
+        >
+          {showMessages ? 'Hide Messages' : 'Messages'}
+        </button>
+        {showMessages && (
+          <div style={{ marginTop: '0.75rem' }}>
+            <MessageThread bookingId={booking.id} perspective="customer" />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
