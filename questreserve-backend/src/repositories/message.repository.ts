@@ -43,4 +43,40 @@ export class MessageRepository {
       .where({ id })
       .update({ read_at: new Date() });
   }
+
+  async findInboxForUser(userId: string, userType: 'provider' | 'customer'): Promise<Array<{
+    booking_id: string;
+    location_name: string;
+    last_message_body: string;
+    last_message_at: Date;
+    unread_count: number;
+  }>> {
+    const otherType = userType === 'provider' ? 'customer' : 'provider';
+
+    const rows = await this.knex('message')
+      .join('booking', 'message.booking_id', 'booking.id')
+      .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
+      .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
+      .where(userType === 'customer'
+        ? { 'booking.end_user_id': userId }
+        : { 'booking_location.provider_id': userId }
+      )
+      .select(
+        'booking.id as booking_id',
+        'booking_location.name as location_name',
+        this.knex.raw('MAX(message.created_at) as last_message_at'),
+        this.knex.raw(`COUNT(CASE WHEN message.sender_type = ? AND message.read_at IS NULL THEN 1 END) as unread_count`, [otherType]),
+        this.knex.raw(`(array_agg(message.body ORDER BY message.created_at DESC))[1] as last_message_body`),
+      )
+      .groupBy('booking.id', 'booking_location.name')
+      .orderBy('last_message_at', 'desc');
+
+    return rows.map((r) => ({
+      booking_id: r.booking_id,
+      location_name: r.location_name,
+      last_message_body: r.last_message_body,
+      last_message_at: r.last_message_at,
+      unread_count: Number(r.unread_count),
+    }));
+  }
 }

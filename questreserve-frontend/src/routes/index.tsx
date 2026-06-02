@@ -15,6 +15,7 @@ import { BrowseLocations } from '@/pages/BrowseLocations/BrowseLocations'
 import { LocationDetail } from '@/pages/LocationDetail/LocationDetail'
 import { MyBookings } from '@/pages/MyBookings/MyBookings'
 import { CustomerSettings } from '@/pages/CustomerSettings/CustomerSettings'
+import { CustomerMessages } from '@/pages/CustomerMessages/CustomerMessages'
 import { PaymentStub } from '@/pages/PaymentStub/PaymentStub'
 import { About } from '@/pages/About/About'
 import { ProviderDashboard } from '@/pages/ProviderDashboard/ProviderDashboard'
@@ -117,6 +118,10 @@ export const router = createBrowserRouter([
       {
         path: 'bookings',
         element: <MyBookings />,
+      },
+      {
+        path: 'messages',
+        element: <CustomerMessages />,
       },
       {
         path: 'settings',

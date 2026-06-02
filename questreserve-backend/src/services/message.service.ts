@@ -108,4 +108,18 @@ export class MessageService {
     }
     await this.messageRepo.markRead(messageId);
   }
+
+  async getInbox(
+    userId: string,
+    userTokenType: TokenType
+  ): Promise<Array<{
+    booking_id: string;
+    location_name: string;
+    last_message_body: string;
+    last_message_at: Date;
+    unread_count: number;
+  }>> {
+    const userType = tokenTypeToSenderType(userTokenType);
+    return this.messageRepo.findInboxForUser(userId, userType);
+  }
 }

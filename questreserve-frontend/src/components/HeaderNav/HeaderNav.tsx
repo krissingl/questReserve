@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { getInbox } from '@/api/provider.api'
 import logoLockup from '@/assets/logo-primary-white-gold.svg'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
@@ -8,6 +10,16 @@ const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
 
 export function HeaderNav() {
   const { token, role, logout } = useAuth()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (!token || role !== 'customer') return
+    getInbox()
+      .then((entries) => {
+        setUnreadCount(entries.reduce((sum, e) => sum + e.unread_count, 0))
+      })
+      .catch(() => {})
+  }, [token, role])
 
   const logoHref = !token
     ? '/locations'
@@ -37,6 +49,37 @@ export function HeaderNav() {
           <>
             <NavLink to="/customer/bookings" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
               My Bookings
+            </NavLink>
+            <NavLink
+              to="/customer/messages"
+              style={navLinkStyle}
+              className="text-sm font-medium transition-colors hover:opacity-80"
+            >
+              <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                Messages
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      right: '-14px',
+                      minWidth: '16px',
+                      height: '16px',
+                      borderRadius: 'var(--radius-pill)',
+                      backgroundColor: 'rgb(var(--accent))',
+                      color: 'rgb(var(--accent-foreground))',
+                      fontSize: '0.6rem',
+                      fontWeight: 'var(--weight-bold)',
+                      textAlign: 'center',
+                      lineHeight: '16px',
+                      padding: '0 4px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </span>
             </NavLink>
             <NavLink to="/customer/settings" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
               Settings

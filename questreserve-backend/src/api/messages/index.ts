@@ -65,6 +65,16 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+router.get('/inbox', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = getUser(req);
+    const inbox = await messageService.getInbox(user.sub, user.type);
+    res.json(inbox);
+  } catch (err) {
+    handleMessageError(err, res, next);
+  }
+});
+
 router.patch('/:id/read', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getUser(req);

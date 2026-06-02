@@ -167,3 +167,16 @@ export async function sendMessage(bookingId: string, body: string): Promise<Mess
 export async function markMessageRead(messageId: string): Promise<void> {
   await apiClient.patch(`/messages/${messageId}/read`)
 }
+
+export interface InboxEntry {
+  booking_id: string
+  location_name: string
+  last_message_body: string
+  last_message_at: string
+  unread_count: number
+}
+
+export async function getInbox(): Promise<InboxEntry[]> {
+  const response = await apiClient.get<InboxEntry[]>('/messages/inbox')
+  return response.data
+}
