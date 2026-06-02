@@ -60,7 +60,7 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     return row ?? null;
   }
 
-  async findByIdWithProvider(id: string): Promise<(BookingLocation & { provider_first_name: string; provider_last_name: string }) | null> {
+  async findByIdWithProvider(id: string): Promise<(BookingLocation & { provider_first_name: string; provider_last_name: string; provider_profile_picture_url: string | null }) | null> {
     const row = await this.knex('booking_location')
       .join('provider', 'booking_location.provider_id', 'provider.id')
       .where('booking_location.id', id)
@@ -68,6 +68,7 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
         'booking_location.*',
         'provider.first_name as provider_first_name',
         'provider.last_name as provider_last_name',
+        'provider.profile_picture_url as provider_profile_picture_url',
       )
       .first();
     return row ?? null;

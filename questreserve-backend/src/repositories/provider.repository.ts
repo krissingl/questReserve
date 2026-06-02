@@ -53,6 +53,7 @@ export class ProviderRepository extends BaseRepository<Provider> {
     first_name: string;
     last_name: string;
     organization_name: string | null;
+    profile_picture_url: string | null;
     locations: Array<{
       id: string;
       name: string;
@@ -63,7 +64,7 @@ export class ProviderRepository extends BaseRepository<Provider> {
   } | null> {
     const provider = await this.knex<Provider>('provider')
       .where({ id })
-      .select('id', 'first_name', 'last_name', 'organization_name', 'status')
+      .select('id', 'first_name', 'last_name', 'organization_name', 'status', 'profile_picture_url')
       .first();
     if (!provider || provider.status === 'SUSPENDED') return null;
 
@@ -77,6 +78,7 @@ export class ProviderRepository extends BaseRepository<Provider> {
       first_name: provider.first_name,
       last_name: provider.last_name,
       organization_name: provider.organization_name,
+      profile_picture_url: provider.profile_picture_url ?? null,
       locations,
     };
   }

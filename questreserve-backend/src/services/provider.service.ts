@@ -95,6 +95,7 @@ export interface CustomerProfileView {
   first_name: string;
   last_name: string;
   email: string;
+  profile_picture_url: string | null;
   bookings: CustomerBookingSummary[];
 }
 
@@ -274,6 +275,7 @@ export class ProviderService {
         this.knex.raw("NULLIF(TRIM(CONCAT(COALESCE(end_user.first_name, ''), ' ', COALESCE(end_user.last_name, ''))), '') as end_user_name"),
         'end_user.first_name as end_user_first_name',
         'end_user.last_name as end_user_last_name',
+        'end_user.profile_picture_url as end_user_profile_picture_url',
         'booking.status',
         'booking.created_at',
         'booking.updated_at',
@@ -351,6 +353,7 @@ export class ProviderService {
       first_name: customer.first_name,
       last_name: customer.last_name,
       email: customer.email,
+      profile_picture_url: customer.profile_picture_url ?? null,
       bookings: bookings.map((b) => ({
         id: b.id,
         location_name: b.location_name,

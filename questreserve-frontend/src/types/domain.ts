@@ -34,6 +34,7 @@ export interface BookingLocation {
   updated_at: string
   provider_first_name?: string
   provider_last_name?: string
+  provider_profile_picture_url?: string | null
 }
 
 export interface BookingLocationWithSlotCount extends BookingLocation {
@@ -89,6 +90,7 @@ export interface ProviderBooking {
   end_user_name: string | null
   end_user_first_name: string | null
   end_user_last_name: string | null
+  end_user_profile_picture_url: string | null
   status: BookingStatus
   created_at: string
   updated_at: string

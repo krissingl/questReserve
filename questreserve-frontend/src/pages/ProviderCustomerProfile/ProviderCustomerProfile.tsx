@@ -66,7 +66,7 @@ export function ProviderCustomerProfile() {
       {!loading && !error && profile && (
         <>
           <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" />
+            <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" pictureUrl={profile.profile_picture_url} />
             <div>
               <h1
                 style={{

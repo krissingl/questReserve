@@ -99,6 +99,7 @@ function BookingCard({ booking }: BookingCardProps) {
                 firstName={booking.end_user_first_name!}
                 lastName={booking.end_user_last_name!}
                 size="sm"
+                pictureUrl={booking.end_user_profile_picture_url}
               />
             )}
             {customerFullName}

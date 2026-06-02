@@ -103,6 +103,7 @@ export interface ProviderBookingView {
   end_user_name: string | null;
   end_user_first_name: string | null;
   end_user_last_name: string | null;
+  end_user_profile_picture_url: string | null;
   status: BookingStatus;
   created_at: Date;
   updated_at: Date;

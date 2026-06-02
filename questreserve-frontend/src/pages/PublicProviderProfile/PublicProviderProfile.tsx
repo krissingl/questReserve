@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getPublicProviderProfile } from '@/api/guest.api'
 import type { PublicProviderProfile as PublicProviderProfileData } from '@/api/guest.api'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
 export function PublicProviderProfile() {
@@ -48,22 +49,27 @@ export function PublicProviderProfile() {
 
   return (
     <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
-      <h1
-        style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: '1.75rem',
-          fontWeight: 'var(--weight-bold)',
-          color: 'rgb(var(--foreground))',
-          marginBottom: '0.25rem',
-        }}
-      >
-        {profile.first_name} {profile.last_name}
-      </h1>
-      {profile.organization_name && (
-        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '2rem' }}>
-          {profile.organization_name}
-        </p>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" pictureUrl={profile.profile_picture_url} />
+        <div>
+          <h1
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.75rem',
+              fontWeight: 'var(--weight-bold)',
+              color: 'rgb(var(--foreground))',
+              marginBottom: '0.25rem',
+            }}
+          >
+            {profile.first_name} {profile.last_name}
+          </h1>
+          {profile.organization_name && (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+              {profile.organization_name}
+            </p>
+          )}
+        </div>
+      </div>
 
       <h2
         style={{

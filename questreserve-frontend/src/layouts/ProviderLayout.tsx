@@ -75,7 +75,7 @@ function ProviderNav({ profile }: ProviderNavProps) {
             textDecoration: 'none',
           }}
         >
-          <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="sm" />
+          <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="sm" pictureUrl={profile.profile_picture_url} />
           <span>{profile.first_name} {profile.last_name}</span>
         </Link>
       )}

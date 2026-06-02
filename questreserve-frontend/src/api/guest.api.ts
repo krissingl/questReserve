@@ -14,6 +14,7 @@ export interface PublicProviderProfile {
   first_name: string
   last_name: string
   organization_name: string | null
+  profile_picture_url: string | null
   locations: PublicLocation[]
 }
 

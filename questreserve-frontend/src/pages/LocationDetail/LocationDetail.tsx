@@ -7,6 +7,7 @@ import { useLocationImages } from '@/hooks/useLocationImages'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatSlotTime } from '@/utils/formatSlotTime'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { TimeSlot } from '@/types/domain'
 
 interface SlotCardProps {
@@ -270,28 +271,12 @@ export function LocationDetail() {
               onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--accent))' }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--muted-foreground))' }}
             >
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '22px',
-                  height: '22px',
-                  borderRadius: '50%',
-                  backgroundColor: 'rgb(var(--background))',
-                  border: '1px solid rgb(var(--accent))',
-                  color: 'rgb(var(--accent))',
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '0.6rem',
-                  fontWeight: 'var(--weight-bold)',
-                  lineHeight: 1,
-                  letterSpacing: '0.04em',
-                  flexShrink: 0,
-                  userSelect: 'none',
-                }}
-              >
-                {location.provider_first_name.charAt(0).toUpperCase()}{location.provider_last_name.charAt(0).toUpperCase()}
-              </span>
+              <AvatarIcon
+                firstName={location.provider_first_name}
+                lastName={location.provider_last_name}
+                size="sm"
+                pictureUrl={location.provider_profile_picture_url}
+              />
               <span>{location.provider_first_name} {location.provider_last_name}</span>
             </Link>
           )}

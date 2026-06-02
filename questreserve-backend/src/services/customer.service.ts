@@ -62,7 +62,7 @@ export class CustomerService {
     return this.locationRepo.findById(locationId);
   }
 
-  async getLocationWithProvider(locationId: string): Promise<(BookingLocation & { provider_first_name: string; provider_last_name: string }) | null> {
+  async getLocationWithProvider(locationId: string): Promise<(BookingLocation & { provider_first_name: string; provider_last_name: string; provider_profile_picture_url: string | null }) | null> {
     return this.locationRepo.findByIdWithProvider(locationId);
   }
 
