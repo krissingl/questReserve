@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom'
 import { getProviderCustomer } from '@/api/provider.api'
 import type { ProviderCustomerProfile as ProviderCustomerProfileData } from '@/api/provider.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
-import { MessageThread } from '@/components/MessageThread/MessageThread'
 
 const statusColours: Record<string, { bg: string; text: string }> = {
   BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
@@ -67,22 +66,42 @@ export function ProviderCustomerProfile() {
         <>
           <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" pictureUrl={profile.profile_picture_url} />
-            <div>
-              <h1
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '1.75rem',
-                  fontWeight: 'var(--weight-bold)',
-                  color: 'rgb(var(--foreground))',
-                  marginBottom: '0.25rem',
-                }}
-              >
-                {profile.first_name} {profile.last_name}
-              </h1>
-              <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
-                {profile.email}
-              </p>
-            </div>
+            <h1
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.75rem',
+                fontWeight: 'var(--weight-bold)',
+                color: 'rgb(var(--foreground))',
+                margin: 0,
+              }}
+            >
+              {profile.first_name} {profile.last_name}
+            </h1>
+          </div>
+
+          <div
+            style={{
+              padding: '1rem 1.25rem',
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'rgb(var(--card))',
+              boxShadow: 'var(--shadow-card)',
+              marginBottom: '2rem',
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1rem',
+                fontWeight: 'var(--weight-semibold)',
+                color: 'rgb(var(--foreground))',
+                marginBottom: '0.5rem',
+              }}
+            >
+              About
+            </h2>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+              No bio yet.
+            </p>
           </div>
 
           <h2
@@ -98,11 +117,11 @@ export function ProviderCustomerProfile() {
           </h2>
 
           {profile.bookings.length === 0 ? (
-            <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)' }}>
+            <p style={{ color: 'rgb(var(--muted-foreground))', fontSize: 'var(--text-sm)', marginBottom: '2rem' }}>
               No bookings with your adventures yet.
             </p>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
               {profile.bookings.map((b) => {
                 const colours = statusColours[b.status] ?? statusColours.CANCELLED
                 return (
@@ -141,17 +160,53 @@ export function ProviderCustomerProfile() {
                         {b.status}
                       </span>
                     </div>
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '1rem' }}>
+                    <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '0.75rem' }}>
                       {formatDateRange(b.start_time, b.end_time)}
                     </p>
-                    <div style={{ paddingTop: '0.75rem', borderTop: '1px solid rgb(var(--border))' }}>
-                      <MessageThread bookingId={b.id} perspective="provider" otherName={`${profile.first_name} ${profile.last_name}`} />
-                    </div>
+                    <Link
+                      to={`/provider/messages/${b.id}`}
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.3rem 0.75rem',
+                        borderRadius: 'var(--radius)',
+                        border: '1px solid rgb(var(--accent) / 0.5)',
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 'var(--weight-medium)',
+                        color: 'rgb(var(--accent))',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      Message
+                    </Link>
                   </div>
                 )
               })}
             </div>
           )}
+
+          <div
+            style={{
+              padding: '1rem 1.25rem',
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'rgb(var(--card))',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.1rem',
+                fontWeight: 'var(--weight-semibold)',
+                color: 'rgb(var(--foreground))',
+                marginBottom: '0.5rem',
+              }}
+            >
+              Reviews
+            </h2>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+              No reviews yet.
+            </p>
+          </div>
         </>
       )}
     </div>

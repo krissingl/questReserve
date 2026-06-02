@@ -71,6 +71,31 @@ export function PublicProviderProfile() {
         </div>
       </div>
 
+      <div
+        style={{
+          padding: '1rem 1.25rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--card))',
+          boxShadow: 'var(--shadow-card)',
+          marginBottom: '2rem',
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1rem',
+            fontWeight: 'var(--weight-semibold)',
+            color: 'rgb(var(--foreground))',
+            marginBottom: '0.5rem',
+          }}
+        >
+          About
+        </h2>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+          No bio yet.
+        </p>
+      </div>
+
       <h2
         style={{
           fontFamily: 'var(--font-heading)',
@@ -180,6 +205,31 @@ export function PublicProviderProfile() {
           ))}
         </div>
       )}
+
+      <div
+        style={{
+          padding: '1rem 1.25rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--card))',
+          boxShadow: 'var(--shadow-card)',
+          marginTop: '2rem',
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1.1rem',
+            fontWeight: 'var(--weight-semibold)',
+            color: 'rgb(var(--foreground))',
+            marginBottom: '0.5rem',
+          }}
+        >
+          Reviews
+        </h2>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+          No reviews yet.
+        </p>
+      </div>
     </div>
   )
 }

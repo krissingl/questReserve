@@ -28,6 +28,7 @@ import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
 import { PublicProviderProfile } from '@/pages/PublicProviderProfile/PublicProviderProfile'
 import { ProviderCustomerProfile } from '@/pages/ProviderCustomerProfile/ProviderCustomerProfile'
 import { CustomerMessageThread } from '@/pages/CustomerMessageThread/CustomerMessageThread'
+import { ProviderMessageThread } from '@/pages/ProviderMessageThread/ProviderMessageThread'
 import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
 
 export const router = createBrowserRouter([
@@ -189,6 +190,10 @@ export const router = createBrowserRouter([
       {
         path: 'customers/:customerId',
         element: <ProviderCustomerProfile />,
+      },
+      {
+        path: 'messages/:bookingId',
+        element: <ProviderMessageThread />,
       },
     ],
   },
