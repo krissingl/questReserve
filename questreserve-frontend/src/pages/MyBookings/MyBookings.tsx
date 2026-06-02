@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useMyBookings } from '@/hooks/useMyBookings'
 import { useCancelBooking } from '@/hooks/useCancelBooking'
 import { StatusBadge } from '@/components/StatusBadge'
-import { MessageThread } from '@/components/MessageThread/MessageThread'
 import { isExpired, isCancellable } from '@/utils/bookingUtils'
 import { formatSlotTime } from '@/utils/formatSlotTime'
 import type { Booking } from '@/types/domain'
@@ -23,7 +22,6 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
   const { cancelBooking, isLoading: cancelling } = useCancelBooking()
   const [confirming, setConfirming] = useState(false)
   const [cancelError, setCancelError] = useState<string | null>(null)
-  const [showMessages, setShowMessages] = useState(false)
 
   const handleConfirmCancel = async () => {
     try {
@@ -152,27 +150,22 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
       )}
 
       <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgb(var(--border))' }}>
-        <button
-          type="button"
-          onClick={() => setShowMessages((v) => !v)}
+        <Link
+          to={`/customer/messages/${booking.id}`}
           style={{
+            display: 'inline-block',
             padding: '0.375rem 0.875rem',
             borderRadius: 'var(--radius)',
             border: '1px solid rgb(var(--accent) / 0.5)',
-            backgroundColor: showMessages ? 'rgb(var(--accent) / 0.12)' : 'transparent',
-            cursor: 'pointer',
+            backgroundColor: 'transparent',
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-medium)',
             color: 'rgb(var(--accent))',
+            textDecoration: 'none',
           }}
         >
-          {showMessages ? 'Hide Messages' : 'Message Provider'}
-        </button>
-        {showMessages && (
-          <div style={{ marginTop: '0.75rem' }}>
-            <MessageThread bookingId={booking.id} perspective="customer" />
-          </div>
-        )}
+          Message Provider
+        </Link>
       </div>
     </div>
   )
