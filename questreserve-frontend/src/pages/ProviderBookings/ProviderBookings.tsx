@@ -214,6 +214,8 @@ export function ProviderBookings() {
     backgroundColor: 'rgb(var(--background))',
     color: 'rgb(var(--foreground))',
     fontSize: 'var(--text-sm)',
+    lineHeight: '1.5',
+    verticalAlign: 'middle',
     cursor: 'pointer',
   }
 
