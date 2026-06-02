@@ -38,7 +38,7 @@ export function HeaderNav() {
         <img src={logoLockup} alt="QuestReserve" style={{ height: '40px' }} />
       </Link>
 
-      <nav className="flex flex-1 items-center justify-end gap-4">
+      <nav className="flex flex-1 items-center justify-end gap-8">
         {(!token || role === 'customer') && (
           <NavLink to="/locations" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
             Browse Adventures
@@ -55,7 +55,7 @@ export function HeaderNav() {
               style={navLinkStyle}
               className="text-sm font-medium transition-colors hover:opacity-80"
             >
-              <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', paddingRight: unreadCount > 0 ? '12px' : undefined }}>
                 Messages
                 {unreadCount > 0 && (
                   <span
