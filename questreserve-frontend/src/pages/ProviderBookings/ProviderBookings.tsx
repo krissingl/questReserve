@@ -81,6 +81,7 @@ function BookingCard({ booking }: BookingCardProps) {
           color: 'rgb(var(--muted-foreground))',
           display: 'flex',
           flexWrap: 'wrap',
+          alignItems: 'center',
           gap: '0.4rem 1.5rem',
         }}
       >
