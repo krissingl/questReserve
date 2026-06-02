@@ -93,11 +93,11 @@ function BookingCard({ booking }: BookingCardProps) {
           <strong style={{ color: 'rgb(var(--foreground))' }}>Booked on:</strong>{' '}
           {formatDate(booking.created_at)}
         </span>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-          <strong style={{ color: 'rgb(var(--foreground))' }}>Customer:</strong>{' '}
+        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <strong style={{ color: 'rgb(var(--foreground))', lineHeight: 1 }}>Customer:</strong>
           <Link
             to={`/provider/customers/${booking.end_user_id}`}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', color: 'rgb(var(--accent))', textDecoration: 'none', fontWeight: 'var(--weight-medium)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'rgb(var(--accent))', textDecoration: 'none', fontWeight: 'var(--weight-medium)' }}
           >
             {hasName && (
               <AvatarIcon
