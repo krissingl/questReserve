@@ -1,15 +1,81 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getPublicProviderProfile } from '@/api/guest.api'
 import type { PublicProviderProfile as PublicProviderProfileData } from '@/api/guest.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
+function ProfilePictureLightbox({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+  }, [onClose])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Profile photo of ${name}`}
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close photo"
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          background: 'rgba(255,255,255,0.15)',
+          border: 'none',
+          borderRadius: '50%',
+          width: '2.5rem',
+          height: '2.5rem',
+          color: '#fff',
+          fontSize: '1.25rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        ✕
+      </button>
+      <img
+        src={url}
+        alt={name}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '90vw',
+          maxHeight: '90vh',
+          objectFit: 'contain',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
 export function PublicProviderProfile() {
   const { providerId } = useParams<{ providerId: string }>()
   const [profile, setProfile] = useState<PublicProviderProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   useEffect(() => {
     if (!providerId) return
@@ -49,8 +115,24 @@ export function PublicProviderProfile() {
 
   return (
     <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
+      {lightboxOpen && profile.profile_picture_url && (
+        <ProfilePictureLightbox
+          url={profile.profile_picture_url}
+          name={`${profile.first_name} ${profile.last_name}`}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="lg" pictureUrl={profile.profile_picture_url} />
+        <span
+          role={profile.profile_picture_url ? 'button' : undefined}
+          tabIndex={profile.profile_picture_url ? 0 : undefined}
+          onClick={profile.profile_picture_url ? () => setLightboxOpen(true) : undefined}
+          onKeyDown={profile.profile_picture_url ? (e) => { if (e.key === 'Enter' || e.key === ' ') setLightboxOpen(true) } : undefined}
+          style={profile.profile_picture_url ? { cursor: 'pointer' } : undefined}
+          aria-label={profile.profile_picture_url ? `View profile photo of ${profile.first_name} ${profile.last_name}` : undefined}
+        >
+          <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="lg" pictureUrl={profile.profile_picture_url} />
+        </span>
         <div>
           <h1
             style={{

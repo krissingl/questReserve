@@ -1,8 +1,73 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useOutletContext } from 'react-router-dom'
 import { updateMyProfile, changePassword, uploadProviderProfilePicture } from '@/api/provider.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { ProviderLayoutContext } from '@/layouts/ProviderLayout'
+
+function ProfilePictureLightbox({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+  }, [onClose])
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Profile photo of ${name}`}
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1000,
+        backgroundColor: 'rgba(0,0,0,0.9)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close photo"
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          background: 'rgba(255,255,255,0.15)',
+          border: 'none',
+          borderRadius: '50%',
+          width: '2.5rem',
+          height: '2.5rem',
+          color: '#fff',
+          fontSize: '1.25rem',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        ✕
+      </button>
+      <img
+        src={url}
+        alt={name}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          maxWidth: '90vw',
+          maxHeight: '90vh',
+          objectFit: 'contain',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  )
+}
 
 const inputStyle = {
   width: '100%',
@@ -510,6 +575,7 @@ function ProfilePictureSection({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -531,12 +597,26 @@ function ProfilePictureSection({
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-      {currentUrl ? (
-        <img
-          src={currentUrl}
-          alt="Profile"
-          style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
+      {lightboxOpen && currentUrl && (
+        <ProfilePictureLightbox
+          url={currentUrl}
+          name={`${firstName} ${lastName}`}
+          onClose={() => setLightboxOpen(false)}
         />
+      )}
+      {currentUrl ? (
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          aria-label="View profile photo"
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', borderRadius: '50%' }}
+        >
+          <img
+            src={currentUrl}
+            alt="Profile"
+            style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))', display: 'block' }}
+          />
+        </button>
       ) : (
         <AvatarIcon firstName={firstName} lastName={lastName} size="lg" />
       )}

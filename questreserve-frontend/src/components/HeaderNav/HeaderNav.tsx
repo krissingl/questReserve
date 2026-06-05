@@ -113,6 +113,7 @@ export function HeaderNav() {
         {token && role === 'customer' && customerProfile && (
           <Link
             to="/customer/settings"
+            className="transition-colors hover:opacity-80"
             style={{
               display: 'flex',
               alignItems: 'center',
