@@ -65,7 +65,7 @@ export function ProviderCustomerProfile() {
       {!loading && !error && profile && (
         <>
           <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" pictureUrl={profile.profile_picture_url} />
+            <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="lg" pictureUrl={profile.profile_picture_url} />
             <h1
               style={{
                 fontFamily: 'var(--font-heading)',
@@ -99,9 +99,15 @@ export function ProviderCustomerProfile() {
             >
               About
             </h2>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
-              No bio yet.
-            </p>
+            {profile.bio ? (
+              <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', lineHeight: 1.6 }}>
+                {profile.bio}
+              </p>
+            ) : (
+              <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+                No bio yet.
+              </p>
+            )}
           </div>
 
           <h2

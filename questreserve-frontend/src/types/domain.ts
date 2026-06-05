@@ -81,6 +81,7 @@ export interface ProviderProfile {
   plan: ProviderPlan
   status: ProviderStatus
   profile_picture_url: string | null
+  bio: string | null
 }
 
 export interface ProviderBooking {

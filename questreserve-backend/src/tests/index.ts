@@ -34,6 +34,8 @@ export async function createTestEndUser(
     email: `testuser-${id}@test.local`,
     password_hash: '$2b$10$placeholder_hash_for_testing_only_not_valid',
     role: 'REGULAR' as EndUserRole,
+    profile_picture_url: null,
+    bio: null,
     ...overrides,
   };
   const [row] = await testKnex<EndUser>('end_user').insert(data).returning('*');
@@ -54,6 +56,8 @@ export async function createTestProvider(
     organization_name: null,
     plan: 'FREE' as ProviderPlan,
     status: 'ACTIVE' as ProviderStatus,
+    profile_picture_url: null,
+    bio: null,
     ...overrides,
   };
   const [row] = await testKnex<Provider>('provider').insert(data).returning('*');

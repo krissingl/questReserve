@@ -4,7 +4,6 @@ import { GuestLayout } from '@/layouts/GuestLayout'
 import { ProviderLayout } from '@/layouts/ProviderLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AlreadyAuthRedirect } from '@/layouts/AlreadyAuthRedirect'
-import { CustomerHome } from '@/pages/CustomerHome'
 import { AdminHome } from '@/pages/AdminHome'
 import { LoginPage } from '@/pages/LoginPage'
 import { CustomerLogin } from '@/pages/CustomerLogin/CustomerLogin'
@@ -126,7 +125,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <CustomerHome />,
+        element: <Navigate to="/locations" replace />,
       },
       {
         path: 'bookings',

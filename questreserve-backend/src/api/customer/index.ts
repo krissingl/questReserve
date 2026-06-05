@@ -139,7 +139,7 @@ protectedRouter.use(authenticate, requireRole('end_user'));
 protectedRouter.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getUser(req);
-    const row = await db('end_user').where({ id: user.sub }).select('id', 'first_name', 'last_name', 'email', 'profile_picture_url').first();
+    const row = await db('end_user').where({ id: user.sub }).select('id', 'first_name', 'last_name', 'email', 'profile_picture_url', 'bio').first();
     if (!row) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(row);
   } catch (err) {
@@ -152,14 +152,17 @@ protectedRouter.patch('/profile', async (req: Request, res: Response, next: Next
     res.status(400).json({ error: 'Request body must be a JSON object' }); return;
   }
   const b = req.body as Record<string, unknown>;
-  const { first_name, last_name } = b;
+  const { first_name, last_name, bio } = b;
   if (first_name !== undefined && (typeof first_name !== 'string' || (first_name as string).trim() === '')) {
     res.status(400).json({ error: 'first_name must be a non-empty string' }); return;
   }
   if (last_name !== undefined && (typeof last_name !== 'string' || (last_name as string).trim() === '')) {
     res.status(400).json({ error: 'last_name must be a non-empty string' }); return;
   }
-  if (first_name === undefined && last_name === undefined) {
+  if (bio !== undefined && bio !== null && typeof bio !== 'string') {
+    res.status(400).json({ error: 'bio must be a string or null' }); return;
+  }
+  if (first_name === undefined && last_name === undefined && bio === undefined) {
     res.status(400).json({ error: 'No valid fields to update' }); return;
   }
   try {
@@ -167,10 +170,11 @@ protectedRouter.patch('/profile', async (req: Request, res: Response, next: Next
     const updates: Record<string, unknown> = { updated_at: new Date() };
     if (first_name !== undefined) updates.first_name = (first_name as string).trim();
     if (last_name !== undefined) updates.last_name = (last_name as string).trim();
+    if (bio !== undefined) updates.bio = bio === null ? null : (bio as string).trim() || null;
     const [updated] = await db('end_user')
       .where({ id: user.sub })
       .update(updates)
-      .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url']);
+      .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url', 'bio']);
     if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(updated);
   } catch (err) {
@@ -192,7 +196,7 @@ protectedRouter.post('/profile/picture', (req: Request, res: Response, next: Nex
       const [updated] = await db('end_user')
         .where({ id: user.sub })
         .update({ profile_picture_url: imageUrl, updated_at: new Date() })
-        .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url']);
+        .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url', 'bio']);
       if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
       res.json(updated);
     } catch (err) {

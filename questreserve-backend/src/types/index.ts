@@ -26,6 +26,7 @@ export interface Provider {
   plan: ProviderPlan;
   status: ProviderStatus;
   profile_picture_url: string | null;
+  bio: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -38,6 +39,7 @@ export interface EndUser {
   password_hash: string;
   role: EndUserRole;
   profile_picture_url: string | null;
+  bio: string | null;
   created_at: Date;
   updated_at: Date;
 }

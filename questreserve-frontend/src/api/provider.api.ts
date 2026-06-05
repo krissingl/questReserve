@@ -95,6 +95,7 @@ export interface UpdateProfilePayload {
   first_name?: string
   last_name?: string
   organization_name?: string
+  bio?: string | null
 }
 
 export async function updateMyProfile(payload: UpdateProfilePayload): Promise<ProviderProfile> {
@@ -136,6 +137,7 @@ export interface ProviderCustomerProfile {
   last_name: string
   email: string
   profile_picture_url: string | null
+  bio: string | null
   bookings: CustomerBookingSummary[]
 }
 

@@ -68,6 +68,7 @@ export interface ProviderProfileView {
   plan: ProviderPlan;
   status: ProviderStatus;
   profile_picture_url: string | null;
+  bio: string | null;
 }
 
 export interface UpdateProfileInput {
@@ -75,6 +76,7 @@ export interface UpdateProfileInput {
   first_name?: string;
   last_name?: string;
   organization_name?: string | null;
+  bio?: string | null;
 }
 
 export interface ChangePasswordInput {
@@ -96,6 +98,7 @@ export interface CustomerProfileView {
   last_name: string;
   email: string;
   profile_picture_url: string | null;
+  bio: string | null;
   bookings: CustomerBookingSummary[];
 }
 
@@ -290,12 +293,12 @@ export class ProviderService {
   async getProfile(providerId: string): Promise<ProviderProfileView | null> {
     const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
     if (!provider) return null;
-    const { id, first_name, last_name, email, organization_name, plan, status, profile_picture_url } = provider;
-    return { id, first_name, last_name, email, organization_name, plan, status, profile_picture_url: profile_picture_url ?? null };
+    const { id, first_name, last_name, email, organization_name, plan, status, profile_picture_url, bio } = provider;
+    return { id, first_name, last_name, email, organization_name, plan, status, profile_picture_url: profile_picture_url ?? null, bio: bio ?? null };
   }
 
   async updateProfile(providerId: string, input: UpdateProfileInput): Promise<ProviderProfileView | null> {
-    const updates: Partial<Pick<Provider, 'email' | 'first_name' | 'last_name' | 'organization_name'>> = {};
+    const updates: Partial<Pick<Provider, 'email' | 'first_name' | 'last_name' | 'organization_name' | 'bio'>> = {};
 
     if (input.email !== undefined) {
       const existing = await this.knex<Provider>('provider').where({ email: input.email }).whereNot({ id: providerId }).first();
@@ -305,11 +308,12 @@ export class ProviderService {
     if (input.first_name !== undefined) updates.first_name = input.first_name;
     if (input.last_name !== undefined) updates.last_name = input.last_name;
     if ('organization_name' in input) updates.organization_name = input.organization_name ?? null;
+    if ('bio' in input) updates.bio = input.bio ?? null;
 
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ ...updates, updated_at: new Date() })
-      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status', 'profile_picture_url']);
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status', 'profile_picture_url', 'bio']);
     return updated ?? null;
   }
 
@@ -317,7 +321,7 @@ export class ProviderService {
     const [updated] = await this.knex<Provider>('provider')
       .where({ id: providerId })
       .update({ profile_picture_url: url, updated_at: new Date() })
-      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status', 'profile_picture_url']);
+      .returning(['id', 'first_name', 'last_name', 'email', 'organization_name', 'plan', 'status', 'profile_picture_url', 'bio']);
     return updated ?? null;
   }
 
@@ -354,6 +358,7 @@ export class ProviderService {
       last_name: customer.last_name,
       email: customer.email,
       profile_picture_url: customer.profile_picture_url ?? null,
+      bio: customer.bio ?? null,
       bookings: bookings.map((b) => ({
         id: b.id,
         location_name: b.location_name,

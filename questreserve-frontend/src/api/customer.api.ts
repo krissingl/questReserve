@@ -7,6 +7,7 @@ export interface CustomerProfile {
   last_name: string
   email: string
   profile_picture_url: string | null
+  bio: string | null
 }
 
 export async function getMyCustomerProfile(): Promise<CustomerProfile> {
@@ -17,6 +18,7 @@ export async function getMyCustomerProfile(): Promise<CustomerProfile> {
 export interface UpdateCustomerProfilePayload {
   first_name?: string
   last_name?: string
+  bio?: string | null
 }
 
 export async function updateMyCustomerProfile(payload: UpdateCustomerProfilePayload): Promise<CustomerProfile> {

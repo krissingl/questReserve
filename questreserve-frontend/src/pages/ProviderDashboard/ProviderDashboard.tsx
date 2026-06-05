@@ -63,7 +63,7 @@ function UpcomingBookingRow({ booking }: UpcomingBookingRowProps) {
         justifyContent: 'space-between',
         padding: '0.75rem 1rem',
         borderRadius: 'var(--radius)',
-        backgroundColor: 'rgb(var(--background))',
+        backgroundColor: 'rgb(var(--surface))',
         gap: '1rem',
         flexWrap: 'wrap',
       }}
@@ -112,7 +112,7 @@ function AdventurePreviewRow({ location }: AdventurePreviewRowProps) {
       style={{
         padding: '0.75rem 1rem',
         borderRadius: 'var(--radius)',
-        backgroundColor: 'rgb(var(--background))',
+        backgroundColor: 'rgb(var(--surface))',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',

@@ -296,6 +296,91 @@ function ChangePasswordSection() {
   )
 }
 
+function UpdateBioForm({ initialBio, onSuccess }: { initialBio: string; onSuccess: () => void }) {
+  const [bio, setBio] = useState(initialBio)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitting(true)
+    setError(null)
+    setSuccess(false)
+    try {
+      await updateMyProfile({ bio: bio.trim() || null })
+      setSuccess(true)
+      onSuccess()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update bio.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h2
+        style={{
+          fontFamily: 'var(--font-heading)',
+          fontSize: '1rem',
+          fontWeight: 'var(--weight-semibold)',
+          color: 'rgb(var(--foreground))',
+          marginBottom: '0.5rem',
+        }}
+      >
+        About
+      </h2>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '0.75rem' }}>
+        Write a brief bio about yourself or your organization. Customers can see this on your public profile.
+      </p>
+      <textarea
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        rows={5}
+        maxLength={600}
+        placeholder="Tell customers about yourself and what makes your adventures special…"
+        style={{
+          width: '100%',
+          padding: '0.5rem 0.75rem',
+          borderRadius: 'var(--radius)',
+          border: '1px solid rgb(var(--border))',
+          fontSize: 'var(--text-sm)',
+          backgroundColor: 'rgb(var(--background))',
+          color: 'rgb(var(--foreground))',
+          resize: 'vertical',
+          boxSizing: 'border-box' as const,
+          outline: 'none',
+          marginBottom: '0.75rem',
+        }}
+      />
+      {error && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>
+      )}
+      {success && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>About updated.</p>
+      )}
+      <button
+        type="submit"
+        disabled={submitting}
+        style={{
+          padding: '0.5rem 1.25rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--accent))',
+          color: 'rgb(var(--accent-foreground))',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--weight-semibold)',
+          border: 'none',
+          cursor: submitting ? 'not-allowed' : 'pointer',
+          opacity: submitting ? 0.6 : 1,
+        }}
+      >
+        {submitting ? 'Saving…' : 'Save About'}
+      </button>
+    </form>
+  )
+}
+
 function UpdateProfileForm({
   initialFirstName,
   initialLastName,
@@ -450,10 +535,10 @@ function ProfilePictureSection({
         <img
           src={currentUrl}
           alt="Profile"
-          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
+          style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
         />
       ) : (
-        <AvatarIcon firstName={firstName} lastName={lastName} size="md" />
+        <AvatarIcon firstName={firstName} lastName={lastName} size="lg" />
       )}
       <div>
         <input
@@ -631,6 +716,10 @@ export function ProviderAccount() {
           initialOrgName={profile.organization_name ?? ''}
           onSuccess={refetchProfile}
         />
+      </div>
+
+      <div style={sectionStyle}>
+        <UpdateBioForm initialBio={profile.bio ?? ''} onSuccess={refetchProfile} />
       </div>
 
       <div style={sectionStyle}>

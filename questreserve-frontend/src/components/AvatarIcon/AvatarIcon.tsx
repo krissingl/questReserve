@@ -1,13 +1,14 @@
 interface AvatarIconProps {
   firstName: string
   lastName: string
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
   pictureUrl?: string | null
 }
 
 const SIZE_MAP = {
   sm: { dimension: '28px', fontSize: '0.7rem' },
   md: { dimension: '36px', fontSize: '0.9rem' },
+  lg: { dimension: '96px', fontSize: '2rem' },
 }
 
 export function AvatarIcon({ firstName, lastName, size = 'md', pictureUrl }: AvatarIconProps) {

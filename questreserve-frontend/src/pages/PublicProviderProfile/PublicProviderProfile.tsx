@@ -50,7 +50,7 @@ export function PublicProviderProfile() {
   return (
     <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="md" pictureUrl={profile.profile_picture_url} />
+        <AvatarIcon firstName={profile.first_name} lastName={profile.last_name} size="lg" pictureUrl={profile.profile_picture_url} />
         <div>
           <h1
             style={{
@@ -91,9 +91,15 @@ export function PublicProviderProfile() {
         >
           About
         </h2>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
-          No bio yet.
-        </p>
+        {profile.bio ? (
+          <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', lineHeight: 1.6 }}>
+            {profile.bio}
+          </p>
+        ) : (
+          <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+            No bio yet.
+          </p>
+        )}
       </div>
 
       <h2
@@ -122,6 +128,8 @@ export function PublicProviderProfile() {
                 backgroundColor: 'rgb(var(--card))',
                 boxShadow: 'var(--shadow-card)',
                 overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
               <div
@@ -146,7 +154,7 @@ export function PublicProviderProfile() {
                   </span>
                 )}
               </div>
-              <div style={{ padding: '1rem' }}>
+              <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                   <span
                     style={{
@@ -180,26 +188,29 @@ export function PublicProviderProfile() {
                       color: 'rgb(var(--muted-foreground))',
                       marginBottom: '0.75rem',
                       lineHeight: 1.5,
+                      flex: 1,
                     }}
                   >
                     {loc.description}
                   </p>
                 )}
-                <Link
-                  to={`/locations/${loc.id}`}
-                  style={{
-                    display: 'inline-block',
-                    padding: '0.4rem 1rem',
-                    borderRadius: 'var(--radius)',
-                    backgroundColor: 'rgb(var(--accent))',
-                    color: 'rgb(var(--accent-foreground))',
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--weight-semibold)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  Book This Adventure
-                </Link>
+                <div style={{ marginTop: 'auto', paddingTop: loc.description ? 0 : '0.75rem' }}>
+                  <Link
+                    to={`/locations/${loc.id}`}
+                    style={{
+                      display: 'inline-block',
+                      padding: '0.4rem 1rem',
+                      borderRadius: 'var(--radius)',
+                      backgroundColor: 'rgb(var(--accent))',
+                      color: 'rgb(var(--accent-foreground))',
+                      fontSize: 'var(--text-sm)',
+                      fontWeight: 'var(--weight-semibold)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    Book This Adventure
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

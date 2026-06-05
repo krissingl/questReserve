@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { getInbox } from '@/api/provider.api'
+import { getMyCustomerProfile } from '@/api/customer.api'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import logoLockup from '@/assets/logo-primary-white-gold.svg'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
   color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
 })
 
+interface CustomerNavProfile {
+  firstName: string
+  lastName: string
+  pictureUrl: string | null
+}
+
 export function HeaderNav() {
   const { token, role, logout } = useAuth()
+  const { pathname } = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [customerProfile, setCustomerProfile] = useState<CustomerNavProfile | null>(null)
 
   useEffect(() => {
     if (!token || role !== 'customer') return
@@ -19,12 +29,19 @@ export function HeaderNav() {
         setUnreadCount(entries.reduce((sum, e) => sum + e.unread_count, 0))
       })
       .catch(() => {})
+  }, [token, role, pathname])
+
+  useEffect(() => {
+    if (!token || role !== 'customer') return
+    getMyCustomerProfile()
+      .then((p) => setCustomerProfile({ firstName: p.first_name, lastName: p.last_name, pictureUrl: p.profile_picture_url }))
+      .catch(() => {})
   }, [token, role])
 
   const logoHref = !token
     ? '/locations'
     : role === 'customer'
-      ? '/customer'
+      ? '/locations'
       : role === 'provider'
         ? '/provider'
         : '/admin'
@@ -93,9 +110,28 @@ export function HeaderNav() {
           </NavLink>
         )}
 
-        <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-          About
-        </NavLink>
+        {token && role === 'customer' && customerProfile && (
+          <Link
+            to="/customer/settings"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              fontSize: 'var(--text-sm)',
+              color: 'rgb(var(--muted-foreground))',
+              textDecoration: 'none',
+            }}
+          >
+            <AvatarIcon firstName={customerProfile.firstName} lastName={customerProfile.lastName} size="sm" pictureUrl={customerProfile.pictureUrl} />
+            <span>{customerProfile.firstName} {customerProfile.lastName}</span>
+          </Link>
+        )}
+
+        {!token && (
+          <NavLink to="/about" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
+            About
+          </NavLink>
+        )}
 
         {!token ? (
           <NavLink to="/login" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">

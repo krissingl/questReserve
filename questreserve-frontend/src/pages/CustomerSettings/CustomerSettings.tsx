@@ -71,10 +71,10 @@ function ProfilePictureSection({
         <img
           src={currentUrl}
           alt="Profile"
-          style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
+          style={{ width: '96px', height: '96px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgb(var(--border))' }}
         />
       ) : (
-        <AvatarIcon firstName={firstName} lastName={lastName} size="md" />
+        <AvatarIcon firstName={firstName} lastName={lastName} size="lg" />
       )}
       <div>
         <input
@@ -120,12 +120,18 @@ function ProfileSection() {
   const [validationError, setValidationError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
+  const [bio, setBio] = useState('')
+  const [bioSubmitting, setBioSubmitting] = useState(false)
+  const [bioError, setBioError] = useState<string | null>(null)
+  const [bioSuccess, setBioSuccess] = useState(false)
+
   useEffect(() => {
     getMyCustomerProfile()
       .then((p) => {
         setProfile(p)
         setFirstName(p.first_name)
         setLastName(p.last_name)
+        setBio(p.bio ?? '')
         setLoading(false)
       })
       .catch(() => {
@@ -156,6 +162,23 @@ function ProfileSection() {
       setError(err instanceof Error ? err.message : 'Failed to update profile.')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function handleBioSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setBioSubmitting(true)
+    setBioError(null)
+    setBioSuccess(false)
+    try {
+      const updated = await updateMyCustomerProfile({ bio: bio.trim() || null })
+      setProfile(updated)
+      setBio(updated.bio ?? '')
+      setBioSuccess(true)
+    } catch (err: unknown) {
+      setBioError(err instanceof Error ? err.message : 'Failed to update bio.')
+    } finally {
+      setBioSubmitting(false)
     }
   }
 
@@ -240,6 +263,59 @@ function ProfileSection() {
           }}
         >
           {submitting ? 'Saving…' : 'Update Profile'}
+        </button>
+      </form>
+
+      <form onSubmit={handleBioSubmit} style={{ paddingTop: '1.25rem', marginTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
+        <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'rgb(var(--foreground))', marginBottom: '0.5rem' }}>
+          About
+        </h3>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '0.75rem' }}>
+          Write a brief bio about yourself or your adventure party. Providers can see this when reviewing your booking.
+        </p>
+        <textarea
+          id="customer-bio"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          rows={4}
+          maxLength={600}
+          placeholder="Tell providers about yourself or your group…"
+          style={{
+            width: '100%',
+            padding: '0.5rem 0.75rem',
+            borderRadius: 'var(--radius)',
+            border: '1px solid rgb(var(--border))',
+            fontSize: 'var(--text-sm)',
+            backgroundColor: 'rgb(var(--background))',
+            color: 'rgb(var(--foreground))',
+            resize: 'vertical',
+            boxSizing: 'border-box' as const,
+            outline: 'none',
+            marginBottom: '0.75rem',
+          }}
+        />
+        {bioError && (
+          <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{bioError}</p>
+        )}
+        {bioSuccess && (
+          <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>About updated.</p>
+        )}
+        <button
+          type="submit"
+          disabled={bioSubmitting}
+          style={{
+            padding: '0.5rem 1.25rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: bioSubmitting ? 'not-allowed' : 'pointer',
+            opacity: bioSubmitting ? 0.6 : 1,
+          }}
+        >
+          {bioSubmitting ? 'Saving…' : 'Save About'}
         </button>
       </form>
     </>
