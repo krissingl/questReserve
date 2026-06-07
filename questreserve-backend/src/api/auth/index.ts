@@ -3,9 +3,10 @@ import db from '../../db/db';
 import { AuthService, InvalidCredentialsError, DuplicateAccountError, SuspendedAccountError } from '../../services/auth.service';
 import { authenticate, requireRole } from '../../middleware';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
+import { BookingRepository } from '../../repositories/booking.repository';
 import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
-import { ProviderService, IncorrectPasswordError } from '../../services/provider.service';
+import { ProviderService, IncorrectPasswordError, ProviderNotFoundError } from '../../services/provider.service';
 import { UnauthenticatedError } from '../../utils/errors';
 
 const router = Router();
@@ -14,7 +15,8 @@ const authService = new AuthService(db);
 const locationRepo = new BookingLocationRepository(db);
 const locationImagesRepo = new LocationImagesRepository(db);
 const slotRepo = new TimeSlotRepository(db);
-const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db);
+const bookingRepo = new BookingRepository(db);
+const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db, bookingRepo);
 
 function validateBody(body: unknown, required: string[]): string | null {
   if (typeof body !== 'object' || body === null) return 'Request body must be a JSON object';
@@ -120,6 +122,9 @@ router.patch('/provider/password', authenticate, requireRole('provider'), async 
   } catch (err) {
     if (err instanceof IncorrectPasswordError) {
       res.status(401).json({ error: err.message }); return;
+    }
+    if (err instanceof ProviderNotFoundError) {
+      res.status(404).json({ error: 'Not found' }); return;
     }
     if (err instanceof UnauthenticatedError) {
       res.status(401).json({ error: err.message }); return;

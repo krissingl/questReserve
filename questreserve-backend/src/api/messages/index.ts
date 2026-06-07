@@ -2,6 +2,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
 import { authenticate } from '../../middleware';
 import { MessageRepository } from '../../repositories/message.repository';
+import { BookingRepository } from '../../repositories/booking.repository';
 import {
   MessageService,
   BookingNotFoundError,
@@ -13,7 +14,8 @@ import { UnauthenticatedError } from '../../utils/errors';
 
 const router = Router();
 const messageRepo = new MessageRepository(db);
-const messageService = new MessageService(messageRepo, db);
+const bookingRepo = new BookingRepository(db);
+const messageService = new MessageService(messageRepo, bookingRepo);
 
 function getUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthenticatedError();

@@ -1,9 +1,9 @@
 import fs from 'fs';
-import path from 'path';
 import { Router, Request, Response, NextFunction } from 'express';
-import multer, { MulterError } from 'multer';
+import { MulterError } from 'multer';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
+import { uploadProfilePic } from '../../infrastructure/upload';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
@@ -21,36 +21,7 @@ import { Booking, Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
-const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const PROFILE_PICS_DIR = path.join(process.cwd(), 'uploads', 'profile-pictures');
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
-
-const MIME_TO_EXT: Record<string, string> = {
-  'image/jpeg': '.jpg',
-  'image/png': '.png',
-  'image/webp': '.webp',
-};
-
-const uploadProfilePic = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      fs.mkdirSync(PROFILE_PICS_DIR, { recursive: true });
-      cb(null, PROFILE_PICS_DIR);
-    },
-    filename: (_req, file, cb) => {
-      const ext = MIME_TO_EXT[file.mimetype] ?? '.bin';
-      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
-    },
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    if (ACCEPTED_MIME_TYPES.has(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
-    }
-  },
-});
 
 const router = Router();
 const publicRouter = Router();
@@ -145,9 +116,9 @@ protectedRouter.use(authenticate, requireRole('end_user'));
 protectedRouter.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = getUser(req);
-    const row = await db('end_user').where({ id: user.sub }).select('id', 'first_name', 'last_name', 'email', 'profile_picture_url', 'bio').first();
-    if (!row) { res.status(404).json({ error: 'Not found' }); return; }
-    res.json(row);
+    const profile = await customerService.getProfile(user.sub);
+    if (!profile) { res.status(404).json({ error: 'Not found' }); return; }
+    res.json(profile);
   } catch (err) {
     next(err);
   }
@@ -173,14 +144,11 @@ protectedRouter.patch('/profile', async (req: Request, res: Response, next: Next
   }
   try {
     const user = getUser(req);
-    const updates: Record<string, unknown> = { updated_at: new Date() };
-    if (first_name !== undefined) updates.first_name = (first_name as string).trim();
-    if (last_name !== undefined) updates.last_name = (last_name as string).trim();
-    if (bio !== undefined) updates.bio = bio === null ? null : (bio as string).trim() || null;
-    const [updated] = await db('end_user')
-      .where({ id: user.sub })
-      .update(updates)
-      .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url', 'bio']);
+    const updated = await customerService.updateProfile(user.sub, {
+      first_name: first_name !== undefined ? (first_name as string).trim() : undefined,
+      last_name: last_name !== undefined ? (last_name as string).trim() : undefined,
+      bio: bio !== undefined ? (bio === null ? null : (bio as string).trim() || null) : undefined,
+    });
     if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(updated);
   } catch (err) {
@@ -199,14 +167,11 @@ protectedRouter.post('/profile/picture', (req: Request, res: Response, next: Nex
     try {
       const user = getUser(req);
       const imageUrl = `${PUBLIC_URL}/uploads/profile-pictures/${req.file.filename}`;
-      const [updated] = await db('end_user')
-        .where({ id: user.sub })
-        .update({ profile_picture_url: imageUrl, updated_at: new Date() })
-        .returning(['id', 'first_name', 'last_name', 'email', 'profile_picture_url', 'bio']);
+      const updated = await customerService.setProfilePicture(user.sub, imageUrl);
       if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
       res.json(updated);
     } catch (err) {
-      fs.unlink(req.file.path, () => {});
+      fs.unlink(req.file.path, (unlinkErr) => { if (unlinkErr) console.error('Failed to clean up uploaded file:', unlinkErr); });
       next(err);
     }
   });

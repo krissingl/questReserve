@@ -1,5 +1,5 @@
-import { Knex } from 'knex';
 import { MessageRepository, Message, InsertMessageData } from '../repositories/message.repository';
+import { BookingRepository } from '../repositories/booking.repository';
 import { Booking } from '../types';
 import { TokenType } from '../utils/jwt';
 
@@ -38,25 +38,11 @@ function tokenTypeToSenderType(type: TokenType): 'provider' | 'customer' {
 export class MessageService {
   constructor(
     private readonly messageRepo: MessageRepository,
-    private readonly knex: Knex
+    private readonly bookingRepo: BookingRepository
   ) {}
 
   private async getBookingWithProvider(bookingId: string): Promise<(Booking & { provider_id: string }) | null> {
-    const row = await this.knex('booking')
-      .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
-      .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
-      .where({ 'booking.id': bookingId })
-      .select(
-        'booking.id',
-        'booking.time_slot_id',
-        'booking.end_user_id',
-        'booking.status',
-        'booking.created_at',
-        'booking.updated_at',
-        'booking_location.provider_id',
-      )
-      .first();
-    return row ?? null;
+    return this.bookingRepo.findByIdWithProvider(bookingId);
   }
 
   private async assertPartyAccess(bookingId: string, userId: string, userType: TokenType): Promise<void> {

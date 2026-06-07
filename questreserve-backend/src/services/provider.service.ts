@@ -1,9 +1,11 @@
 import bcrypt from 'bcryptjs';
 import { Knex } from 'knex';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { BookingRepository } from '../repositories/booking.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
+import { ProviderRepository } from '../repositories/provider.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, BookingLocationWithSlotCount, BookingStatus, Difficulty, EndUser, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, TimeSlot, TimeSlotWithBooking } from '../types';
+import { BookingLocation, BookingLocationWithSlotCount, BookingStatus, Difficulty, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -115,12 +117,21 @@ export class IncorrectPasswordError extends Error {
   }
 }
 
+export class ProviderNotFoundError extends Error {
+  constructor() {
+    super('Provider not found');
+    this.name = 'ProviderNotFoundError';
+  }
+}
+
 export class ProviderService {
   constructor(
     private readonly locationRepo: BookingLocationRepository,
     private readonly locationImagesRepo: LocationImagesRepository,
     private readonly slotRepo: TimeSlotRepository,
-    private readonly knex: Knex
+    private readonly knex: Knex,
+    private readonly bookingRepo: BookingRepository,
+    private readonly providerRepo?: ProviderRepository
   ) {}
 
   async createLocation(providerId: string, data: CreateLocationInput): Promise<BookingLocation> {
@@ -324,9 +335,22 @@ export class ProviderService {
     return updated ?? null;
   }
 
+  async getPublicProfile(providerId: string): Promise<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    organization_name: string | null;
+    profile_picture_url: string | null;
+    bio: string | null;
+    locations: Array<{ id: string; name: string; description: string | null; difficulty: string; image_url: string | null }>;
+  } | null> {
+    if (!this.providerRepo) throw new Error('ProviderRepository not injected');
+    return this.providerRepo.findPublicProfile(providerId);
+  }
+
   async changePassword(providerId: string, input: ChangePasswordInput): Promise<void> {
     const provider = await this.knex<Provider>('provider').where({ id: providerId }).first();
-    if (!provider) throw new Error('Provider not found');
+    if (!provider) throw new ProviderNotFoundError();
     const match = await bcrypt.compare(input.currentPassword, provider.password_hash);
     if (!match) throw new IncorrectPasswordError();
     const newHash = await bcrypt.hash(input.newPassword, 10);
@@ -336,21 +360,11 @@ export class ProviderService {
   }
 
   async getCustomerProfile(providerId: string, customerId: string): Promise<CustomerProfileView> {
-    const bookings = await this.knex('booking')
-      .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
-      .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
-      .where({ 'booking.end_user_id': customerId, 'booking_location.provider_id': providerId })
-      .select(
-        'booking.id',
-        'booking_location.name as location_name',
-        'time_slot.start_time',
-        'time_slot.end_time',
-        'booking.status',
-      );
+    const bookings = await this.bookingRepo.findByCustomerAndProvider(customerId, providerId);
 
     if (bookings.length === 0) throw new CustomerNotFoundError();
 
-    const customer = await this.knex<EndUser>('end_user').where({ id: customerId }).first();
+    const customer = await this.bookingRepo.findCustomerById(customerId);
     if (!customer) throw new CustomerNotFoundError();
 
     return {

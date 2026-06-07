@@ -4,6 +4,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
+import { uploadProfilePic } from '../../infrastructure/upload';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
@@ -16,13 +17,13 @@ import {
   EmailConflictError,
   CustomerNotFoundError,
 } from '../../services/provider.service';
+import { BookingRepository } from '../../repositories/booking.repository';
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
 const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'location-images');
-const PROFILE_PICS_DIR = path.join(process.cwd(), 'uploads', 'profile-pictures');
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
 
 const MIME_TO_EXT: Record<string, string> = {
@@ -52,33 +53,13 @@ const upload = multer({
   },
 });
 
-const uploadProfilePic = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      fs.mkdirSync(PROFILE_PICS_DIR, { recursive: true });
-      cb(null, PROFILE_PICS_DIR);
-    },
-    filename: (_req, file, cb) => {
-      const ext = MIME_TO_EXT[file.mimetype] ?? '.bin';
-      cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
-    },
-  }),
-  limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (_req, file, cb) => {
-    if (ACCEPTED_MIME_TYPES.has(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new MulterError('LIMIT_UNEXPECTED_FILE', file.fieldname));
-    }
-  },
-});
-
 const router = Router();
 
 const locationRepo = new BookingLocationRepository(db);
 const locationImagesRepo = new LocationImagesRepository(db);
 const slotRepo = new TimeSlotRepository(db);
-const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db);
+const bookingRepo = new BookingRepository(db);
+const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db, bookingRepo);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
