@@ -65,9 +65,6 @@ export class MessageService {
     const senderType = tokenTypeToSenderType(senderTokenType);
     const data: InsertMessageData = { booking_id: bookingId, sender_id: senderId, sender_type: senderType, body };
     const message = await this.messageRepo.insert(data);
-
-    // TODO: trigger email/push notification
-
     return message;
   }
 

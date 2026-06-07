@@ -86,7 +86,7 @@ export interface ChangePasswordInput {
   newPassword: string;
 }
 
-export interface CustomerBookingSummary {
+interface CustomerBookingSummary {
   id: string;
   location_name: string;
   start_time: string;
@@ -94,7 +94,7 @@ export interface CustomerBookingSummary {
   status: BookingStatus;
 }
 
-export interface CustomerProfileView {
+interface CustomerProfileView {
   id: string;
   first_name: string;
   last_name: string;

@@ -172,7 +172,7 @@ router.post('/profile/picture', (req: Request, res: Response, next: NextFunction
       if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
       res.json(updated);
     } catch (err) {
-      fs.unlink(req.file.path, () => {});
+      fs.unlink(req.file.path, (unlinkErr) => { if (unlinkErr) console.error('Failed to clean up uploaded file:', unlinkErr); });
       next(err);
     }
   });
@@ -262,7 +262,7 @@ router.post('/locations/:id/images', (req: Request, res: Response, next: NextFun
       const image = await providerService.addLocationImage(getUser(req).sub, req.params.id, imageUrl);
       res.status(201).json(image);
     } catch (err) {
-      fs.unlink(req.file.path, () => {});
+      fs.unlink(req.file.path, (unlinkErr) => { if (unlinkErr) console.error('Failed to clean up uploaded file:', unlinkErr); });
       handleProviderError(err, res, next);
     }
   });

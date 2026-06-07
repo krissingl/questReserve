@@ -1,73 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getProviderCustomer } from '@/api/provider.api'
 import type { ProviderCustomerProfile as ProviderCustomerProfileData } from '@/api/provider.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
-
-function ProfilePictureLightbox({ url, name, onClose }: { url: string; name: string; onClose: () => void }) {
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onClose()
-  }, [onClose])
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleKeyDown])
-
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={`Profile photo of ${name}`}
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        backgroundColor: 'rgba(0,0,0,0.9)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close photo"
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: 'rgba(255,255,255,0.15)',
-          border: 'none',
-          borderRadius: '50%',
-          width: '2.5rem',
-          height: '2.5rem',
-          color: '#fff',
-          fontSize: '1.25rem',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        ✕
-      </button>
-      <img
-        src={url}
-        alt={name}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: '90vw',
-          maxHeight: '90vh',
-          objectFit: 'contain',
-          borderRadius: '50%',
-          pointerEvents: 'none',
-        }}
-      />
-    </div>
-  )
-}
+import { ProfilePictureLightbox } from '@/components/ProfilePictureLightbox/ProfilePictureLightbox'
 
 const statusColours: Record<string, { bg: string; text: string }> = {
   BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },

@@ -107,7 +107,7 @@ router.post('/admin/login', async (req: Request, res: Response, next: NextFuncti
 router.patch('/provider/password', authenticate, requireRole('provider'), async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) { res.status(401).json({ error: 'Unauthenticated' }); return; }
   const b = req.body as Record<string, unknown>;
-  if (typeof b.currentPassword !== 'string' || b.currentPassword.trim() === '') {
+  if (typeof b.currentPassword !== 'string' || b.currentPassword === '') {
     res.status(400).json({ error: 'currentPassword is required' }); return;
   }
   if (typeof b.newPassword !== 'string' || b.newPassword.length < 8) {
