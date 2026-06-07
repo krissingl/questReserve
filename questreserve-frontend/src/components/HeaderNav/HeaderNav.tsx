@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { getInbox } from '@/api/provider.api'
 import { getMyCustomerProfile } from '@/api/customer.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
-import logoLockup from '@/assets/logo-primary-white-gold.svg'
 
 const navLinkStyle = ({ isActive }: { isActive: boolean }) => ({
   color: isActive ? 'rgb(var(--accent))' : 'rgb(var(--foreground))',
@@ -51,8 +50,22 @@ export function HeaderNav() {
       className="flex w-full items-center gap-6 px-6 py-3"
       style={{ backgroundColor: 'rgb(var(--background))', position: 'sticky', top: 0, zIndex: 100 }}
     >
-      <Link to={logoHref} className="flex-shrink-0">
-        <img src={logoLockup} alt="QuestReserve" style={{ height: '40px' }} />
+      <Link
+        to={logoHref}
+        className="flex-shrink-0"
+        style={{ textDecoration: 'none' }}
+      >
+        <span
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontWeight: 'var(--weight-bold)',
+            fontSize: '1rem',
+            color: 'rgb(var(--accent))',
+            letterSpacing: '0.03em',
+          }}
+        >
+          QuestReserve
+        </span>
       </Link>
 
       <nav className="flex flex-1 items-center justify-end gap-8">

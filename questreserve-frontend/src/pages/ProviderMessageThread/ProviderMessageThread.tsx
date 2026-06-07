@@ -1,8 +1,10 @@
 import { useParams, Link } from 'react-router-dom'
 import { MessageThread } from '@/components/MessageThread/MessageThread'
+import { useMyProviderBookings } from '@/hooks/useMyProviderBookings'
 
 export function ProviderMessageThread() {
   const { bookingId } = useParams<{ bookingId: string }>()
+  const { data: bookings } = useMyProviderBookings()
 
   if (!bookingId) {
     return (
@@ -11,6 +13,12 @@ export function ProviderMessageThread() {
       </main>
     )
   }
+
+  const booking = bookings.find((b) => b.id === bookingId)
+  const customerName =
+    booking?.end_user_first_name && booking?.end_user_last_name
+      ? `${booking.end_user_first_name} ${booking.end_user_last_name}`
+      : undefined
 
   return (
     <main style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
@@ -26,7 +34,7 @@ export function ProviderMessageThread() {
       >
         &larr; Back to Bookings
       </Link>
-      <MessageThread bookingId={bookingId} perspective="provider" />
+      <MessageThread bookingId={bookingId} perspective="provider" otherName={customerName} />
     </main>
   )
 }
