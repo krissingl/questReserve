@@ -7,6 +7,7 @@ import { useLocationImages } from '@/hooks/useLocationImages'
 import { useAuth } from '@/contexts/AuthContext'
 import { formatSlotTime } from '@/utils/formatSlotTime'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
+import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import type { TimeSlot } from '@/types/domain'
 
 interface SlotCardProps {
@@ -245,15 +246,41 @@ export function LocationDetail() {
           {location.name}
         </h1>
 
-        <span
-          className="inline-block rounded px-2 py-0.5 text-xs font-medium"
-          style={{
-            backgroundColor: 'rgb(var(--primary))',
-            color: 'rgb(var(--primary-foreground, 255 255 255))',
-          }}
-        >
-          {location.difficulty}
-        </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span
+            className="inline-block rounded px-2 py-0.5 text-xs font-medium"
+            style={{
+              backgroundColor: 'rgb(var(--primary))',
+              color: 'rgb(var(--primary-foreground, 255 255 255))',
+            }}
+          >
+            {location.difficulty}
+          </span>
+
+          {location.provider_first_name && location.provider_last_name && (
+            <Link
+              to={`/providers/${location.provider_id}/profile`}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                fontSize: 'var(--text-sm)',
+                color: 'rgb(var(--muted-foreground))',
+                textDecoration: 'none',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--accent))' }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--muted-foreground))' }}
+            >
+              <AvatarIcon
+                firstName={location.provider_first_name}
+                lastName={location.provider_last_name}
+                size="sm"
+                pictureUrl={location.provider_profile_picture_url}
+              />
+              <span>{location.provider_first_name} {location.provider_last_name}</span>
+            </Link>
+          )}
+        </div>
 
         {location.description && (
           <p

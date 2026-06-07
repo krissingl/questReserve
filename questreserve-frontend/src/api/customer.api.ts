@@ -1,6 +1,42 @@
 import { apiClient } from './client'
 import type { BookingLocation, LocationImage, Booking, TimeSlot, LocationFilters } from '@/types/domain'
 
+export interface CustomerProfile {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  profile_picture_url: string | null
+  bio: string | null
+}
+
+export async function getMyCustomerProfile(): Promise<CustomerProfile> {
+  const response = await apiClient.get<CustomerProfile>('/customer/profile')
+  return response.data
+}
+
+export interface UpdateCustomerProfilePayload {
+  first_name?: string
+  last_name?: string
+  bio?: string | null
+}
+
+export async function updateMyCustomerProfile(payload: UpdateCustomerProfilePayload): Promise<CustomerProfile> {
+  const response = await apiClient.patch<CustomerProfile>('/customer/profile', payload)
+  return response.data
+}
+
+export async function uploadCustomerProfilePicture(file: File): Promise<CustomerProfile> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post<CustomerProfile>(
+    '/customer/profile/picture',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return response.data
+}
+
 export async function getBookingLocations(filters?: LocationFilters): Promise<BookingLocation[]> {
   const params: Record<string, string> = {}
   if (filters?.difficulty) {

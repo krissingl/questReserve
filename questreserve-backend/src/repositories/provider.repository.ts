@@ -47,4 +47,40 @@ export class ProviderRepository extends BaseRepository<Provider> {
   async delete(id: string): Promise<void> {
     await this.knex<Provider>('provider').where({ id }).delete();
   }
+
+  async findPublicProfile(id: string): Promise<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    organization_name: string | null;
+    profile_picture_url: string | null;
+    bio: string | null;
+    locations: Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      difficulty: string;
+      image_url: string | null;
+    }>;
+  } | null> {
+    const provider = await this.knex<Provider>('provider')
+      .where({ id })
+      .select('id', 'first_name', 'last_name', 'organization_name', 'status', 'profile_picture_url', 'bio')
+      .first();
+    if (!provider || provider.status === 'SUSPENDED') return null;
+
+    const locations = await this.knex('booking_location')
+      .where({ provider_id: id })
+      .select('id', 'name', 'description', 'difficulty', 'image_url');
+
+    return {
+      id: provider.id,
+      first_name: provider.first_name,
+      last_name: provider.last_name,
+      organization_name: provider.organization_name,
+      profile_picture_url: provider.profile_picture_url ?? null,
+      bio: provider.bio ?? null,
+      locations,
+    };
+  }
 }

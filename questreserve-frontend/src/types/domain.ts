@@ -32,6 +32,9 @@ export interface BookingLocation {
   image_url: string | null
   created_at: string
   updated_at: string
+  provider_first_name?: string
+  provider_last_name?: string
+  provider_profile_picture_url?: string | null
 }
 
 export interface BookingLocationWithSlotCount extends BookingLocation {
@@ -66,12 +69,19 @@ export interface Booking {
   slot_end_time: string
 }
 
+export type ProviderPlan = 'FREE' | 'STANDARD' | 'PREMIUM'
+export type ProviderStatus = 'ACTIVE' | 'SUSPENDED'
+
 export interface ProviderProfile {
   id: string
   first_name: string
   last_name: string
   email: string
   organization_name: string | null
+  plan: ProviderPlan
+  status: ProviderStatus
+  profile_picture_url: string | null
+  bio: string | null
 }
 
 export interface ProviderBooking {
@@ -79,6 +89,9 @@ export interface ProviderBooking {
   time_slot_id: string
   end_user_id: string
   end_user_name: string | null
+  end_user_first_name: string | null
+  end_user_last_name: string | null
+  end_user_profile_picture_url: string | null
   status: BookingStatus
   created_at: string
   updated_at: string

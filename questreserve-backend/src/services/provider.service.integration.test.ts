@@ -4,6 +4,7 @@ import {
   LocationOwnershipError,
 } from './provider.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { BookingRepository } from '../repositories/booking.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import {
@@ -32,7 +33,8 @@ function makeService() {
   const locationRepo = new BookingLocationRepository(testKnex);
   const locationImagesRepo = new LocationImagesRepository(testKnex);
   const slotRepo = new TimeSlotRepository(testKnex);
-  return new ProviderService(locationRepo, locationImagesRepo, slotRepo, testKnex);
+  const bookingRepo = new BookingRepository(testKnex);
+  return new ProviderService(locationRepo, locationImagesRepo, slotRepo, testKnex, bookingRepo);
 }
 
 describe('ProviderService — integration', () => {

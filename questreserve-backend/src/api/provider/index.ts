@@ -4,6 +4,7 @@ import { Router, Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
+import { uploadProfilePic } from '../../infrastructure/upload';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
@@ -14,7 +15,9 @@ import {
   SlotNotFoundError,
   ImageNotFoundError,
   EmailConflictError,
+  CustomerNotFoundError,
 } from '../../services/provider.service';
+import { BookingRepository } from '../../repositories/booking.repository';
 import { Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
@@ -23,6 +26,12 @@ const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads', 'location-images');
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
 
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (_req, _file, cb) => {
@@ -30,7 +39,7 @@ const upload = multer({
       cb(null, UPLOADS_DIR);
     },
     filename: (_req, file, cb) => {
-      const ext = `.${file.mimetype.split('/')[1]}`;
+      const ext = MIME_TO_EXT[file.mimetype] ?? '.bin';
       cb(null, `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`);
     },
   }),
@@ -49,7 +58,8 @@ const router = Router();
 const locationRepo = new BookingLocationRepository(db);
 const locationImagesRepo = new LocationImagesRepository(db);
 const slotRepo = new TimeSlotRepository(db);
-const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db);
+const bookingRepo = new BookingRepository(db);
+const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db, bookingRepo);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
 
@@ -67,7 +77,8 @@ function handleProviderError(err: unknown, res: Response, next: NextFunction): v
     err instanceof LocationNotFoundError ||
     err instanceof LocationOwnershipError ||
     err instanceof SlotNotFoundError ||
-    err instanceof ImageNotFoundError
+    err instanceof ImageNotFoundError ||
+    err instanceof CustomerNotFoundError
   ) {
     res.status(404).json({ error: 'Not found' });
   } else {
@@ -113,29 +124,58 @@ router.patch('/profile', async (req: Request, res: Response, next: NextFunction)
     }
   }
 
-  if (b.password !== undefined) {
-    if (typeof b.password !== 'string' || b.password.length < 8) {
-      res.status(400).json({ error: 'password must be at least 8 characters' }); return;
-    }
-    if (b.password.length > 72) {
-      res.status(400).json({ error: 'password must not exceed 72 characters' }); return;
-    }
+  const { first_name, last_name, organization_name, bio } = b;
+  if (first_name !== undefined && (typeof first_name !== 'string' || (first_name as string).trim() === '')) {
+    res.status(400).json({ error: 'first_name must be a non-empty string' }); return;
+  }
+  if (last_name !== undefined && (typeof last_name !== 'string' || (last_name as string).trim() === '')) {
+    res.status(400).json({ error: 'last_name must be a non-empty string' }); return;
+  }
+  if (organization_name !== undefined && organization_name !== null && typeof organization_name !== 'string') {
+    res.status(400).json({ error: 'organization_name must be a string or null' }); return;
+  }
+  if (bio !== undefined && bio !== null && typeof bio !== 'string') {
+    res.status(400).json({ error: 'bio must be a string or null' }); return;
   }
 
-  if (b.email === undefined && b.password === undefined) {
+  const hasUpdate = b.email !== undefined || first_name !== undefined || last_name !== undefined || organization_name !== undefined || bio !== undefined;
+  if (!hasUpdate) {
     res.status(400).json({ error: 'No valid fields to update' }); return;
   }
 
   try {
     const updated = await providerService.updateProfile(getUser(req).sub, {
       email: b.email !== undefined ? (b.email as string).trim() : undefined,
-      password: b.password !== undefined ? (b.password as string) : undefined,
+      first_name: first_name !== undefined ? (first_name as string).trim() : undefined,
+      last_name: last_name !== undefined ? (last_name as string).trim() : undefined,
+      organization_name: organization_name !== undefined ? (organization_name as string | null) : undefined,
+      bio: bio !== undefined ? (bio === null ? null : (bio as string).trim() || null) : undefined,
     });
     if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
     res.json(updated);
   } catch (err) {
     handleProviderError(err, res, next);
   }
+});
+
+router.post('/profile/picture', (req: Request, res: Response, next: NextFunction) => {
+  uploadProfilePic.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr instanceof MulterError) {
+      res.status(400).json({ error: uploadErr.message });
+      return;
+    }
+    if (uploadErr) { next(uploadErr); return; }
+    if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
+    try {
+      const imageUrl = `${PUBLIC_URL}/uploads/profile-pictures/${req.file.filename}`;
+      const updated = await providerService.setProfilePicture(getUser(req).sub, imageUrl);
+      if (!updated) { res.status(404).json({ error: 'Provider not found' }); return; }
+      res.json(updated);
+    } catch (err) {
+      fs.unlink(req.file.path, (unlinkErr) => { if (unlinkErr) console.error('Failed to clean up uploaded file:', unlinkErr); });
+      next(err);
+    }
+  });
 });
 
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
@@ -222,7 +262,7 @@ router.post('/locations/:id/images', (req: Request, res: Response, next: NextFun
       const image = await providerService.addLocationImage(getUser(req).sub, req.params.id, imageUrl);
       res.status(201).json(image);
     } catch (err) {
-      fs.unlink(req.file.path, () => {});
+      fs.unlink(req.file.path, (unlinkErr) => { if (unlinkErr) console.error('Failed to clean up uploaded file:', unlinkErr); });
       handleProviderError(err, res, next);
     }
   });
@@ -250,6 +290,15 @@ router.get('/bookings', async (req: Request, res: Response, next: NextFunction) 
   try {
     const bookings = await providerService.getBookings(getUser(req).sub);
     res.json(bookings);
+  } catch (err) {
+    handleProviderError(err, res, next);
+  }
+});
+
+router.get('/customers/:customerId', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const profile = await providerService.getCustomerProfile(getUser(req).sub, req.params.customerId);
+    res.json(profile);
   } catch (err) {
     handleProviderError(err, res, next);
   }

@@ -4,6 +4,7 @@ import {
   LocationOwnershipError,
 } from './provider.service';
 import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { BookingRepository } from '../repositories/booking.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingLocation, TimeSlot } from '../types';
@@ -65,9 +66,23 @@ function makeRepositories() {
     delete: jest.fn(),
   } as unknown as jest.Mocked<TimeSlotRepository>;
 
+  const bookingRepo = {
+    findById: jest.fn(),
+    findAll: jest.fn(),
+    findAllByEndUser: jest.fn(),
+    findByTimeSlot: jest.fn(),
+    findBookedByTimeSlots: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+    findCustomerById: jest.fn(),
+    findByCustomerAndProvider: jest.fn(),
+    findByIdWithProvider: jest.fn(),
+  } as unknown as jest.Mocked<BookingRepository>;
+
   const mockKnex = {} as Knex;
 
-  return { locationRepo, locationImagesRepo, slotRepo, mockKnex };
+  return { locationRepo, locationImagesRepo, slotRepo, bookingRepo, mockKnex };
 }
 
 describe('ProviderService', () => {
@@ -79,7 +94,7 @@ describe('ProviderService', () => {
     const repos = makeRepositories();
     locationRepo = repos.locationRepo;
     slotRepo = repos.slotRepo;
-    service = new ProviderService(locationRepo, repos.locationImagesRepo, slotRepo, repos.mockKnex);
+    service = new ProviderService(locationRepo, repos.locationImagesRepo, slotRepo, repos.mockKnex, repos.bookingRepo);
   });
 
   describe('createLocation', () => {

@@ -1,9 +1,22 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
 import { AuthService, InvalidCredentialsError, DuplicateAccountError, SuspendedAccountError } from '../../services/auth.service';
+import { authenticate, requireRole } from '../../middleware';
+import { BookingLocationRepository } from '../../repositories/booking-location.repository';
+import { BookingRepository } from '../../repositories/booking.repository';
+import { LocationImagesRepository } from '../../repositories/location-images.repository';
+import { TimeSlotRepository } from '../../repositories/time-slot.repository';
+import { ProviderService, IncorrectPasswordError, ProviderNotFoundError } from '../../services/provider.service';
+import { UnauthenticatedError } from '../../utils/errors';
 
 const router = Router();
 const authService = new AuthService(db);
+
+const locationRepo = new BookingLocationRepository(db);
+const locationImagesRepo = new LocationImagesRepository(db);
+const slotRepo = new TimeSlotRepository(db);
+const bookingRepo = new BookingRepository(db);
+const providerService = new ProviderService(locationRepo, locationImagesRepo, slotRepo, db, bookingRepo);
 
 function validateBody(body: unknown, required: string[]): string | null {
   if (typeof body !== 'object' || body === null) return 'Request body must be a JSON object';
@@ -88,6 +101,35 @@ router.post('/admin/login', async (req: Request, res: Response, next: NextFuncti
     res.json(result);
   } catch (err) {
     handleAuthError(err, res, next);
+  }
+});
+
+router.patch('/provider/password', authenticate, requireRole('provider'), async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.user) { res.status(401).json({ error: 'Unauthenticated' }); return; }
+  const b = req.body as Record<string, unknown>;
+  if (typeof b.currentPassword !== 'string' || b.currentPassword === '') {
+    res.status(400).json({ error: 'currentPassword is required' }); return;
+  }
+  if (typeof b.newPassword !== 'string' || b.newPassword.length < 8) {
+    res.status(400).json({ error: 'newPassword must be at least 8 characters' }); return;
+  }
+  if (b.newPassword.length > 72) {
+    res.status(400).json({ error: 'newPassword must not exceed 72 characters' }); return;
+  }
+  try {
+    await providerService.changePassword(req.user.sub, { currentPassword: b.currentPassword, newPassword: b.newPassword });
+    res.status(204).send();
+  } catch (err) {
+    if (err instanceof IncorrectPasswordError) {
+      res.status(401).json({ error: err.message }); return;
+    }
+    if (err instanceof ProviderNotFoundError) {
+      res.status(404).json({ error: 'Not found' }); return;
+    }
+    if (err instanceof UnauthenticatedError) {
+      res.status(401).json({ error: err.message }); return;
+    }
+    next(err);
   }
 });
 

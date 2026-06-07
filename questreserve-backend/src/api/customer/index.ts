@@ -1,6 +1,9 @@
+import fs from 'fs';
 import { Router, Request, Response, NextFunction } from 'express';
+import { MulterError } from 'multer';
 import db from '../../db/db';
 import { authenticate, requireRole } from '../../middleware';
+import { uploadProfilePic } from '../../infrastructure/upload';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../../repositories/location-images.repository';
 import { TimeSlotRepository } from '../../repositories/time-slot.repository';
@@ -17,6 +20,8 @@ import {
 import { Booking, Difficulty } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
+
+const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
 
 const router = Router();
 const publicRouter = Router();
@@ -73,7 +78,7 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
 
 publicRouter.get('/locations/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const location = await customerService.getLocation(req.params.id);
+    const location = await customerService.getLocationWithProvider(req.params.id);
     if (!location) { res.status(404).json({ error: 'Not found' }); return; }
     res.json(location);
   } catch (err) {
@@ -107,6 +112,70 @@ publicRouter.get('/locations/:id/slots', async (req: Request, res: Response, nex
 });
 
 protectedRouter.use(authenticate, requireRole('end_user'));
+
+protectedRouter.get('/profile', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = getUser(req);
+    const profile = await customerService.getProfile(user.sub);
+    if (!profile) { res.status(404).json({ error: 'Not found' }); return; }
+    res.json(profile);
+  } catch (err) {
+    next(err);
+  }
+});
+
+protectedRouter.patch('/profile', async (req: Request, res: Response, next: NextFunction) => {
+  if (typeof req.body !== 'object' || req.body === null) {
+    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
+  }
+  const b = req.body as Record<string, unknown>;
+  const { first_name, last_name, bio } = b;
+  if (first_name !== undefined && (typeof first_name !== 'string' || (first_name as string).trim() === '')) {
+    res.status(400).json({ error: 'first_name must be a non-empty string' }); return;
+  }
+  if (last_name !== undefined && (typeof last_name !== 'string' || (last_name as string).trim() === '')) {
+    res.status(400).json({ error: 'last_name must be a non-empty string' }); return;
+  }
+  if (bio !== undefined && bio !== null && typeof bio !== 'string') {
+    res.status(400).json({ error: 'bio must be a string or null' }); return;
+  }
+  if (first_name === undefined && last_name === undefined && bio === undefined) {
+    res.status(400).json({ error: 'No valid fields to update' }); return;
+  }
+  try {
+    const user = getUser(req);
+    const updated = await customerService.updateProfile(user.sub, {
+      first_name: first_name !== undefined ? (first_name as string).trim() : undefined,
+      last_name: last_name !== undefined ? (last_name as string).trim() : undefined,
+      bio: bio !== undefined ? (bio === null ? null : (bio as string).trim() || null) : undefined,
+    });
+    if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+});
+
+protectedRouter.post('/profile/picture', (req: Request, res: Response, next: NextFunction) => {
+  uploadProfilePic.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr instanceof MulterError) {
+      res.status(400).json({ error: uploadErr.message });
+      return;
+    }
+    if (uploadErr) { next(uploadErr); return; }
+    if (!req.file) { res.status(400).json({ error: 'No image file provided' }); return; }
+    try {
+      const user = getUser(req);
+      const imageUrl = `${PUBLIC_URL}/uploads/profile-pictures/${req.file.filename}`;
+      const updated = await customerService.setProfilePicture(user.sub, imageUrl);
+      if (!updated) { res.status(404).json({ error: 'Not found' }); return; }
+      res.json(updated);
+    } catch (err) {
+      fs.unlink(req.file.path, (unlinkErr) => { if (unlinkErr) console.error('Failed to clean up uploaded file:', unlinkErr); });
+      next(err);
+    }
+  });
+});
 
 protectedRouter.post('/bookings', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['time_slot_id']);

@@ -19,6 +19,7 @@ app.use(requestLogger);
 app.use(jsonBody);
 
 app.use('/uploads/location-images', express.static(path.join(process.cwd(), 'uploads', 'location-images')));
+app.use('/uploads/profile-pictures', express.static(path.join(process.cwd(), 'uploads', 'profile-pictures')));
 
 app.get('/', (_req, res) => res.send('Ollo, Backend?'));
 app.use('/api', apiRouter);

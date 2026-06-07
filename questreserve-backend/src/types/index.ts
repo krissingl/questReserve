@@ -25,6 +25,8 @@ export interface Provider {
   organization_name: string | null;
   plan: ProviderPlan;
   status: ProviderStatus;
+  profile_picture_url: string | null;
+  bio: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -36,6 +38,8 @@ export interface EndUser {
   email: string;
   password_hash: string;
   role: EndUserRole;
+  profile_picture_url: string | null;
+  bio: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -99,6 +103,9 @@ export interface ProviderBookingView {
   time_slot_id: string;
   end_user_id: string;
   end_user_name: string | null;
+  end_user_first_name: string | null;
+  end_user_last_name: string | null;
+  end_user_profile_picture_url: string | null;
   status: BookingStatus;
   created_at: Date;
   updated_at: Date;
@@ -106,6 +113,16 @@ export interface ProviderBookingView {
   end_time: Date;
   booking_location_id: string;
   location_name: string;
+}
+
+export interface Message {
+  id: string;
+  booking_id: string;
+  sender_id: string;
+  sender_type: 'provider' | 'customer';
+  body: string;
+  created_at: Date;
+  read_at: Date | null;
 }
 
 export interface AdminBookingView {

@@ -4,7 +4,6 @@ import { GuestLayout } from '@/layouts/GuestLayout'
 import { ProviderLayout } from '@/layouts/ProviderLayout'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AlreadyAuthRedirect } from '@/layouts/AlreadyAuthRedirect'
-import { CustomerHome } from '@/pages/CustomerHome'
 import { AdminHome } from '@/pages/AdminHome'
 import { LoginPage } from '@/pages/LoginPage'
 import { CustomerLogin } from '@/pages/CustomerLogin/CustomerLogin'
@@ -15,6 +14,7 @@ import { BrowseLocations } from '@/pages/BrowseLocations/BrowseLocations'
 import { LocationDetail } from '@/pages/LocationDetail/LocationDetail'
 import { MyBookings } from '@/pages/MyBookings/MyBookings'
 import { CustomerSettings } from '@/pages/CustomerSettings/CustomerSettings'
+import { CustomerMessages } from '@/pages/CustomerMessages/CustomerMessages'
 import { PaymentStub } from '@/pages/PaymentStub/PaymentStub'
 import { About } from '@/pages/About/About'
 import { ProviderDashboard } from '@/pages/ProviderDashboard/ProviderDashboard'
@@ -24,15 +24,22 @@ import { ProviderLocationEdit } from '@/pages/ProviderLocationEdit/ProviderLocat
 import { ProviderAdventures } from '@/pages/ProviderAdventures/ProviderAdventures'
 import { ProviderBookings } from '@/pages/ProviderBookings/ProviderBookings'
 import { ProviderAccount } from '@/pages/ProviderAccount/ProviderAccount'
+import { PublicProviderProfile } from '@/pages/PublicProviderProfile/PublicProviderProfile'
+import { ProviderCustomerProfile } from '@/pages/ProviderCustomerProfile/ProviderCustomerProfile'
+import { CustomerMessageThread } from '@/pages/CustomerMessageThread/CustomerMessageThread'
+import { ProviderMessageThread } from '@/pages/ProviderMessageThread/ProviderMessageThread'
+import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <Navigate to="/locations" replace />,
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/locations',
     element: <GuestLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -47,10 +54,22 @@ export const router = createBrowserRouter([
   {
     path: '/about',
     element: <GuestLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
         element: <About />,
+      },
+    ],
+  },
+  {
+    path: '/providers/:providerId/profile',
+    element: <GuestLayout />,
+    errorElement: <RouteErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <PublicProviderProfile />,
       },
     ],
   },
@@ -61,6 +80,7 @@ export const router = createBrowserRouter([
         <LoginPage />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/customer/login',
@@ -69,6 +89,7 @@ export const router = createBrowserRouter([
         <CustomerLogin />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/customer/register',
@@ -77,6 +98,7 @@ export const router = createBrowserRouter([
         <CustomerRegister />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/provider/login',
@@ -85,6 +107,7 @@ export const router = createBrowserRouter([
         <ProviderLogin />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/provider/register',
@@ -93,18 +116,28 @@ export const router = createBrowserRouter([
         <ProviderRegister />
       </AlreadyAuthRedirect>
     ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/customer',
     element: <CustomerLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
-        element: <CustomerHome />,
+        element: <Navigate to="/locations" replace />,
       },
       {
         path: 'bookings',
         element: <MyBookings />,
+      },
+      {
+        path: 'messages',
+        element: <CustomerMessages />,
+      },
+      {
+        path: 'messages/:bookingId',
+        element: <CustomerMessageThread />,
       },
       {
         path: 'settings',
@@ -119,6 +152,7 @@ export const router = createBrowserRouter([
   {
     path: '/provider',
     element: <ProviderLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,
@@ -152,11 +186,20 @@ export const router = createBrowserRouter([
         path: 'account',
         element: <ProviderAccount />,
       },
+      {
+        path: 'customers/:customerId',
+        element: <ProviderCustomerProfile />,
+      },
+      {
+        path: 'messages/:bookingId',
+        element: <ProviderMessageThread />,
+      },
     ],
   },
   {
     path: '/admin',
     element: <AdminLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,

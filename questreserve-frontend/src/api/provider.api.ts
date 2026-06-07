@@ -92,10 +92,56 @@ export async function getMyProfile(): Promise<ProviderProfile> {
 
 export interface UpdateProfilePayload {
   email?: string
-  password?: string
+  first_name?: string
+  last_name?: string
+  organization_name?: string
+  bio?: string | null
 }
 
 export async function updateMyProfile(payload: UpdateProfilePayload): Promise<ProviderProfile> {
   const response = await apiClient.patch<ProviderProfile>('/provider/profile', payload)
   return response.data
 }
+
+export interface ChangePasswordPayload {
+  currentPassword: string
+  newPassword: string
+}
+
+export async function changePassword(payload: ChangePasswordPayload): Promise<void> {
+  await apiClient.patch('/auth/provider/password', payload)
+}
+
+export async function uploadProviderProfilePicture(file: File): Promise<ProviderProfile> {
+  const formData = new FormData()
+  formData.append('image', file)
+  const response = await apiClient.post<ProviderProfile>(
+    '/provider/profile/picture',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+  return response.data
+}
+
+export interface CustomerBookingSummary {
+  id: string
+  location_name: string
+  start_time: string
+  end_time: string
+  status: 'BOOKED' | 'CANCELLED'
+}
+
+export interface ProviderCustomerProfile {
+  id: string
+  first_name: string
+  last_name: string
+  profile_picture_url: string | null
+  bio: string | null
+  bookings: CustomerBookingSummary[]
+}
+
+export async function getProviderCustomer(customerId: string): Promise<ProviderCustomerProfile> {
+  const response = await apiClient.get<ProviderCustomerProfile>(`/provider/customers/${customerId}`)
+  return response.data
+}
+

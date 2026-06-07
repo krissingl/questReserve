@@ -148,6 +148,25 @@ function BookingCard({ booking, onCancelled }: BookingCardProps) {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgb(var(--border))' }}>
+        <Link
+          to={`/customer/messages/${booking.id}`}
+          style={{
+            display: 'inline-block',
+            padding: '0.375rem 0.875rem',
+            borderRadius: 'var(--radius)',
+            border: '1px solid rgb(var(--accent) / 0.5)',
+            backgroundColor: 'transparent',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-medium)',
+            color: 'rgb(var(--accent))',
+            textDecoration: 'none',
+          }}
+        >
+          Message Provider
+        </Link>
+      </div>
     </div>
   )
 }

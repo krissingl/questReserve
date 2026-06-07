@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useOutletContext } from 'react-router-dom'
-import { updateMyProfile } from '@/api/provider.api'
+import { updateMyProfile, changePassword, uploadProviderProfilePicture } from '@/api/provider.api'
+import { ProfilePictureSection } from '@/components/ProfilePictureSection/ProfilePictureSection'
 import type { ProviderLayoutContext } from '@/layouts/ProviderLayout'
 
 const inputStyle = {
@@ -101,27 +102,217 @@ function UpdateEmailForm({ currentEmail, onSuccess }: { currentEmail: string; on
   )
 }
 
-function UpdatePasswordForm() {
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
+function ChangePasswordSection() {
+  const [open, setOpen] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrent, setShowCurrent] = useState(false)
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  function handleOpen() {
+    setOpen(true)
+    setSuccess(false)
+    setError(null)
+  }
+
+  function handleCancel() {
+    setOpen(false)
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+    setError(null)
+    setSuccess(false)
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (newPassword !== confirmPassword) {
+      setError('New Password and Confirm New Password do not match.')
+      return
+    }
+    setSubmitting(true)
+    setError(null)
+    try {
+      await changePassword({ currentPassword, newPassword })
+      setSuccess(true)
+      setOpen(false)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to change password.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const toggleButtonStyle = {
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    fontSize: 'var(--text-sm)',
+    color: 'rgb(var(--muted-foreground))',
+    position: 'absolute' as const,
+    right: '0.75rem',
+    top: '50%',
+    transform: 'translateY(-50%)',
+  }
+
+  return (
+    <div>
+      <h2
+        style={{
+          fontFamily: 'var(--font-heading)',
+          fontSize: '1rem',
+          fontWeight: 'var(--weight-semibold)',
+          color: 'rgb(var(--foreground))',
+          marginBottom: '1rem',
+        }}
+      >
+        Password
+      </h2>
+      {success && !open && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>
+          Password changed successfully.
+        </p>
+      )}
+      {!open ? (
+        <button
+          type="button"
+          onClick={handleOpen}
+          style={{
+            padding: '0.5rem 1.25rem',
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Change Password
+        </button>
+      ) : (
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="current-password" style={labelStyle}>Current Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="current-password"
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+                style={{ ...inputStyle, paddingRight: '3.5rem' }}
+              />
+              <button type="button" onClick={() => setShowCurrent((v) => !v)} style={toggleButtonStyle} aria-label={showCurrent ? 'Hide' : 'Show'}>
+                {showCurrent ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="new-password" style={labelStyle}>New Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="new-password"
+                type={showNew ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={8}
+                style={{ ...inputStyle, paddingRight: '3.5rem' }}
+              />
+              <button type="button" onClick={() => setShowNew((v) => !v)} style={toggleButtonStyle} aria-label={showNew ? 'Hide' : 'Show'}>
+                {showNew ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label htmlFor="confirm-new-password" style={labelStyle}>Confirm New Password</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                id="confirm-new-password"
+                type={showConfirm ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                style={{ ...inputStyle, paddingRight: '3.5rem' }}
+              />
+              <button type="button" onClick={() => setShowConfirm((v) => !v)} style={toggleButtonStyle} aria-label={showConfirm ? 'Hide' : 'Show'}>
+                {showConfirm ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+          {error && (
+            <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>
+              {error}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'rgb(var(--accent))',
+                color: 'rgb(var(--accent-foreground))',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)',
+                border: 'none',
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                opacity: submitting ? 0.6 : 1,
+              }}
+            >
+              {submitting ? 'Saving…' : 'Save Password'}
+            </button>
+            <button
+              type="button"
+              onClick={handleCancel}
+              style={{
+                padding: '0.5rem 1.25rem',
+                borderRadius: 'var(--radius)',
+                backgroundColor: 'transparent',
+                color: 'rgb(var(--muted-foreground))',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-regular)',
+                border: '1px solid rgb(var(--border))',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  )
+}
+
+function UpdateBioForm({ initialBio, onSuccess }: { initialBio: string; onSuccess: () => void }) {
+  const [bio, setBio] = useState(initialBio)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
-    if (password !== confirm) { setError('Passwords do not match.'); return }
     setSubmitting(true)
     setError(null)
     setSuccess(false)
     try {
-      await updateMyProfile({ password })
+      await updateMyProfile({ bio: bio.trim() || null })
       setSuccess(true)
-      setPassword('')
-      setConfirm('')
+      onSuccess()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to update password.')
+      setError(err instanceof Error ? err.message : 'Failed to update bio.')
     } finally {
       setSubmitting(false)
     }
@@ -135,43 +326,39 @@ function UpdatePasswordForm() {
           fontSize: '1rem',
           fontWeight: 'var(--weight-semibold)',
           color: 'rgb(var(--foreground))',
-          marginBottom: '1rem',
+          marginBottom: '0.5rem',
         }}
       >
-        Update Password
+        About
       </h2>
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="account-password" style={labelStyle}>New Password</label>
-        <input
-          id="account-password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          style={inputStyle}
-        />
-      </div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label htmlFor="account-password-confirm" style={labelStyle}>Confirm Password</label>
-        <input
-          id="account-password-confirm"
-          type="password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          required
-          style={inputStyle}
-        />
-      </div>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', marginBottom: '0.75rem' }}>
+        Write a brief bio about yourself or your organization. Customers can see this on your public profile.
+      </p>
+      <textarea
+        value={bio}
+        onChange={(e) => setBio(e.target.value)}
+        rows={5}
+        maxLength={600}
+        placeholder="Tell customers about yourself and what makes your adventures special…"
+        style={{
+          width: '100%',
+          padding: '0.5rem 0.75rem',
+          borderRadius: 'var(--radius)',
+          border: '1px solid rgb(var(--border))',
+          fontSize: 'var(--text-sm)',
+          backgroundColor: 'rgb(var(--background))',
+          color: 'rgb(var(--foreground))',
+          resize: 'vertical',
+          boxSizing: 'border-box' as const,
+          outline: 'none',
+          marginBottom: '0.75rem',
+        }}
+      />
       {error && (
-        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>
-          {error}
-        </p>
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>
       )}
       {success && (
-        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--success, 34 197 94))' }}>
-          Password updated successfully.
-        </p>
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>About updated.</p>
       )}
       <button
         type="submit"
@@ -188,11 +375,126 @@ function UpdatePasswordForm() {
           opacity: submitting ? 0.6 : 1,
         }}
       >
-        {submitting ? 'Saving…' : 'Save Password'}
+        {submitting ? 'Saving…' : 'Save About'}
       </button>
     </form>
   )
 }
+
+function UpdateProfileForm({
+  initialFirstName,
+  initialLastName,
+  initialOrgName,
+  onSuccess,
+}: {
+  initialFirstName: string
+  initialLastName: string
+  initialOrgName: string
+  onSuccess: () => void
+}) {
+  const [firstName, setFirstName] = useState(initialFirstName)
+  const [lastName, setLastName] = useState(initialLastName)
+  const [orgName, setOrgName] = useState(initialOrgName)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!firstName.trim()) { setValidationError('First name is required.'); return }
+    if (!lastName.trim()) { setValidationError('Last name is required.'); return }
+    setValidationError(null)
+    setSubmitting(true)
+    setError(null)
+    setSuccess(false)
+    try {
+      await updateMyProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        organization_name: orgName.trim() || undefined,
+      })
+      setSuccess(true)
+      onSuccess()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
+      <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'rgb(var(--foreground))', marginBottom: '0.75rem' }}>
+        Update Profile
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
+        <div>
+          <label htmlFor="profile-first-name" style={labelStyle}>First Name</label>
+          <input
+            id="profile-first-name"
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+            style={inputStyle}
+          />
+        </div>
+        <div>
+          <label htmlFor="profile-last-name" style={labelStyle}>Last Name</label>
+          <input
+            id="profile-last-name"
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+            style={inputStyle}
+          />
+        </div>
+      </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="profile-org-name" style={labelStyle}>
+          Organization Name{' '}
+          <span style={{ fontSize: '0.75rem', fontWeight: 'var(--weight-regular)', color: 'rgb(var(--muted-foreground))' }}>(optional)</span>
+        </label>
+        <input
+          id="profile-org-name"
+          type="text"
+          value={orgName}
+          onChange={(e) => setOrgName(e.target.value)}
+          style={inputStyle}
+        />
+      </div>
+      {validationError && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{validationError}</p>
+      )}
+      {error && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>
+      )}
+      {success && (
+        <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>Profile updated.</p>
+      )}
+      <button
+        type="submit"
+        disabled={submitting}
+        style={{
+          padding: '0.5rem 1.25rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--accent))',
+          color: 'rgb(var(--accent-foreground))',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--weight-semibold)',
+          border: 'none',
+          cursor: submitting ? 'not-allowed' : 'pointer',
+          opacity: submitting ? 0.6 : 1,
+        }}
+      >
+        {submitting ? 'Saving…' : 'Update Profile'}
+      </button>
+    </form>
+  )
+}
+
 
 const sectionStyle = {
   padding: '1.5rem',
@@ -239,7 +541,7 @@ export function ProviderAccount() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '700px', margin: '0 auto' }}>
+    <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
       <h1
         style={{
           fontFamily: 'var(--font-heading)',
@@ -279,25 +581,69 @@ export function ProviderAccount() {
           )}
         </dl>
 
-        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '0.35rem 0.9rem',
-              borderRadius: 'var(--radius)',
-              border: '1px solid rgb(var(--border))',
-              fontSize: 'var(--text-sm)',
-              color: 'rgb(var(--muted-foreground))',
-              cursor: 'not-allowed',
-              userSelect: 'none',
-            }}
-          >
-            Update Profile
-          </span>
-          <p style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: 'rgb(var(--muted-foreground))' }}>
-            Profile editing (name, organization) is coming in a future update.
-          </p>
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Plan</span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '0.2rem 0.7rem',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)',
+                backgroundColor: 'rgb(var(--card))',
+                border: '1px solid rgb(var(--accent))',
+                color: 'rgb(var(--accent))',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {profile.plan}
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Status</span>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '0.2rem 0.7rem',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-semibold)',
+                backgroundColor: 'rgb(var(--card))',
+                border: profile.status === 'ACTIVE' ? '1px solid rgb(var(--accent))' : '1px solid rgb(180 83 9)',
+                color: profile.status === 'ACTIVE' ? 'rgb(var(--accent))' : 'rgb(180 83 9)',
+                letterSpacing: '0.04em',
+              }}
+            >
+              {profile.status}
+            </span>
+          </div>
         </div>
+
+        <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
+          <h3 style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'rgb(var(--foreground))', marginBottom: '0.75rem' }}>
+            Profile Photo
+          </h3>
+          <ProfilePictureSection
+            currentUrl={profile.profile_picture_url ?? null}
+            firstName={profile.first_name}
+            lastName={profile.last_name}
+            inputId="provider-profile-pic-input"
+            uploadFn={uploadProviderProfilePicture}
+            onSuccess={refetchProfile}
+          />
+        </div>
+
+        <UpdateProfileForm
+          initialFirstName={profile.first_name}
+          initialLastName={profile.last_name}
+          initialOrgName={profile.organization_name ?? ''}
+          onSuccess={refetchProfile}
+        />
+      </div>
+
+      <div style={sectionStyle}>
+        <UpdateBioForm initialBio={profile.bio ?? ''} onSuccess={refetchProfile} />
       </div>
 
       <div style={sectionStyle}>
@@ -305,7 +651,7 @@ export function ProviderAccount() {
       </div>
 
       <div style={sectionStyle}>
-        <UpdatePasswordForm />
+        <ChangePasswordSection />
       </div>
     </div>
   )

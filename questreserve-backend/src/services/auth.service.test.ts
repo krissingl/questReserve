@@ -37,6 +37,8 @@ const endUser: EndUser = {
   email: 'test@test.local',
   password_hash: 'hashed',
   role: 'REGULAR',
+  profile_picture_url: null,
+  bio: null,
   created_at: new Date(),
   updated_at: new Date(),
 };
@@ -50,6 +52,8 @@ const provider: Provider = {
   organization_name: null,
   plan: 'FREE',
   status: 'ACTIVE',
+  profile_picture_url: null,
+  bio: null,
   created_at: new Date(),
   updated_at: new Date(),
 };
