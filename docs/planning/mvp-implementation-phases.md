@@ -94,9 +94,23 @@ Two tightly coupled deliverables treated as one phase:
 **Browse UI Redesign** — Redesign the browse locations view from a grid of cards to a split-panel layout: list of locations on the left, expanded preview of the focused location on the right. The UI redesign is not meaningful without richer location data; the image gallery provides that context.
 
 ## Phase 11: Frontend — Provider Dashboard
-Status : In PROGRESS
+Status : ✅ COMPLETE
 
 Manage locations, timeslots, view bookings and revenue.
+
+## Phase 11.5: Frontend — Profile Pages
+Status : In Progress
+
+Add both customer and provider pages as well as messaging capabilities based by booking and profile images.
+
+## Phase 11.6: Reviews & Branding Cleanup
+Status : NOT STARTED
+
+Two workstreams planned for this phase:
+
+**Reviews** — Pull reviews out of stretch goals and implement as a dedicated feature. Three review types: (1) Provider reviews a customer — accessible only to providers on the customer's profile page; (2) Customer reviews a provider — accessible on the provider's public profile page; (3) Customer reviews a location — accessible on the location/adventure detail page. All reviews gated by interaction history: a customer cannot review a location they have not booked, a provider cannot review a customer they have not hosted.
+
+**Branding & Styling Cleanup** — Audit and improve visual consistency across the app. Make styling more uniform and visually interesting throughout the customer, provider, and guest portals.
 
 ## Phase 12: Frontend — Admin Panel
 Status : NOT STARTED
