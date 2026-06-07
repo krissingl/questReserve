@@ -135,7 +135,6 @@ export interface ProviderCustomerProfile {
   id: string
   first_name: string
   last_name: string
-  email: string
   profile_picture_url: string | null
   bio: string | null
   bookings: CustomerBookingSummary[]

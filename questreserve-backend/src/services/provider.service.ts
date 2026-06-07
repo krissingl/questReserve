@@ -96,7 +96,6 @@ export interface CustomerProfileView {
   id: string;
   first_name: string;
   last_name: string;
-  email: string;
   profile_picture_url: string | null;
   bio: string | null;
   bookings: CustomerBookingSummary[];
@@ -337,9 +336,6 @@ export class ProviderService {
   }
 
   async getCustomerProfile(providerId: string, customerId: string): Promise<CustomerProfileView> {
-    const customer = await this.knex<EndUser>('end_user').where({ id: customerId }).first();
-    if (!customer) throw new CustomerNotFoundError();
-
     const bookings = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
       .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')
@@ -352,11 +348,15 @@ export class ProviderService {
         'booking.status',
       );
 
+    if (bookings.length === 0) throw new CustomerNotFoundError();
+
+    const customer = await this.knex<EndUser>('end_user').where({ id: customerId }).first();
+    if (!customer) throw new CustomerNotFoundError();
+
     return {
       id: customer.id,
       first_name: customer.first_name,
       last_name: customer.last_name,
-      email: customer.email,
       profile_picture_url: customer.profile_picture_url ?? null,
       bio: customer.bio ?? null,
       bookings: bookings.map((b) => ({
