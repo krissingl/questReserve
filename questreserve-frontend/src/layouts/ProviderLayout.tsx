@@ -94,72 +94,80 @@ function ProviderNav({ profile }: ProviderNavProps) {
               height="12"
               viewBox="0 0 12 12"
               fill="none"
-              style={{ color: 'rgb(var(--muted-foreground))', flexShrink: 0 }}
+              style={{
+                color: 'rgb(var(--muted-foreground))',
+                flexShrink: 0,
+                transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.18s ease',
+              }}
             >
               <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
-          {dropdownOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              minWidth: '180px',
+              backgroundColor: 'rgb(var(--background))',
+              border: '1px solid rgb(var(--border))',
+              borderTop: 'none',
+              borderRadius: '0 0 var(--radius-md) var(--radius-md)',
+              boxShadow: '0 6px 16px rgba(0,0,0,0.10)',
+              overflow: 'hidden',
+              zIndex: 200,
+              opacity: dropdownOpen ? 1 : 0,
+              transform: dropdownOpen ? 'translateY(0)' : 'translateY(-6px)',
+              pointerEvents: dropdownOpen ? 'auto' : 'none',
+              transition: 'opacity 0.18s ease, transform 0.18s ease',
+            }}
+          >
             <div
               style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                right: 0,
-                minWidth: '180px',
-                backgroundColor: 'rgb(var(--background))',
-                border: '1px solid rgb(var(--border))',
-                borderRadius: 'var(--radius-md)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                overflow: 'hidden',
-                zIndex: 200,
+                padding: '0.625rem 1rem',
+                fontSize: 'var(--text-sm)',
+                color: 'rgb(var(--muted-foreground))',
+                borderBottom: '1px solid rgb(var(--border))',
               }}
             >
-              <div
-                style={{
-                  padding: '0.625rem 1rem',
-                  fontSize: 'var(--text-sm)',
-                  color: 'rgb(var(--muted-foreground))',
-                  borderBottom: '1px solid rgb(var(--border))',
-                }}
-              >
-                {profile.first_name} {profile.last_name}
-              </div>
-              <Link
-                to="/provider/account"
-                onClick={() => setDropdownOpen(false)}
-                style={{
-                  display: 'block',
-                  padding: '0.625rem 1rem',
-                  fontSize: 'var(--text-sm)',
-                  color: 'rgb(var(--foreground))',
-                  textDecoration: 'none',
-                }}
-                className="transition-colors hover:opacity-80"
-              >
-                My Account
-              </Link>
-              <button
-                type="button"
-                onClick={() => { setDropdownOpen(false); logout() }}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '0.625rem 1rem',
-                  fontSize: 'var(--text-sm)',
-                  color: 'rgb(var(--foreground))',
-                  background: 'none',
-                  border: 'none',
-                  borderTop: '1px solid rgb(var(--border))',
-                  cursor: 'pointer',
-                }}
-                className="transition-colors hover:opacity-80"
-              >
-                Log Out
-              </button>
+              {profile.first_name} {profile.last_name}
             </div>
-          )}
+            <Link
+              to="/provider/account"
+              onClick={() => setDropdownOpen(false)}
+              style={{
+                display: 'block',
+                padding: '0.625rem 1rem',
+                fontSize: 'var(--text-sm)',
+                color: 'rgb(var(--foreground))',
+                textDecoration: 'none',
+              }}
+              className="transition-colors hover:opacity-80"
+            >
+              My Account
+            </Link>
+            <button
+              type="button"
+              onClick={() => { setDropdownOpen(false); logout() }}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '0.625rem 1rem',
+                fontSize: 'var(--text-sm)',
+                color: 'rgb(var(--foreground))',
+                background: 'none',
+                border: 'none',
+                borderTop: '1px solid rgb(var(--border))',
+                cursor: 'pointer',
+              }}
+              className="transition-colors hover:opacity-80"
+            >
+              Log Out
+            </button>
+          </div>
         </div>
       )}
     </nav>
