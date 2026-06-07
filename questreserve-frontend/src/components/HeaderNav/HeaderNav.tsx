@@ -60,8 +60,8 @@ export function HeaderNav() {
 
   return (
     <header
-      className="flex w-full items-center gap-6 px-6 py-3"
-      style={{ backgroundColor: 'rgb(var(--background))', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid rgb(var(--border))' }}
+      className="flex w-full items-center gap-6 px-6"
+      style={{ backgroundColor: 'rgb(var(--background))', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid rgb(var(--border))', height: '52px' }}
     >
       <Link
         to={logoHref}
