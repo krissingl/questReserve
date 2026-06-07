@@ -1,14 +1,7 @@
 import { Knex } from 'knex';
+import { Message } from '../types';
 
-export interface Message {
-  id: string;
-  booking_id: string;
-  sender_id: string;
-  sender_type: 'provider' | 'customer';
-  body: string;
-  created_at: Date;
-  read_at: Date | null;
-}
+export { Message };
 
 export interface InsertMessageData {
   booking_id: string;

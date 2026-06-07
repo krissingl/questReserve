@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { getInbox } from '@/api/provider.api'
-import type { InboxEntry } from '@/api/provider.api'
+import { getInbox } from '@/api/messages.api'
+import type { InboxEntry } from '@/api/messages.api'
 
 interface UseInboxResult {
   data: InboxEntry[]
@@ -8,12 +8,13 @@ interface UseInboxResult {
   error: string | null
 }
 
-export function useInbox(): UseInboxResult {
+export function useInbox(deps: unknown[] = [], skip = false): UseInboxResult {
   const [data, setData] = useState<InboxEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!skip)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (skip) return
     let cancelled = false
     setIsLoading(true)
     setError(null)
@@ -35,7 +36,8 @@ export function useInbox(): UseInboxResult {
     return () => {
       cancelled = true
     }
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skip, ...deps])
 
   return { data, isLoading, error }
 }

@@ -115,6 +115,16 @@ export interface ProviderBookingView {
   location_name: string;
 }
 
+export interface Message {
+  id: string;
+  booking_id: string;
+  sender_id: string;
+  sender_type: 'provider' | 'customer';
+  body: string;
+  created_at: Date;
+  read_at: Date | null;
+}
+
 export interface AdminBookingView {
   id: string;
   time_slot_id: string;

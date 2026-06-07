@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { getInbox } from '@/api/provider.api'
+import { useInbox } from '@/hooks/useInbox'
 import { getMyCustomerProfile } from '@/api/customer.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 
@@ -18,19 +18,13 @@ interface CustomerNavProfile {
 export function HeaderNav() {
   const { token, role, logout } = useAuth()
   const { pathname } = useLocation()
-  const [unreadCount, setUnreadCount] = useState(0)
   const [customerProfile, setCustomerProfile] = useState<CustomerNavProfile | null>(null)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (!token || role !== 'customer') return
-    getInbox()
-      .then((entries) => {
-        setUnreadCount(entries.reduce((sum, e) => sum + e.unread_count, 0))
-      })
-      .catch(() => {})
-  }, [token, role, pathname])
+  const isCustomer = Boolean(token) && role === 'customer'
+  const { data: inboxEntries } = useInbox([token, role, pathname], !isCustomer)
+  const unreadCount = isCustomer ? inboxEntries.reduce((sum, e) => sum + e.unread_count, 0) : 0
 
   useEffect(() => {
     if (!token || role !== 'customer') return

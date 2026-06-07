@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { getMessages, sendMessage, markMessageRead } from '@/api/provider.api'
-import type { Message } from '@/api/provider.api'
+import { getMessages, sendMessage, markMessageRead } from '@/api/messages.api'
+import type { Message } from '@/api/messages.api'
 
 interface MessageThreadProps {
   bookingId: string

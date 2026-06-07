@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
-import { getInbox } from '@/api/provider.api'
+import { useInbox } from '@/hooks/useInbox'
 import { MessageThread } from '@/components/MessageThread/MessageThread'
-import type { InboxEntry } from '@/api/provider.api'
+import type { InboxEntry } from '@/api/messages.api'
 
 function formatRelativeTime(isoString: string): string {
   const diff = Date.now() - new Date(isoString).getTime()
@@ -17,22 +17,13 @@ function formatRelativeTime(isoString: string): string {
 }
 
 export function CustomerMessages() {
+  const { data: inboxData, isLoading: loading, error } = useInbox()
   const [inbox, setInbox] = useState<InboxEntry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [openBookingId, setOpenBookingId] = useState<string | null>(null)
 
   useEffect(() => {
-    getInbox()
-      .then((data) => {
-        setInbox(data)
-        setLoading(false)
-      })
-      .catch(() => {
-        setError('Failed to load messages.')
-        setLoading(false)
-      })
-  }, [])
+    setInbox(inboxData)
+  }, [inboxData])
 
   function handleOpen(bookingId: string) {
     setOpenBookingId((prev) => (prev === bookingId ? null : bookingId))
