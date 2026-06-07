@@ -74,7 +74,7 @@ function ProviderNav({ profile }: ProviderNavProps) {
       </div>
 
       {profile && (
-        <div ref={dropdownRef} style={{ position: 'relative' }}>
+        <div ref={dropdownRef} style={{ position: 'relative', alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>
           <button
             type="button"
             onClick={() => setDropdownOpen((prev) => !prev)}
@@ -109,12 +109,11 @@ function ProviderNav({ profile }: ProviderNavProps) {
             style={{
               position: 'absolute',
               top: '100%',
-              right: 0,
-              minWidth: '180px',
+              right: '-1.5rem',
+              minWidth: '220px',
               backgroundColor: 'rgb(var(--background))',
               border: '1px solid rgb(var(--border))',
               borderTop: 'none',
-              borderRadius: '0 0 var(--radius-md) var(--radius-md)',
               boxShadow: '0 6px 16px rgba(0,0,0,0.10)',
               overflow: 'hidden',
               zIndex: 200,
