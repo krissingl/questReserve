@@ -41,7 +41,7 @@ export class MessageService {
     private readonly knex: Knex
   ) {}
 
-  private async getBookingWithProvider(bookingId: string): Promise<Booking & { provider_id: string }> {
+  private async getBookingWithProvider(bookingId: string): Promise<(Booking & { provider_id: string }) | null> {
     const row = await this.knex('booking')
       .join('time_slot', 'booking.time_slot_id', 'time_slot.id')
       .join('booking_location', 'time_slot.booking_location_id', 'booking_location.id')

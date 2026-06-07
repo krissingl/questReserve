@@ -10,7 +10,7 @@ export interface PublicLocation {
 }
 
 export interface PublicProviderProfile {
-  id: number
+  id: string
   first_name: string
   last_name: string
   organization_name: string | null
@@ -19,7 +19,7 @@ export interface PublicProviderProfile {
   locations: PublicLocation[]
 }
 
-export async function getPublicProviderProfile(id: string | number): Promise<PublicProviderProfile> {
+export async function getPublicProviderProfile(id: string): Promise<PublicProviderProfile> {
   const response = await apiClient.get<PublicProviderProfile>(`/providers/${id}/public`)
   return response.data
 }
