@@ -81,7 +81,7 @@ export function HeaderNav() {
         </span>
       </Link>
 
-      <nav className="flex flex-1 items-center justify-end gap-8">
+      <nav className="flex flex-1 items-center justify-end gap-8 self-stretch">
         {(!token || role === 'customer') && (
           <NavLink to="/locations" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
             Browse Adventures
