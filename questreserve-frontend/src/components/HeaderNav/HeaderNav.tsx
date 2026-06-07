@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { getInbox } from '@/api/provider.api'
@@ -20,6 +20,8 @@ export function HeaderNav() {
   const { pathname } = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
   const [customerProfile, setCustomerProfile] = useState<CustomerNavProfile | null>(null)
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!token || role !== 'customer') return
@@ -36,6 +38,17 @@ export function HeaderNav() {
       .then((p) => setCustomerProfile({ firstName: p.first_name, lastName: p.last_name, pictureUrl: p.profile_picture_url }))
       .catch(() => {})
   }, [token, role])
+
+  useEffect(() => {
+    if (!dropdownOpen) return
+    function handleOutsideClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutsideClick)
+    return () => document.removeEventListener('mousedown', handleOutsideClick)
+  }, [dropdownOpen])
 
   const logoHref = !token
     ? '/locations'
@@ -59,7 +72,7 @@ export function HeaderNav() {
           style={{
             fontFamily: 'var(--font-heading)',
             fontWeight: 'var(--weight-bold)',
-            fontSize: '1rem',
+            fontSize: '1.25rem',
             color: 'rgb(var(--accent))',
             letterSpacing: '0.03em',
           }}
@@ -111,9 +124,6 @@ export function HeaderNav() {
                 )}
               </span>
             </NavLink>
-            <NavLink to="/customer/settings" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
-              Settings
-            </NavLink>
           </>
         )}
 
@@ -121,24 +131,6 @@ export function HeaderNav() {
           <NavLink to={`/${role}`} style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
             Dashboard
           </NavLink>
-        )}
-
-        {token && role === 'customer' && customerProfile && (
-          <Link
-            to="/customer/settings"
-            className="transition-colors hover:opacity-80"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: 'var(--text-sm)',
-              color: 'rgb(var(--muted-foreground))',
-              textDecoration: 'none',
-            }}
-          >
-            <AvatarIcon firstName={customerProfile.firstName} lastName={customerProfile.lastName} size="sm" pictureUrl={customerProfile.pictureUrl} />
-            <span>{customerProfile.firstName} {customerProfile.lastName}</span>
-          </Link>
         )}
 
         {!token && (
@@ -151,6 +143,94 @@ export function HeaderNav() {
           <NavLink to="/login" style={navLinkStyle} className="text-sm font-medium transition-colors hover:opacity-80">
             Login
           </NavLink>
+        ) : role === 'customer' && customerProfile ? (
+          <div ref={dropdownRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              onClick={() => setDropdownOpen((prev) => !prev)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.25rem 0',
+              }}
+            >
+              <AvatarIcon firstName={customerProfile.firstName} lastName={customerProfile.lastName} size="sm" pictureUrl={customerProfile.pictureUrl} />
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                fill="none"
+                style={{ color: 'rgb(var(--muted-foreground))', flexShrink: 0 }}
+              >
+                <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            {dropdownOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 8px)',
+                  right: 0,
+                  minWidth: '180px',
+                  backgroundColor: 'rgb(var(--background))',
+                  border: '1px solid rgb(var(--border))',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                  overflow: 'hidden',
+                  zIndex: 200,
+                }}
+              >
+                <div
+                  style={{
+                    padding: '0.625rem 1rem',
+                    fontSize: 'var(--text-sm)',
+                    color: 'rgb(var(--muted-foreground))',
+                    borderBottom: '1px solid rgb(var(--border))',
+                  }}
+                >
+                  {customerProfile.firstName} {customerProfile.lastName}
+                </div>
+                <Link
+                  to="/customer/settings"
+                  onClick={() => setDropdownOpen(false)}
+                  style={{
+                    display: 'block',
+                    padding: '0.625rem 1rem',
+                    fontSize: 'var(--text-sm)',
+                    color: 'rgb(var(--foreground))',
+                    textDecoration: 'none',
+                  }}
+                  className="transition-colors hover:opacity-80"
+                >
+                  My Account
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => { setDropdownOpen(false); logout() }}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: '0.625rem 1rem',
+                    fontSize: 'var(--text-sm)',
+                    color: 'rgb(var(--foreground))',
+                    background: 'none',
+                    border: 'none',
+                    borderTop: '1px solid rgb(var(--border))',
+                    cursor: 'pointer',
+                  }}
+                  className="transition-colors hover:opacity-80"
+                >
+                  Log Out
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button
             type="button"
