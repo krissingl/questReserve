@@ -2,16 +2,24 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { getPublicProviderProfile } from '@/api/guest.api'
 import type { PublicProviderProfile as PublicProviderProfileData } from '@/api/guest.api'
+import { getMyBookings } from '@/api/customer.api'
+import type { Booking } from '@/types/domain'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import { ProfilePictureLightbox } from '@/components/ProfilePictureLightbox/ProfilePictureLightbox'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
+import { ReviewList } from '@/components/ReviewList/ReviewList'
+import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function PublicProviderProfile() {
   const { providerId } = useParams<{ providerId: string }>()
+  const { user, role } = useAuth()
   const [profile, setProfile] = useState<PublicProviderProfileData | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [eligibleBooking, setEligibleBooking] = useState<Booking | null>(null)
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!providerId) return
@@ -32,6 +40,22 @@ export function PublicProviderProfile() {
         setLoading(false)
       })
   }, [providerId])
+
+  useEffect(() => {
+    if (!user || role !== 'customer' || !profile) {
+      setEligibleBooking(null)
+      return
+    }
+    const locationIds = new Set(profile.locations.map((l) => l.id))
+    getMyBookings()
+      .then((bookings) => {
+        const eligible = bookings
+          .filter((b) => b.status === 'BOOKED' && locationIds.has(b.booking_location_id))
+          .sort((a, b) => new Date(b.slot_start_time).getTime() - new Date(a.slot_start_time).getTime())[0]
+        setEligibleBooking(eligible ?? null)
+      })
+      .catch(() => setEligibleBooking(null))
+  }, [user, role, profile])
 
   if (loading) {
     return (
@@ -237,7 +261,7 @@ export function PublicProviderProfile() {
 
       <div
         style={{
-          padding: '1rem 1.25rem',
+          padding: '1.25rem',
           borderRadius: 'var(--radius)',
           backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
@@ -250,14 +274,34 @@ export function PublicProviderProfile() {
             fontSize: '1.1rem',
             fontWeight: 'var(--weight-semibold)',
             color: 'rgb(var(--foreground))',
-            marginBottom: '0.5rem',
+            marginBottom: '1rem',
           }}
         >
           Reviews
         </h2>
-        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
-          No reviews yet.
-        </p>
+        <ReviewList
+          targetId={providerId!}
+          targetType="provider"
+          refreshKey={reviewRefreshKey}
+        />
+        <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
+          {!user ? (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+              Sign in to leave a review
+            </p>
+          ) : role === 'customer' && eligibleBooking ? (
+            <ReviewForm
+              bookingId={eligibleBooking.id}
+              targetId={providerId!}
+              targetType="provider"
+              onSuccess={() => setReviewRefreshKey((k) => k + 1)}
+            />
+          ) : role === 'customer' ? (
+            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+              Book an adventure with this provider to leave a review.
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   )
