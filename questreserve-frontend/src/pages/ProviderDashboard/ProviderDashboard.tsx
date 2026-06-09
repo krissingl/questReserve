@@ -140,7 +140,7 @@ function AdventurePreviewRow({ location }: AdventurePreviewRowProps) {
             display: 'inline-block',
             padding: '0.1rem 0.5rem',
             borderRadius: 'var(--radius-pill)',
-            fontSize: '0.65rem',
+            fontSize: 'var(--text-xs)',
             fontWeight: 'var(--weight-medium)',
             backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
             color: 'rgb(var(--primary-foreground, 255 255 255))',

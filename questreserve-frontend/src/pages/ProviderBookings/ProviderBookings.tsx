@@ -17,7 +17,7 @@ function formatDate(isoString: string): string {
 }
 
 const statusColours: Record<string, { bg: string; text: string }> = {
-  BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
+  BOOKED: { bg: 'rgb(var(--success) / 0.12)', text: 'rgb(var(--success))' },
   CANCELLED: { bg: 'rgb(var(--muted))', text: 'rgb(var(--muted-foreground))' },
 }
 
@@ -169,7 +169,7 @@ function CountBadge({ count }: CountBadgeProps) {
         display: 'inline-block',
         padding: '0.1rem 0.5rem',
         borderRadius: 'var(--radius-pill)',
-        fontSize: '0.72rem',
+        fontSize: 'var(--text-xs)',
         fontWeight: 'var(--weight-medium)',
         backgroundColor: 'rgb(var(--muted))',
         color: 'rgb(var(--muted-foreground))',

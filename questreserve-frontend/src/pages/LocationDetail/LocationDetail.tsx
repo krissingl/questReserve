@@ -11,6 +11,7 @@ import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import { ReviewList } from '@/components/ReviewList/ReviewList'
 import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
 import { getMyBookings } from '@/api/customer.api'
+import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 import type { TimeSlot, Booking } from '@/types/domain'
 
 interface SlotCardProps {
@@ -59,8 +60,8 @@ function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCan
             onMouseLeave={() => setReserveHovered(false)}
             className="rounded px-4 py-1.5 text-sm font-medium"
             style={{
-              backgroundColor: reserveHovered ? 'rgb(var(--accent))' : 'rgb(var(--primary))',
-              color: 'rgb(var(--primary-foreground, 255 255 255))',
+              backgroundColor: reserveHovered ? 'rgb(var(--accent) / 0.85)' : 'rgb(var(--accent))',
+              color: 'rgb(var(--accent-foreground))',
               transition: 'background-color 0.15s ease',
             }}
           >
@@ -233,7 +234,7 @@ export function LocationDetail() {
   if (!location) return null
 
   return (
-    <main className="p-8">
+    <main className="p-8" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <Link
         to="/locations"
         className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
@@ -270,7 +271,7 @@ export function LocationDetail() {
           <span
             className="inline-block rounded px-2 py-0.5 text-xs font-medium"
             style={{
-              backgroundColor: 'rgb(var(--primary))',
+              backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
               color: 'rgb(var(--primary-foreground, 255 255 255))',
             }}
           >

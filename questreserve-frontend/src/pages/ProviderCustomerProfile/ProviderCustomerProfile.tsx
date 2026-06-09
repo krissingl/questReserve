@@ -8,7 +8,7 @@ import { ReviewList } from '@/components/ReviewList/ReviewList'
 import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
 
 const statusColours: Record<string, { bg: string; text: string }> = {
-  BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
+  BOOKED: { bg: 'rgb(var(--success) / 0.12)', text: 'rgb(var(--success))' },
   CANCELLED: { bg: 'rgb(var(--muted))', text: 'rgb(var(--muted-foreground))' },
 }
 
