@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
@@ -8,7 +8,10 @@ import { useAuth } from '@/contexts/AuthContext'
 import { formatSlotTime } from '@/utils/formatSlotTime'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
-import type { TimeSlot } from '@/types/domain'
+import { ReviewList } from '@/components/ReviewList/ReviewList'
+import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
+import { getMyBookings } from '@/api/customer.api'
+import type { TimeSlot, Booking } from '@/types/domain'
 
 interface SlotCardProps {
   slot: TimeSlot
@@ -126,7 +129,7 @@ export function LocationDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { token } = useAuth()
+  const { token, role } = useAuth()
 
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
   const { data: images } = useLocationImages(id ?? '')
@@ -141,6 +144,23 @@ export function LocationDetail() {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<string | null>(null)
   const [bookingError, setBookingError] = useState<string | null>(null)
+  const [eligibleBooking, setEligibleBooking] = useState<Booking | null>(null)
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0)
+
+  useEffect(() => {
+    if (!token || role !== 'customer' || !id) {
+      setEligibleBooking(null)
+      return
+    }
+    getMyBookings()
+      .then((bookings) => {
+        const eligible = bookings
+          .filter((b) => b.status === 'BOOKED' && b.booking_location_id === id)
+          .sort((a, b) => new Date(b.slot_start_time).getTime() - new Date(a.slot_start_time).getTime())[0]
+        setEligibleBooking(eligible ?? null)
+      })
+      .catch(() => setEligibleBooking(null))
+  }, [token, role, id])
 
   const pendingSlotId: string | null =
     selectedSlotId ?? (token && slotParam && !slotsLoading ? slotParam : null)
@@ -368,6 +388,41 @@ export function LocationDetail() {
           </div>
         )}
       </div>
+
+      {id && (
+        <div
+          className="mt-6 rounded-lg"
+          style={{
+            padding: '1.25rem',
+            backgroundColor: 'rgb(var(--card))',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          <h2
+            className="mb-4 text-xl font-bold"
+            style={{ fontFamily: 'var(--font-heading)', color: 'rgb(var(--foreground))' }}
+          >
+            Reviews
+          </h2>
+          <ReviewList targetId={id} targetType="location" refreshKey={reviewRefreshKey} />
+          {role === 'customer' && (
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
+              {eligibleBooking ? (
+                <ReviewForm
+                  bookingId={eligibleBooking.id}
+                  targetId={id}
+                  targetType="location"
+                  onSuccess={() => setReviewRefreshKey((k) => k + 1)}
+                />
+              ) : (
+                <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
+                  Book this adventure to leave a review.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </main>
   )
 }
