@@ -23,3 +23,26 @@ export async function getPublicProviderProfile(id: string): Promise<PublicProvid
   const response = await apiClient.get<PublicProviderProfile>(`/providers/${id}/public`)
   return response.data
 }
+
+export interface ReviewItem {
+  id: string
+  rating: number
+  body: string | null
+  created_at: string
+}
+
+export interface ReviewsResponse {
+  reviews: ReviewItem[]
+  averageRating: number
+  count: number
+}
+
+export async function getReviews(
+  targetId: string,
+  targetType: 'provider' | 'customer' | 'location'
+): Promise<ReviewsResponse> {
+  const response = await apiClient.get<ReviewsResponse>('/reviews', {
+    params: { targetId, targetType },
+  })
+  return response.data
+}
