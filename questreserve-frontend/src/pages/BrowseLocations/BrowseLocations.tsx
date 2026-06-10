@@ -13,11 +13,10 @@ import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 interface LocationListItemProps {
   location: BookingLocation
   isFocused: boolean
-  rating?: LocationRatingSummary
   onClick: () => void
 }
 
-function LocationListItem({ location, isFocused, rating, onClick }: LocationListItemProps) {
+function LocationListItem({ location, isFocused, onClick }: LocationListItemProps) {
   return (
     <div
       style={{
@@ -104,27 +103,6 @@ function LocationListItem({ location, isFocused, rating, onClick }: LocationList
           >
             {location.difficulty}
           </span>
-          {rating && rating.count > 0 && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.25rem' }}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  width="11"
-                  height="11"
-                  fill={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.3)'}
-                  stroke={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.5)'}
-                  strokeWidth="1"
-                >
-                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                </svg>
-              ))}
-              <span style={{ fontSize: '0.65rem', color: 'rgb(var(--muted-foreground))' }}>
-                {rating.averageRating.toFixed(1)}
-              </span>
-            </span>
-          )}
         </div>
       </button>
 
@@ -457,7 +435,6 @@ export function BrowseLocations() {
                 key={location.id}
                 location={location}
                 isFocused={focusedLocation?.id === location.id}
-                rating={locationRatings[location.id]}
                 onClick={() => setFocusedId(location.id)}
               />
             ))}
