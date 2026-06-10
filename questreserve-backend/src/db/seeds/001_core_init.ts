@@ -666,6 +666,36 @@ export async function seed(knex: Knex): Promise<void> {
       { id: "b00c0008-0000-0000-0000-000000000000", time_slot_id: "510c0018-0000-0000-0000-000000000000", end_user_id: "66666666-7777-8888-9999-000000000000", status: "CANCELLED", created_at: trx.fn.now(), updated_at: trx.fn.now() },
     ];
     await trx("booking").insert(bookings);
+
+    const reviews = [
+      // Laios reviews Strahd (provider) via booking b00c0001
+      { id: "aa000001-0000-0000-0000-000000000000", reviewer_id: FIXED_END_USER_ID, reviewer_type: "customer", target_id: FIXED_PROVIDER_ID, target_type: "provider", booking_id: "b00c0001-0000-0000-0000-000000000000", rating: 4, body: "Eerie atmosphere and incredibly immersive. Strahd knows how to keep you on edge right until the final bell.", created_at: trx.fn.now() },
+      // Laios reviews Castle Ravenloft Great Hall (location) via booking b00c0001
+      { id: "aa000002-0000-0000-0000-000000000000", reviewer_id: FIXED_END_USER_ID, reviewer_type: "customer", target_id: "10c00001-0000-0000-0000-000000000000", target_type: "location", booking_id: "b00c0001-0000-0000-0000-000000000000", rating: 5, body: "The fog effects alone are worth the trip. Puzzle design is clever — our team almost didn't make it out.", created_at: trx.fn.now() },
+      // Strahd reviews Laios (customer) via booking b00c0001
+      { id: "aa000003-0000-0000-0000-000000000000", reviewer_id: FIXED_PROVIDER_ID, reviewer_type: "provider", target_id: FIXED_END_USER_ID, target_type: "customer", booking_id: "b00c0001-0000-0000-0000-000000000000", rating: 5, body: "Excellent adventurer. Respectful of the props, enthusiastic, and sharp enough to solve the riddle without a single hint.", created_at: trx.fn.now() },
+      // Bilbo reviews Strahd (provider) via booking b00c0002
+      { id: "aa000004-0000-0000-0000-000000000000", reviewer_id: "11111111-2222-3333-4444-555555555555", reviewer_type: "customer", target_id: FIXED_PROVIDER_ID, target_type: "provider", booking_id: "b00c0002-0000-0000-0000-000000000000", rating: 5, body: "In all my years of adventure, I have never felt such genuine dread. Strahd's Midnight Market is not for the faint-hearted. I loved every second.", created_at: trx.fn.now() },
+      // Bilbo reviews Barovia Midnight Market (location) via booking b00c0002
+      { id: "aa000005-0000-0000-0000-000000000000", reviewer_id: "11111111-2222-3333-4444-555555555555", reviewer_type: "customer", target_id: "10c00003-0000-0000-0000-000000000000", target_type: "location", booking_id: "b00c0002-0000-0000-0000-000000000000", rating: 5, body: "The spectral merchants are a wonderful touch. Found the cursed item on our second attempt — the first failure only made victory sweeter.", created_at: trx.fn.now() },
+      // Strahd reviews Bilbo (customer) via booking b00c0002
+      { id: "aa000006-0000-0000-0000-000000000000", reviewer_id: FIXED_PROVIDER_ID, reviewer_type: "provider", target_id: "11111111-2222-3333-4444-555555555555", target_type: "customer", booking_id: "b00c0002-0000-0000-0000-000000000000", rating: 4, body: "A seasoned explorer with a good eye for hidden details. Took the second attempt in stride. Would welcome back anytime.", created_at: trx.fn.now() },
+      // Ciri reviews Halaster (provider) via booking b00c0003
+      { id: "aa000007-0000-0000-0000-000000000000", reviewer_id: "33333333-4444-5555-6666-777777777777", reviewer_type: "customer", target_id: "cccccccc-cccc-cccc-cccc-cccccccccccc", target_type: "provider", booking_id: "b00c0003-0000-0000-0000-000000000000", rating: 3, body: "Challenging, but the illusion traps felt a bit arbitrary. Halaster clearly enjoys watching people struggle more than he should.", created_at: trx.fn.now() },
+      // Ciri reviews Undermountain Sargauth (location) via booking b00c0003
+      { id: "aa000008-0000-0000-0000-000000000000", reviewer_id: "33333333-4444-5555-6666-777777777777", reviewer_type: "customer", target_id: "10c00004-0000-0000-0000-000000000000", target_type: "location", booking_id: "b00c0003-0000-0000-0000-000000000000", rating: 4, body: "The collapsing passages are genuinely terrifying. Not recommended for anyone with claustrophobia.", created_at: trx.fn.now() },
+      // Navi reviews Smaug (provider) via booking b00c0004
+      { id: "aa000009-0000-0000-0000-000000000000", reviewer_id: "44444444-5555-6666-7777-888888888888", reviewer_type: "customer", target_id: "dddddddd-dddd-dddd-dddd-dddddddddddd", target_type: "provider", booking_id: "b00c0004-0000-0000-0000-000000000000", rating: 5, body: "HEY! LISTEN! This was the most incredible experience of my life. Smaug is a natural — terrifying and theatrical in equal measure.", created_at: trx.fn.now() },
+      // Navi reviews Lonely Mountain Treasure Vault (location) via booking b00c0004
+      { id: "aa000010-0000-0000-0000-000000000000", reviewer_id: "44444444-5555-6666-7777-888888888888", reviewer_type: "customer", target_id: "10c00006-0000-0000-0000-000000000000", target_type: "location", booking_id: "b00c0004-0000-0000-0000-000000000000", rating: 5, body: "The sound design is extraordinary. You genuinely feel like you are creeping past a sleeping dragon. We found the Arkenstone with 30 seconds to spare.", created_at: trx.fn.now() },
+      // Alucard reviews Gohma (provider) via booking b00c0005
+      { id: "aa000011-0000-0000-0000-000000000000", reviewer_id: "77777777-8888-9999-0000-111111111111", reviewer_type: "customer", target_id: "00000000-ffff-0000-ffff-000000000000", target_type: "provider", booking_id: "b00c0005-0000-0000-0000-000000000000", rating: 4, body: "Queen Gohma runs a tight operation. The forest setting is hauntingly beautiful. I have fought real monsters — this came surprisingly close.", created_at: trx.fn.now() },
+      // Tatl reviews Vecna (provider) via booking b00c0006
+      { id: "aa000012-0000-0000-0000-000000000000", reviewer_id: "55555555-6666-7777-8888-999999999999", reviewer_type: "customer", target_id: "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee", target_type: "provider", booking_id: "b00c0006-0000-0000-0000-000000000000", rating: 5, body: "Vecna's archive is no joke. We decoded three inscriptions before the ritual countdown hit zero. Absolutely terrifying. Absolutely worth it.", created_at: trx.fn.now() },
+      // Tatl reviews Whispered Tomb Archive (location) via booking b00c0006
+      { id: "aa000013-0000-0000-0000-000000000000", reviewer_id: "55555555-6666-7777-8888-999999999999", reviewer_type: "customer", target_id: "10c00007-0000-0000-0000-000000000000", target_type: "location", booking_id: "b00c0006-0000-0000-0000-000000000000", rating: 5, body: "Beautifully designed space. The countdown audio alone gave me chills. The best escape room experience I have ever had.", created_at: trx.fn.now() },
+    ];
+    await trx("review").insert(reviews);
   });
 
   // Execute file copies only after the transaction commits successfully
