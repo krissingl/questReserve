@@ -73,6 +73,15 @@ router.post('/', authenticate, async (req: Request, res: Response, next: NextFun
   }
 });
 
+router.get('/location-averages', async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const averages = await reviewRepo.findAverageRatingsForAllLocations();
+    res.json(averages);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   const { targetId, targetType } = req.query as Record<string, string | undefined>;
   if (!targetId || targetId.trim() === '') {

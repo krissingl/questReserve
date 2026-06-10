@@ -58,4 +58,23 @@ export class ReviewRepository {
       count: result ? parseInt(result.count, 10) : 0,
     };
   }
+
+  async findAverageRatingsForAllLocations(): Promise<Record<string, ReviewAverageResult>> {
+    const rows = await this.knex('review')
+      .where({ target_type: 'location' })
+      .select(
+        'target_id',
+        this.knex.raw('COALESCE(AVG(rating), 0) as average_rating'),
+        this.knex.raw('COUNT(*) as count')
+      )
+      .groupBy('target_id') as Array<{ target_id: string; average_rating: string; count: string }>;
+    const result: Record<string, ReviewAverageResult> = {};
+    for (const row of rows) {
+      result[row.target_id] = {
+        averageRating: parseFloat(row.average_rating),
+        count: parseInt(row.count, 10),
+      };
+    }
+    return result;
+  }
 }

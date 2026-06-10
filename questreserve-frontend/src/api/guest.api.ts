@@ -46,3 +46,13 @@ export async function getReviews(
   })
   return response.data
 }
+
+export interface LocationRatingSummary {
+  averageRating: number
+  count: number
+}
+
+export async function getLocationAverages(): Promise<Record<string, LocationRatingSummary>> {
+  const response = await apiClient.get<Record<string, LocationRatingSummary>>('/reviews/location-averages')
+  return response.data
+}

@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useBookingLocations } from '@/hooks/useBookingLocations'
 import { useLocationImages } from '@/hooks/useLocationImages'
 import { FilterDrawer } from '@/components/FilterDrawer/FilterDrawer'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
+import { getLocationAverages } from '@/api/guest.api'
+import type { LocationRatingSummary } from '@/api/guest.api'
 import type { BookingLocation, LocationFilters } from '@/types/domain'
 import { DIFFICULTY_OPTIONS } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
@@ -11,10 +13,11 @@ import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 interface LocationListItemProps {
   location: BookingLocation
   isFocused: boolean
+  rating?: LocationRatingSummary
   onClick: () => void
 }
 
-function LocationListItem({ location, isFocused, onClick }: LocationListItemProps) {
+function LocationListItem({ location, isFocused, rating, onClick }: LocationListItemProps) {
   return (
     <div
       style={{
@@ -101,6 +104,27 @@ function LocationListItem({ location, isFocused, onClick }: LocationListItemProp
           >
             {location.difficulty}
           </span>
+          {rating && rating.count > 0 && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.25rem' }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <svg
+                  key={star}
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  width="11"
+                  height="11"
+                  fill={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.3)'}
+                  stroke={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.5)'}
+                  strokeWidth="1"
+                >
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                </svg>
+              ))}
+              <span style={{ fontSize: '0.65rem', color: 'rgb(var(--muted-foreground))' }}>
+                {rating.averageRating.toFixed(1)}
+              </span>
+            </span>
+          )}
         </div>
       </button>
 
@@ -110,10 +134,11 @@ function LocationListItem({ location, isFocused, onClick }: LocationListItemProp
 
 interface GalleryPanelProps {
   location: BookingLocation
+  rating?: LocationRatingSummary
   onNavigate: () => void
 }
 
-function GalleryPanel({ location, onNavigate }: GalleryPanelProps) {
+function GalleryPanel({ location, rating, onNavigate }: GalleryPanelProps) {
   const { data: images, isLoading: imagesLoading, error: imagesError } = useLocationImages(location.id)
 
   return (
@@ -144,19 +169,42 @@ function GalleryPanel({ location, onNavigate }: GalleryPanelProps) {
           >
             {location.name}
           </h2>
-          <span
-            style={{
-              display: 'inline-block',
-              padding: '0.1rem 0.5rem',
-              borderRadius: 'var(--radius-pill)',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 'var(--weight-medium)',
-              backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
-              color: 'rgb(var(--primary-foreground, 255 255 255))',
-            }}
-          >
-            {location.difficulty}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+            <span
+              style={{
+                display: 'inline-block',
+                padding: '0.1rem 0.5rem',
+                borderRadius: 'var(--radius-pill)',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 'var(--weight-medium)',
+                backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
+                color: 'rgb(var(--primary-foreground, 255 255 255))',
+              }}
+            >
+              {location.difficulty}
+            </span>
+            {rating && rating.count > 0 && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <svg
+                    key={star}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="13"
+                    height="13"
+                    fill={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.3)'}
+                    stroke={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.5)'}
+                    strokeWidth="1"
+                  >
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+                  </svg>
+                ))}
+                <span style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--muted-foreground))' }}>
+                  {rating.averageRating.toFixed(1)} ({rating.count})
+                </span>
+              </span>
+            )}
+          </div>
           {location.description && (
             <p
               style={{
@@ -212,6 +260,13 @@ export function BrowseLocations() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [filtersHovered, setFiltersHovered] = useState(false)
   const [focusedId, setFocusedId] = useState<string | null>(null)
+  const [locationRatings, setLocationRatings] = useState<Record<string, LocationRatingSummary>>({})
+
+  useEffect(() => {
+    getLocationAverages()
+      .then(setLocationRatings)
+      .catch(() => {})
+  }, [])
 
   const rawDifficulty = searchParams.get('difficulty')
   const appliedFilters: LocationFilters = {
@@ -402,6 +457,7 @@ export function BrowseLocations() {
                 key={location.id}
                 location={location}
                 isFocused={focusedLocation?.id === location.id}
+                rating={locationRatings[location.id]}
                 onClick={() => setFocusedId(location.id)}
               />
             ))}
@@ -418,6 +474,7 @@ export function BrowseLocations() {
             {focusedLocation && (
               <GalleryPanel
                 location={focusedLocation}
+                rating={locationRatings[focusedLocation.id]}
                 onNavigate={() => navigate(`/locations/${focusedLocation.id}`)}
               />
             )}
