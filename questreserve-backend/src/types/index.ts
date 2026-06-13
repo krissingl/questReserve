@@ -129,6 +129,8 @@ export interface Review {
   id: string;
   reviewer_id: string;
   reviewer_type: 'provider' | 'customer';
+  reviewer_first_name?: string | null;
+  reviewer_last_name?: string | null;
   target_id: string;
   target_type: 'provider' | 'customer' | 'location';
   booking_id: string;

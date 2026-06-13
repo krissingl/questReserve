@@ -29,9 +29,20 @@ export class ReviewRepository {
   }
 
   async findByTarget(targetId: string, targetType: 'provider' | 'customer' | 'location'): Promise<Review[]> {
-    return this.knex<Review>('review')
-      .where({ target_id: targetId, target_type: targetType })
-      .orderBy('created_at', 'desc');
+    return this.knex('review')
+      .leftJoin('provider as p', function () {
+        this.on('review.reviewer_id', '=', 'p.id').andOnVal('review.reviewer_type', 'provider');
+      })
+      .leftJoin('end_user as u', function () {
+        this.on('review.reviewer_id', '=', 'u.id').andOnVal('review.reviewer_type', 'customer');
+      })
+      .where({ 'review.target_id': targetId, 'review.target_type': targetType })
+      .select(
+        'review.*',
+        this.knex.raw('COALESCE(p.first_name, u.first_name) as reviewer_first_name'),
+        this.knex.raw('COALESCE(p.last_name, u.last_name) as reviewer_last_name')
+      )
+      .orderBy('review.created_at', 'desc') as Promise<Review[]>;
   }
 
   async findByBookingAndReviewer(
