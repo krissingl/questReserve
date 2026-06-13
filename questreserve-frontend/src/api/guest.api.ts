@@ -29,6 +29,8 @@ export interface ReviewItem {
   rating: number
   body: string | null
   created_at: string
+  reviewer_first_name?: string | null
+  reviewer_last_name?: string | null
 }
 
 export interface ReviewsResponse {

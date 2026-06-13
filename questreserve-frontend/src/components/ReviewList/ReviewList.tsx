@@ -96,12 +96,17 @@ export function ReviewList({ targetId, targetType, refreshKey = 0 }: ReviewListP
                 border: '1px solid rgb(var(--border))',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
                 <StarDisplay rating={review.rating} size={16} />
                 <span style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--muted-foreground))' }}>
                   {formatDate(review.created_at)}
                 </span>
               </div>
+              {(review.reviewer_first_name || review.reviewer_last_name) && (
+                <p style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--muted-foreground))', margin: '0 0 0.3rem 0' }}>
+                  {[review.reviewer_first_name, review.reviewer_last_name].filter(Boolean).join(' ')}
+                </p>
+              )}
               {review.body && (
                 <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', margin: 0 }}>
                   {review.body}
