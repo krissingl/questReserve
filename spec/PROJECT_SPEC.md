@@ -34,6 +34,12 @@ The platform serves three user types:
 - **Booking** — A reservation of a TimeSlot by an EndUser.
   Status: `BOOKED`, `CANCELLED`
 
+- **Review** — A rating and optional written review left by one party about another
+  following a completed booking. `reviewer_type`: `provider` | `customer`.
+  `target_type`: `provider` | `customer` | `location`. Rating: integer 1–5.
+  One review per reviewer per booking. Providers may review customers; customers
+  may review providers or locations.
+
 - **BookingLocationRule** _(Post-MVP)_ — Dynamic rulesets attached to a
   BookingLocation (party size limits, level requirements, cancellation policies).
 
@@ -100,6 +106,7 @@ The platform serves three user types:
 - Provider: view upcoming bookings
 - Admin: manage Provider accounts
 - Admin: view platform-wide booking activity
+- Reviews: customers can review providers and locations after a booking; providers can review customers; average ratings displayed on browse and detail pages
 
 ### Post-MVP / Stretch
 - Revenue reporting for providers (booking revenue summaries, earnings dashboards) — deferred from MVP; no payment schema exists; see US-DO-07 and US-DO-09

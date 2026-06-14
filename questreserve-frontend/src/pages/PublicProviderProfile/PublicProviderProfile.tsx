@@ -65,7 +65,7 @@ export function PublicProviderProfile() {
     )
   }
 
-  if (notFound || !profile) {
+  if (!providerId || notFound || !profile) {
     return (
       <div style={{ padding: '2rem' }}>
         <p style={{ color: 'rgb(var(--destructive))' }}>Provider not found.</p>
@@ -280,7 +280,7 @@ export function PublicProviderProfile() {
           Reviews
         </h2>
         <ReviewList
-          targetId={providerId!}
+          targetId={providerId}
           targetType="provider"
           refreshKey={reviewRefreshKey}
         />
@@ -292,7 +292,7 @@ export function PublicProviderProfile() {
           ) : role === 'customer' && eligibleBooking ? (
             <ReviewForm
               bookingId={eligibleBooking.id}
-              targetId={providerId!}
+              targetId={providerId}
               targetType="provider"
               onSuccess={() => setReviewRefreshKey((k) => k + 1)}
             />

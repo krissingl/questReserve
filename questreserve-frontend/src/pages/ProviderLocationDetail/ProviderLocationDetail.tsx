@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useMyLocation } from '@/hooks/useMyLocation'
 import { TimeSlotManager } from '@/components/TimeSlotManager/TimeSlotManager'
-import { ReviewList } from '@/components/ReviewList/ReviewList'
+import { ReviewList, StarDisplay } from '@/components/ReviewList/ReviewList'
 import { getReviews } from '@/api/guest.api'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
@@ -16,7 +16,7 @@ export function ProviderLocationDetail() {
     if (!id) return
     getReviews(id, 'location')
       .then((data) => setReviewSummary({ averageRating: data.averageRating, count: data.count }))
-      .catch(() => {})
+      .catch((err) => console.error('ProviderLocationDetail: failed to load review summary', err))
   }, [id])
 
   if (!id) {
@@ -241,20 +241,7 @@ export function ProviderLocationDetail() {
             </span>
             {reviewSummary !== null && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg
-                    key={star}
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    width="16"
-                    height="16"
-                    fill={star <= Math.round(reviewSummary.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.3)'}
-                    stroke={star <= Math.round(reviewSummary.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.5)'}
-                    strokeWidth="1"
-                  >
-                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                  </svg>
-                ))}
+                <StarDisplay rating={reviewSummary.averageRating} size={16} />
                 <span style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--muted-foreground))' }}>
                   {reviewSummary.count === 0
                     ? 'No reviews yet'

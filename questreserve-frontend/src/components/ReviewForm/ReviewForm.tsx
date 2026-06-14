@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { z } from 'zod'
-import { apiClient } from '@/api/client'
+import { submitReview } from '@/api/reviews.api'
 import axios from 'axios'
 
 interface ReviewFormProps {
@@ -48,7 +48,7 @@ export function ReviewForm({ bookingId, targetId, targetType, onSuccess }: Revie
 
     setSubmitting(true)
     try {
-      await apiClient.post('/reviews', {
+      await submitReview({
         targetId,
         targetType,
         bookingId,

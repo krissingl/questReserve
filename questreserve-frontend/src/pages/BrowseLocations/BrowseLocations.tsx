@@ -4,6 +4,7 @@ import { useBookingLocations } from '@/hooks/useBookingLocations'
 import { useLocationImages } from '@/hooks/useLocationImages'
 import { FilterDrawer } from '@/components/FilterDrawer/FilterDrawer'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
+import { StarDisplay } from '@/components/ReviewList/ReviewList'
 import { getLocationAverages } from '@/api/guest.api'
 import type { LocationRatingSummary } from '@/api/guest.api'
 import type { BookingLocation, LocationFilters } from '@/types/domain'
@@ -163,20 +164,7 @@ function GalleryPanel({ location, rating, onNavigate }: GalleryPanelProps) {
             </span>
             {rating && rating.count > 0 && (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg
-                    key={star}
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    width="13"
-                    height="13"
-                    fill={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.3)'}
-                    stroke={star <= Math.round(rating.averageRating) ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.5)'}
-                    strokeWidth="1"
-                  >
-                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
-                  </svg>
-                ))}
+                <StarDisplay rating={rating.averageRating} size={13} />
                 <span style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--muted-foreground))' }}>
                   {rating.averageRating.toFixed(1)} ({rating.count})
                 </span>
@@ -243,7 +231,7 @@ export function BrowseLocations() {
   useEffect(() => {
     getLocationAverages()
       .then(setLocationRatings)
-      .catch(() => {})
+      .catch((err) => console.error('BrowseLocations: failed to load location averages', err))
   }, [])
 
   const rawDifficulty = searchParams.get('difficulty')

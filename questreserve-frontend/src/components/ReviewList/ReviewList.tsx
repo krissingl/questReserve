@@ -7,7 +7,7 @@ interface ReviewListProps {
   refreshKey?: number
 }
 
-function StarDisplay({ rating, size = 18 }: { rating: number; size?: number }) {
+export function StarDisplay({ rating, size = 18 }: { rating: number; size?: number }) {
   return (
     <span style={{ display: 'inline-flex', gap: '0.1rem' }}>
       {[1, 2, 3, 4, 5].map((star) => (
@@ -50,7 +50,7 @@ export function ReviewList({ targetId, targetType, refreshKey = 0 }: ReviewListP
         setAverageRating(data.averageRating)
         setCount(data.count)
       })
-      .catch(() => {})
+      .catch((err) => console.error('ReviewList: failed to load reviews', err))
       .finally(() => setLoading(false))
   }, [targetId, targetType, refreshKey])
 

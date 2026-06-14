@@ -1,10 +1,10 @@
-import { ReviewRepository, InsertReviewData, Review, ReviewAverageResult } from '../repositories/review.repository';
+import { ReviewRepository, InsertReviewData, Review } from '../repositories/review.repository';
 import { BookingRepository } from '../repositories/booking.repository';
 
-export class ReviewNotFoundError extends Error {
+export class BookingNotFoundError extends Error {
   constructor() {
     super('Booking not found or you are not a party to it');
-    this.name = 'ReviewNotFoundError';
+    this.name = 'BookingNotFoundError';
   }
 }
 
@@ -53,7 +53,7 @@ export class ReviewService {
     reviewerType: 'provider' | 'customer'
   ): Promise<void> {
     const booking = await this.bookingRepo.findByIdWithProvider(bookingId);
-    if (!booking) throw new ReviewNotFoundError();
+    if (!booking) throw new BookingNotFoundError();
     const isParty =
       reviewerType === 'provider'
         ? booking.provider_id === reviewerId
@@ -105,5 +105,9 @@ export class ReviewService {
       averageRating: avg.averageRating,
       count: avg.count,
     };
+  }
+
+  async getLocationAverageRatings(): Promise<Record<string, { averageRating: number; count: number }>> {
+    return this.reviewRepo.findAverageRatingsForAllLocations();
   }
 }

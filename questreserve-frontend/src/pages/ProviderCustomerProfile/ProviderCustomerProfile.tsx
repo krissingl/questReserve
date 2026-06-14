@@ -44,6 +44,12 @@ export function ProviderCustomerProfile() {
       })
   }, [customerId])
 
+  const eligibleBooking = profile
+    ? [...profile.bookings]
+        .filter((b) => b.status === 'BOOKED')
+        .sort((x, y) => new Date(y.start_time).getTime() - new Date(x.start_time).getTime())[0] ?? null
+    : null
+
   return (
     <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
       <Link
@@ -211,52 +217,45 @@ export function ProviderCustomerProfile() {
             </div>
           )}
 
-          {(() => {
-            const eligibleBooking = [...profile.bookings]
-              .filter((b) => b.status === 'BOOKED')
-              .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime())[0]
-            return (
-              <div
-                style={{
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius)',
-                  backgroundColor: 'rgb(var(--card))',
-                  boxShadow: 'var(--shadow-card)',
-                }}
-              >
-                <h2
-                  style={{
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '1.1rem',
-                    fontWeight: 'var(--weight-semibold)',
-                    color: 'rgb(var(--foreground))',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  Reviews
-                </h2>
-                <ReviewList
+          <div
+            style={{
+              padding: '1.25rem',
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'rgb(var(--card))',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.1rem',
+                fontWeight: 'var(--weight-semibold)',
+                color: 'rgb(var(--foreground))',
+                marginBottom: '1rem',
+              }}
+            >
+              Reviews
+            </h2>
+            <ReviewList
+              targetId={profile.id}
+              targetType="customer"
+              refreshKey={reviewRefreshKey}
+            />
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
+              {eligibleBooking ? (
+                <ReviewForm
+                  bookingId={eligibleBooking.id}
                   targetId={profile.id}
                   targetType="customer"
-                  refreshKey={reviewRefreshKey}
+                  onSuccess={() => setReviewRefreshKey((k) => k + 1)}
                 />
-                <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
-                  {eligibleBooking ? (
-                    <ReviewForm
-                      bookingId={eligibleBooking.id}
-                      targetId={profile.id}
-                      targetType="customer"
-                      onSuccess={() => setReviewRefreshKey((k) => k + 1)}
-                    />
-                  ) : (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
-                      No active bookings to review.
-                    </p>
-                  )}
-                </div>
-              </div>
-            )
-          })()}
+              ) : (
+                <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+                  No active bookings to review.
+                </p>
+              )}
+            </div>
+          </div>
         </>
       )}
     </div>
