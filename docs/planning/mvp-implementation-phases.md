@@ -99,12 +99,12 @@ Status : ✅ COMPLETE
 Manage locations, timeslots, view bookings and revenue.
 
 ## Phase 11.5: Frontend — Profile Pages
-Status : In Progress
+Status : ✅ COMPLETE
 
 Add both customer and provider pages as well as messaging capabilities based by booking and profile images.
 
 ## Phase 11.6: Reviews & Branding Cleanup
-Status : NOT STARTED
+Status : In Progress
 
 Two workstreams planned for this phase:
 
