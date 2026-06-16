@@ -1,14 +1,52 @@
 import { apiClient } from './client'
-import type { BookingLocation, BookingLocationWithSlotCount, LocationImage, TimeSlot, TimeSlotWithBooking, ProviderBooking, ProviderProfile, ProviderDashboardStats, Difficulty } from '@/types/domain'
+import type { BookingLocation, BookingLocationWithSlotCount, BookingType, Difficulty, LocationImage, LandscapeType, LocationSetting, LootType, PrimaryFocus, TimeSlot, TimeSlotWithBooking, ToneTag, ProviderBooking, ProviderProfile, ProviderDashboardStats } from '@/types/domain'
 
-export interface CreateLocationPayload {
+interface LocationRulesetPayload {
+  party_size_min?: number | null
+  party_size_max?: number | null
+  level_range_min?: number | null
+  level_range_max?: number | null
+  landscape_type?: LandscapeType | null
+  setting?: LocationSetting | null
+  environment_tags?: string[] | null
+  magic_restrictions?: string[] | null
+  class_restrictions?: string[] | null
+  race_restrictions?: string[] | null
+  faction_restrictions?: string[] | null
+  party_composition_tags?: string[] | null
+  physical_access?: string[] | null
+  mount_permitted?: boolean
+  familiar_permitted?: boolean
+  solo_permitted?: boolean
+  booking_type?: BookingType | null
+  tone_tags?: ToneTag[] | null
+  gore_level?: number | null
+  non_lethal_mode?: boolean
+  permadeath_risk?: boolean
+  primary_focus?: PrimaryFocus | null
+  boss_encounter?: boolean
+  pvp_permitted?: boolean
+  scouting_permitted?: boolean
+  run_time_minutes?: number | null
+  reset_time_hours?: number | null
+  time_limit_minutes?: number | null
+  has_safe_room?: boolean
+  has_merchant?: boolean
+  equipment_provided?: boolean
+  guide_provided?: boolean
+  loot_type?: LootType | null
+  boss_loot?: boolean
+  unique_item_chance?: boolean
+}
+
+export interface CreateLocationPayload extends LocationRulesetPayload {
   name: string
   description?: string
   difficulty: Difficulty
   cancellation_policy: string
 }
 
-export interface UpdateLocationPayload {
+export interface UpdateLocationPayload extends LocationRulesetPayload {
   name?: string
   description?: string
   difficulty?: Difficulty
