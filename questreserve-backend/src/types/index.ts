@@ -125,6 +125,20 @@ export interface Message {
   read_at: Date | null;
 }
 
+export interface Review {
+  id: string;
+  reviewer_id: string;
+  reviewer_type: 'provider' | 'customer';
+  reviewer_first_name?: string | null;
+  reviewer_last_name?: string | null;
+  target_id: string;
+  target_type: 'provider' | 'customer' | 'location';
+  booking_id: string;
+  rating: number;
+  body: string | null;
+  created_at: Date;
+}
+
 export interface AdminBookingView {
   id: string;
   time_slot_id: string;

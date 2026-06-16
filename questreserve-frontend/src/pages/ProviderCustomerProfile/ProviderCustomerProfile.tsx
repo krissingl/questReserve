@@ -4,9 +4,11 @@ import { getProviderCustomer } from '@/api/provider.api'
 import type { ProviderCustomerProfile as ProviderCustomerProfileData } from '@/api/provider.api'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import { ProfilePictureLightbox } from '@/components/ProfilePictureLightbox/ProfilePictureLightbox'
+import { ReviewList } from '@/components/ReviewList/ReviewList'
+import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
 
 const statusColours: Record<string, { bg: string; text: string }> = {
-  BOOKED: { bg: 'rgb(var(--success, 34 197 94) / 0.12)', text: 'rgb(var(--success, 34 197 94))' },
+  BOOKED: { bg: 'rgb(var(--success) / 0.12)', text: 'rgb(var(--success))' },
   CANCELLED: { bg: 'rgb(var(--muted))', text: 'rgb(var(--muted-foreground))' },
 }
 
@@ -22,6 +24,7 @@ export function ProviderCustomerProfile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!customerId) return
@@ -40,6 +43,12 @@ export function ProviderCustomerProfile() {
         setLoading(false)
       })
   }, [customerId])
+
+  const eligibleBooking = profile
+    ? [...profile.bookings]
+        .filter((b) => b.status === 'BOOKED')
+        .sort((x, y) => new Date(y.start_time).getTime() - new Date(x.start_time).getTime())[0] ?? null
+    : null
 
   return (
     <div style={{ padding: '2rem', width: '85%', minWidth: 'min(700px, 100%)', margin: '0 auto' }}>
@@ -210,7 +219,7 @@ export function ProviderCustomerProfile() {
 
           <div
             style={{
-              padding: '1rem 1.25rem',
+              padding: '1.25rem',
               borderRadius: 'var(--radius)',
               backgroundColor: 'rgb(var(--card))',
               boxShadow: 'var(--shadow-card)',
@@ -222,14 +231,30 @@ export function ProviderCustomerProfile() {
                 fontSize: '1.1rem',
                 fontWeight: 'var(--weight-semibold)',
                 color: 'rgb(var(--foreground))',
-                marginBottom: '0.5rem',
+                marginBottom: '1rem',
               }}
             >
               Reviews
             </h2>
-            <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
-              No reviews yet.
-            </p>
+            <ReviewList
+              targetId={profile.id}
+              targetType="customer"
+              refreshKey={reviewRefreshKey}
+            />
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
+              {eligibleBooking ? (
+                <ReviewForm
+                  bookingId={eligibleBooking.id}
+                  targetId={profile.id}
+                  targetType="customer"
+                  onSuccess={() => setReviewRefreshKey((k) => k + 1)}
+                />
+              ) : (
+                <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))', fontStyle: 'italic' }}>
+                  No active bookings to review.
+                </p>
+              )}
+            </div>
           </div>
         </>
       )}

@@ -23,3 +23,38 @@ export async function getPublicProviderProfile(id: string): Promise<PublicProvid
   const response = await apiClient.get<PublicProviderProfile>(`/providers/${id}/public`)
   return response.data
 }
+
+export interface ReviewItem {
+  id: string
+  rating: number
+  body: string | null
+  created_at: string
+  reviewer_first_name?: string | null
+  reviewer_last_name?: string | null
+}
+
+export interface ReviewsResponse {
+  reviews: ReviewItem[]
+  averageRating: number
+  count: number
+}
+
+export async function getReviews(
+  targetId: string,
+  targetType: 'provider' | 'customer' | 'location'
+): Promise<ReviewsResponse> {
+  const response = await apiClient.get<ReviewsResponse>('/reviews', {
+    params: { targetId, targetType },
+  })
+  return response.data
+}
+
+export interface LocationRatingSummary {
+  averageRating: number
+  count: number
+}
+
+export async function getLocationAverages(): Promise<Record<string, LocationRatingSummary>> {
+  const response = await apiClient.get<Record<string, LocationRatingSummary>>('/reviews/location-averages')
+  return response.data
+}

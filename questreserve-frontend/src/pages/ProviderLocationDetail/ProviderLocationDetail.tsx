@@ -1,11 +1,23 @@
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useMyLocation } from '@/hooks/useMyLocation'
 import { TimeSlotManager } from '@/components/TimeSlotManager/TimeSlotManager'
+import { ReviewList, StarDisplay } from '@/components/ReviewList/ReviewList'
+import { getReviews } from '@/api/guest.api'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
 export function ProviderLocationDetail() {
   const { id } = useParams<{ id: string }>()
   const { data: location, isLoading, error: fetchError } = useMyLocation(id ?? '')
+  const [reviewsOpen, setReviewsOpen] = useState(false)
+  const [reviewSummary, setReviewSummary] = useState<{ averageRating: number; count: number } | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+    getReviews(id, 'location')
+      .then((data) => setReviewSummary({ averageRating: data.averageRating, count: data.count }))
+      .catch((err) => console.error('ProviderLocationDetail: failed to load review summary', err))
+  }, [id])
 
   if (!id) {
     return (
@@ -191,6 +203,72 @@ export function ProviderLocationDetail() {
       </div>
 
       <TimeSlotManager locationId={id} />
+
+      <div
+        style={{
+          marginTop: '1.5rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--card))',
+          boxShadow: 'var(--shadow-card)',
+          overflow: 'hidden',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setReviewsOpen((o) => !o)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            padding: '1rem 1.5rem',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1rem',
+                fontWeight: 'var(--weight-semibold)',
+                color: 'rgb(var(--foreground))',
+              }}
+            >
+              Guest Reviews
+            </span>
+            {reviewSummary !== null && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                <StarDisplay rating={reviewSummary.averageRating} size={16} />
+                <span style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--muted-foreground))' }}>
+                  {reviewSummary.count === 0
+                    ? 'No reviews yet'
+                    : `${reviewSummary.averageRating.toFixed(1)} (${reviewSummary.count})`}
+                </span>
+              </span>
+            )}
+          </span>
+          <span
+            style={{
+              fontSize: 'var(--text-sm)',
+              color: 'rgb(var(--muted-foreground))',
+              transform: reviewsOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.15s ease',
+              display: 'inline-block',
+            }}
+          >
+            &#9660;
+          </span>
+        </button>
+
+        {reviewsOpen && (
+          <div style={{ padding: '0 1.5rem 1.5rem' }}>
+            <ReviewList targetId={id} targetType="location" />
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -172,7 +172,7 @@ function ProfileSection() {
           <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{error}</p>
         )}
         {success && (
-          <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>Profile updated.</p>
+          <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--success))' }}>Profile updated.</p>
         )}
         <button
           type="submit"
@@ -225,7 +225,7 @@ function ProfileSection() {
           <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>{bioError}</p>
         )}
         {bioSuccess && (
-          <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(34 197 94)' }}>About updated.</p>
+          <p style={{ marginBottom: '0.75rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--success))' }}>About updated.</p>
         )}
         <button
           type="submit"

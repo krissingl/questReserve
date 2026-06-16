@@ -73,3 +73,4 @@ export async function getMyBookings(): Promise<Booking[]> {
   const response = await apiClient.get<Booking[]>('/customer/bookings')
   return response.data
 }
+

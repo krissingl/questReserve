@@ -99,18 +99,68 @@ Status : ✅ COMPLETE
 Manage locations, timeslots, view bookings and revenue.
 
 ## Phase 11.5: Frontend — Profile Pages
-Status : In Progress
+Status : ✅ COMPLETE
 
 Add both customer and provider pages as well as messaging capabilities based by booking and profile images.
 
 ## Phase 11.6: Reviews & Branding Cleanup
-Status : NOT STARTED
+Status : ✅ COMPLETE
 
 Two workstreams planned for this phase:
 
 **Reviews** — Pull reviews out of stretch goals and implement as a dedicated feature. Three review types: (1) Provider reviews a customer — accessible only to providers on the customer's profile page; (2) Customer reviews a provider — accessible on the provider's public profile page; (3) Customer reviews a location — accessible on the location/adventure detail page. All reviews gated by interaction history: a customer cannot review a location they have not booked, a provider cannot review a customer they have not hosted.
 
 **Branding & Styling Cleanup** — Audit and improve visual consistency across the app. Make styling more uniform and visually interesting throughout the customer, provider, and guest portals.
+
+## Phase 11.7: Expanded Location Rulesets & Provider Survey
+Status : NOT STARTED
+
+A rich location metadata system with a structured provider survey and expanded customer filters.
+
+**Provider Side** — Multi-step survey UI when creating or editing a location. Providers fill out categorized fields covering:
+- Party size min/max and recommended level range
+- Landscape type (tundra, forest, desert, cave, coastal, volcanic, etc.) and setting (interior / exterior / both)
+- Specialty environment tags (lava, haunted, aerial, underwater, etc.)
+- Magic restrictions (antimagic zones, wild magic, divine/arcane restricted)
+- Class, race, and faction restrictions; party composition rules (tag-based)
+- Physical access requirements (vertical traversal, water traversal, narrow passages, darkness level)
+- Mount/familiar permitted, solo runs permitted, concurrent parties vs. exclusive booking
+- Tone tags (horror, heroic, comedic, mystery, political), gore/intensity level, non-lethal mode, permadeath risk
+- Primary focus (combat / puzzle / roleplay / mixed), boss encounter present, PvP permitted, scouting permitted
+- Estimated run time, dungeon reset time, time limit per run
+- Amenities (safe room, on-site merchant, equipment provided, guide/GM provided)
+- Loot (guaranteed vs. random, boss loot present, unique item chance)
+
+Survey should feel guided — fields grouped by category with clear section headers, helpful prompts, and sensible defaults. All fields optional except party size and level range.
+
+**Customer Side** — Expanded browse/filter UI exposing new fields as filterable options. Priority filters for MVP: level range, run time, setting, landscape, magic environment, tone, party size. Secondary filters: access requirements, amenities, restrictions. Filter state persists in URL params.
+
+## Phase 11.8: "Will" AI Location Assistant (Will-o'-the-Wisp)
+Status : NOT STARTED
+
+A conversational AI helper for customers named Will, styled as a will-o'-the-wisp (glowing orb with soft pulse animation). Will takes a natural language request and translates it into filter selections on the browse page.
+
+> **User-dependent prerequisite:** Visual assets for Will (orb illustration, glow/animation references) will need to be produced before or during this phase. Implementation can begin with placeholder styling, but final polish requires client-provided or user-approved assets.
+
+**Core Behavior** — Customer describes what they want ("a spooky underground dungeon for a party of 4–6, nothing too deadly, we have a paladin"); Will parses the request and snaps the appropriate filters into place visibly so the customer can see and adjust.
+
+**Will's Personality** — Mysterious, whimsical, and helpful. Short flavored responses ("I sense a damp cave with flickering torchlight suits your party…"). Should feel like a character, not a chatbot.
+
+**UI/UX:**
+- Floating orb button in the bottom corner of the Browse Locations page
+- Expands into a small chat panel when clicked
+- Soft glow and pulse animation (CSS only, no heavy libraries)
+- Single-turn interaction: customer describes, Will responds and sets filters
+- Will confirms what filters were applied in plain language
+- Customer can clear Will's selections and start over
+
+**Technical:**
+- Claude API call on the backend (API key never exposed to frontend)
+- Structured output: Will returns a JSON filter object mapping to the existing filter schema
+- Backend endpoint: `POST /ai/location-filter`
+- System prompt defines Will's personality and instructs structured JSON output
+- Graceful fallback if AI call fails (Will says he lost the thread, try again)
+- Depends on Phase 11.7 filter schema being finalized first
 
 ## Phase 12: Frontend — Admin Panel
 Status : NOT STARTED

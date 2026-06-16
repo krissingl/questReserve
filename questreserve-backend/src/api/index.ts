@@ -6,6 +6,7 @@ import customerRouter from './customer';
 import adminRouter from './admin';
 import publicRouter from './public';
 import messagesRouter from './messages';
+import reviewsRouter from './reviews';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/customer', customerRouter);
 router.use('/admin', adminRouter);
 router.use(publicRouter);
 router.use('/messages', messagesRouter);
+router.use('/reviews', reviewsRouter);
 
 export default router;

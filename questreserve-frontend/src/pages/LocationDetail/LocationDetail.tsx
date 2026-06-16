@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useBookingLocation } from '@/hooks/useBookingLocation'
 import { useAvailableSlots } from '@/hooks/useAvailableSlots'
@@ -8,7 +8,11 @@ import { useAuth } from '@/contexts/AuthContext'
 import { formatSlotTime } from '@/utils/formatSlotTime'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
-import type { TimeSlot } from '@/types/domain'
+import { ReviewList } from '@/components/ReviewList/ReviewList'
+import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
+import { getMyBookings } from '@/api/customer.api'
+import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
+import type { TimeSlot, Booking } from '@/types/domain'
 
 interface SlotCardProps {
   slot: TimeSlot
@@ -56,8 +60,8 @@ function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCan
             onMouseLeave={() => setReserveHovered(false)}
             className="rounded px-4 py-1.5 text-sm font-medium"
             style={{
-              backgroundColor: reserveHovered ? 'rgb(var(--accent))' : 'rgb(var(--primary))',
-              color: 'rgb(var(--primary-foreground, 255 255 255))',
+              backgroundColor: reserveHovered ? 'rgb(var(--accent) / 0.85)' : 'rgb(var(--accent))',
+              color: 'rgb(var(--accent-foreground))',
               transition: 'background-color 0.15s ease',
             }}
           >
@@ -126,7 +130,7 @@ export function LocationDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { token } = useAuth()
+  const { token, role } = useAuth()
 
   const { data: location, isLoading, error } = useBookingLocation(id ?? '')
   const { data: images } = useLocationImages(id ?? '')
@@ -141,6 +145,23 @@ export function LocationDetail() {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [conflictError, setConflictError] = useState<string | null>(null)
   const [bookingError, setBookingError] = useState<string | null>(null)
+  const [eligibleBooking, setEligibleBooking] = useState<Booking | null>(null)
+  const [reviewRefreshKey, setReviewRefreshKey] = useState(0)
+
+  useEffect(() => {
+    if (!token || role !== 'customer' || !id) {
+      setEligibleBooking(null)
+      return
+    }
+    getMyBookings()
+      .then((bookings) => {
+        const eligible = bookings
+          .filter((b) => b.status === 'BOOKED' && b.booking_location_id === id)
+          .sort((a, b) => new Date(b.slot_start_time).getTime() - new Date(a.slot_start_time).getTime())[0]
+        setEligibleBooking(eligible ?? null)
+      })
+      .catch(() => setEligibleBooking(null))
+  }, [token, role, id])
 
   const pendingSlotId: string | null =
     selectedSlotId ?? (token && slotParam && !slotsLoading ? slotParam : null)
@@ -213,7 +234,7 @@ export function LocationDetail() {
   if (!location) return null
 
   return (
-    <main className="p-8">
+    <main className="p-8" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <Link
         to="/locations"
         className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
@@ -250,7 +271,7 @@ export function LocationDetail() {
           <span
             className="inline-block rounded px-2 py-0.5 text-xs font-medium"
             style={{
-              backgroundColor: 'rgb(var(--primary))',
+              backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
               color: 'rgb(var(--primary-foreground, 255 255 255))',
             }}
           >
@@ -368,6 +389,41 @@ export function LocationDetail() {
           </div>
         )}
       </div>
+
+      {id && (
+        <div
+          className="mt-6 rounded-lg"
+          style={{
+            padding: '1.25rem',
+            backgroundColor: 'rgb(var(--card))',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          <h2
+            className="mb-4 text-xl font-bold"
+            style={{ fontFamily: 'var(--font-heading)', color: 'rgb(var(--foreground))' }}
+          >
+            Reviews
+          </h2>
+          <ReviewList targetId={id} targetType="location" refreshKey={reviewRefreshKey} />
+          {role === 'customer' && (
+            <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
+              {eligibleBooking ? (
+                <ReviewForm
+                  bookingId={eligibleBooking.id}
+                  targetId={id}
+                  targetType="location"
+                  onSuccess={() => setReviewRefreshKey((k) => k + 1)}
+                />
+              ) : (
+                <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
+                  Book this adventure to leave a review.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </main>
   )
 }
