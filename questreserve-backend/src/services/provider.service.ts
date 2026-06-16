@@ -5,7 +5,7 @@ import { BookingRepository } from '../repositories/booking.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { ProviderRepository } from '../repositories/provider.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
-import { BookingLocation, BookingLocationWithSlotCount, BookingStatus, Difficulty, LocationImage, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, TimeSlot, TimeSlotWithBooking } from '../types';
+import { BookingLocation, BookingLocationWithSlotCount, BookingStatus, BookingType, Difficulty, LocationImage, LandscapeType, LocationSetting, LootType, PrimaryFocus, Provider, ProviderBookingView, ProviderDashboardStats, ProviderPlan, ProviderStatus, ToneTag, TimeSlot, TimeSlotWithBooking } from '../types';
 
 export class LocationNotFoundError extends Error {
   constructor() {
@@ -42,14 +42,52 @@ export class EmailConflictError extends Error {
   }
 }
 
-export interface CreateLocationInput {
+interface LocationRulesetFields {
+  party_size_min?: number | null;
+  party_size_max?: number | null;
+  level_range_min?: number | null;
+  level_range_max?: number | null;
+  landscape_type?: LandscapeType | null;
+  setting?: LocationSetting | null;
+  environment_tags?: string[] | null;
+  magic_restrictions?: string[] | null;
+  class_restrictions?: string[] | null;
+  race_restrictions?: string[] | null;
+  faction_restrictions?: string[] | null;
+  party_composition_tags?: string[] | null;
+  physical_access?: string[] | null;
+  mount_permitted?: boolean;
+  familiar_permitted?: boolean;
+  solo_permitted?: boolean;
+  booking_type?: BookingType | null;
+  tone_tags?: ToneTag[] | null;
+  gore_level?: number | null;
+  non_lethal_mode?: boolean;
+  permadeath_risk?: boolean;
+  primary_focus?: PrimaryFocus | null;
+  boss_encounter?: boolean;
+  pvp_permitted?: boolean;
+  scouting_permitted?: boolean;
+  run_time_minutes?: number | null;
+  reset_time_hours?: number | null;
+  time_limit_minutes?: number | null;
+  has_safe_room?: boolean;
+  has_merchant?: boolean;
+  equipment_provided?: boolean;
+  guide_provided?: boolean;
+  loot_type?: LootType | null;
+  boss_loot?: boolean;
+  unique_item_chance?: boolean;
+}
+
+export interface CreateLocationInput extends LocationRulesetFields {
   name: string;
   description?: string;
   difficulty: Difficulty;
   cancellation_policy: string;
 }
 
-export interface UpdateLocationInput {
+export interface UpdateLocationInput extends LocationRulesetFields {
   name?: string;
   description?: string;
   difficulty?: Difficulty;
@@ -135,14 +173,16 @@ export class ProviderService {
   ) {}
 
   async createLocation(providerId: string, data: CreateLocationInput): Promise<BookingLocation> {
+    const { name, description, difficulty, cancellation_policy, ...rulesetFields } = data;
     return this.locationRepo.create({
       provider_id: providerId,
-      name: data.name,
-      description: data.description ?? null,
-      difficulty: data.difficulty,
-      cancellation_policy: data.cancellation_policy,
+      name,
+      description: description ?? null,
+      difficulty,
+      cancellation_policy,
       image_url: null,
-    });
+      ...rulesetFields,
+    } as Omit<BookingLocation, 'id' | 'created_at' | 'updated_at'>);
   }
 
   async getLocations(providerId: string): Promise<BookingLocationWithSlotCount[]> {

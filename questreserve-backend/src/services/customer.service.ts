@@ -1,4 +1,4 @@
-import { BookingLocationRepository } from '../repositories/booking-location.repository';
+import { BookingLocationRepository, LocationFilters } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
@@ -76,8 +76,8 @@ export class CustomerService {
     private readonly bookingRepo: BookingRepository
   ) {}
 
-  async browseLocations(difficulty?: Difficulty): Promise<BookingLocation[]> {
-    return this.locationRepo.list(difficulty);
+  async browseLocations(filters: LocationFilters = {}): Promise<BookingLocation[]> {
+    return this.locationRepo.findAll(filters);
   }
 
   async getLocation(locationId: string): Promise<BookingLocation | null> {
