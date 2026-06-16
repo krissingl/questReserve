@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useBookingLocations } from '@/hooks/useBookingLocations'
 import { useLocationImages } from '@/hooks/useLocationImages'
-import { FilterDrawer } from '@/components/FilterDrawer/FilterDrawer'
+import { FilterPanelDrawer } from '@/components/LocationFilterPanel/LocationFilterPanel'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import { StarDisplay } from '@/components/ReviewList/ReviewList'
 import { getLocationAverages } from '@/api/guest.api'
 import type { LocationRatingSummary } from '@/api/guest.api'
-import type { BookingLocation, LocationFilters } from '@/types/domain'
-import { DIFFICULTY_OPTIONS } from '@/types/domain'
+import type { BookingLocation, LocationFilters, Difficulty, LandscapeType, LocationSetting, ToneTag } from '@/types/domain'
+import { DIFFICULTY_OPTIONS, LANDSCAPE_TYPE_OPTIONS, SETTING_OPTIONS, TONE_TAG_OPTIONS } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
 interface LocationListItemProps {
@@ -106,7 +106,6 @@ function LocationListItem({ location, isFocused, onClick }: LocationListItemProp
           </span>
         </div>
       </button>
-
     </div>
   )
 }
@@ -220,6 +219,78 @@ function GalleryPanel({ location, rating, onNavigate }: GalleryPanelProps) {
   )
 }
 
+function readFiltersFromParams(searchParams: URLSearchParams): LocationFilters {
+  const filters: LocationFilters = {}
+
+  const difficulty = searchParams.get('difficulty')
+  if (difficulty && DIFFICULTY_OPTIONS.includes(difficulty as Difficulty)) {
+    filters.difficulty = difficulty as Difficulty
+  }
+
+  const levelRangeMin = searchParams.get('levelRangeMin')
+  if (levelRangeMin) {
+    const n = parseInt(levelRangeMin, 10)
+    if (!isNaN(n) && n > 0) filters.levelRangeMin = n
+  }
+
+  const levelRangeMax = searchParams.get('levelRangeMax')
+  if (levelRangeMax) {
+    const n = parseInt(levelRangeMax, 10)
+    if (!isNaN(n) && n > 0) filters.levelRangeMax = n
+  }
+
+  const runTimeMax = searchParams.get('runTimeMax')
+  if (runTimeMax) {
+    const n = parseInt(runTimeMax, 10)
+    if (!isNaN(n) && n > 0) filters.runTimeMax = n
+  }
+
+  const setting = searchParams.get('setting')
+  if (setting && SETTING_OPTIONS.includes(setting as LocationSetting)) {
+    filters.setting = setting as LocationSetting
+  }
+
+  const landscapeType = searchParams.get('landscapeType')
+  if (landscapeType && LANDSCAPE_TYPE_OPTIONS.includes(landscapeType as LandscapeType)) {
+    filters.landscapeType = landscapeType as LandscapeType
+  }
+
+  const toneTag = searchParams.get('toneTag')
+  if (toneTag && TONE_TAG_OPTIONS.includes(toneTag as ToneTag)) {
+    filters.toneTag = toneTag as ToneTag
+  }
+
+  const partySizeMin = searchParams.get('partySizeMin')
+  if (partySizeMin) {
+    const n = parseInt(partySizeMin, 10)
+    if (!isNaN(n) && n > 0) filters.partySizeMin = n
+  }
+
+  const partySizeMax = searchParams.get('partySizeMax')
+  if (partySizeMax) {
+    const n = parseInt(partySizeMax, 10)
+    if (!isNaN(n) && n > 0) filters.partySizeMax = n
+  }
+
+  return filters
+}
+
+function writeFiltersToParams(filters: LocationFilters, setSearchParams: (fn: (prev: URLSearchParams) => URLSearchParams) => void) {
+  setSearchParams(() => {
+    const next = new URLSearchParams()
+    if (filters.difficulty) next.set('difficulty', filters.difficulty)
+    if (filters.levelRangeMin !== undefined) next.set('levelRangeMin', String(filters.levelRangeMin))
+    if (filters.levelRangeMax !== undefined) next.set('levelRangeMax', String(filters.levelRangeMax))
+    if (filters.runTimeMax !== undefined) next.set('runTimeMax', String(filters.runTimeMax))
+    if (filters.setting) next.set('setting', filters.setting)
+    if (filters.landscapeType) next.set('landscapeType', filters.landscapeType)
+    if (filters.toneTag) next.set('toneTag', filters.toneTag)
+    if (filters.partySizeMin !== undefined) next.set('partySizeMin', String(filters.partySizeMin))
+    if (filters.partySizeMax !== undefined) next.set('partySizeMax', String(filters.partySizeMax))
+    return next
+  })
+}
+
 export function BrowseLocations() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -234,12 +305,8 @@ export function BrowseLocations() {
       .catch((err) => console.error('BrowseLocations: failed to load location averages', err))
   }, [])
 
-  const rawDifficulty = searchParams.get('difficulty')
-  const appliedFilters: LocationFilters = {
-    difficulty: DIFFICULTY_OPTIONS.find((d) => d === rawDifficulty),
-  }
-
-  const activeFilterCount = Object.values(appliedFilters).filter(Boolean).length
+  const appliedFilters: LocationFilters = readFiltersFromParams(searchParams)
+  const activeFilterCount = Object.values(appliedFilters).filter((v) => v !== undefined).length
   const hasActiveFilters = activeFilterCount > 0
 
   const { data: locations, isLoading, error } = useBookingLocations(appliedFilters)
@@ -249,25 +316,13 @@ export function BrowseLocations() {
       ? locations.find((l) => l.id === focusedId) ?? locations[0]
       : null
 
-  function handleApply(filters: LocationFilters) {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (filters.difficulty) {
-        next.set('difficulty', filters.difficulty)
-      } else {
-        next.delete('difficulty')
-      }
-      return next
-    })
+  function handleFiltersChange(filters: LocationFilters) {
+    writeFiltersToParams(filters, setSearchParams)
     setFocusedId(null)
   }
 
   function handleClearFilters() {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.delete('difficulty')
-      return next
-    })
+    setSearchParams(() => new URLSearchParams())
     setFocusedId(null)
   }
 
@@ -355,6 +410,24 @@ export function BrowseLocations() {
             </span>
           )}
         </button>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            style={{
+              padding: '0.4rem 0.9rem',
+              border: '1px solid rgb(var(--border))',
+              borderRadius: 'var(--radius-pill)',
+              background: 'transparent',
+              color: 'rgb(var(--muted-foreground))',
+              cursor: 'pointer',
+              fontSize: 'var(--text-sm)',
+            }}
+          >
+            Clear All Filters
+          </button>
+        )}
       </div>
 
       {/* Loading / error / empty states */}
@@ -447,11 +520,12 @@ export function BrowseLocations() {
         </div>
       )}
 
-      <FilterDrawer
+      <FilterPanelDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        applied={appliedFilters}
-        onApply={handleApply}
+        filters={appliedFilters}
+        onChange={handleFiltersChange}
+        onClearAll={handleClearFilters}
       />
     </div>
   )
