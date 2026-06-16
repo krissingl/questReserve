@@ -44,6 +44,13 @@ export interface EndUser {
   updated_at: Date;
 }
 
+export type LandscapeType = 'tundra' | 'forest' | 'desert' | 'cave' | 'coastal' | 'volcanic' | 'urban' | 'plains' | 'mountain' | 'swamp';
+export type LocationSetting = 'interior' | 'exterior' | 'both';
+export type ToneTag = 'horror' | 'heroic' | 'comedic' | 'mystery' | 'political';
+export type PrimaryFocus = 'combat' | 'puzzle' | 'roleplay' | 'mixed';
+export type LootType = 'guaranteed' | 'random' | 'none';
+export type BookingType = 'concurrent' | 'exclusive';
+
 export interface BookingLocation {
   id: string;
   provider_id: string;
@@ -54,6 +61,53 @@ export interface BookingLocation {
   image_url: string | null;
   created_at: Date;
   updated_at: Date;
+
+  // Core specs
+  party_size_min: number | null;
+  party_size_max: number | null;
+  level_range_min: number | null;
+  level_range_max: number | null;
+
+  // Environment
+  landscape_type: LandscapeType | null;
+  setting: LocationSetting | null;
+  environment_tags: string[] | null;
+
+  // Restrictions
+  magic_restrictions: string[] | null;
+  class_restrictions: string[] | null;
+  race_restrictions: string[] | null;
+  faction_restrictions: string[] | null;
+  party_composition_tags: string[] | null;
+  physical_access: string[] | null;
+  mount_permitted: boolean;
+  familiar_permitted: boolean;
+  solo_permitted: boolean;
+  booking_type: BookingType | null;
+
+  // Tone & content
+  tone_tags: ToneTag[] | null;
+  gore_level: number | null;
+  non_lethal_mode: boolean;
+  permadeath_risk: boolean;
+  primary_focus: PrimaryFocus | null;
+  boss_encounter: boolean;
+  pvp_permitted: boolean;
+  scouting_permitted: boolean;
+
+  // Run logistics
+  run_time_minutes: number | null;
+  reset_time_hours: number | null;
+  time_limit_minutes: number | null;
+
+  // Amenities & loot
+  has_safe_room: boolean;
+  has_merchant: boolean;
+  equipment_provided: boolean;
+  guide_provided: boolean;
+  loot_type: LootType | null;
+  boss_loot: boolean;
+  unique_item_chance: boolean;
 }
 
 export interface LocationImage {

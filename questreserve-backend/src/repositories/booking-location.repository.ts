@@ -3,6 +3,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { BaseRepository } from '../infrastructure';
 import { BookingLocation, Difficulty } from '../types';
 
+export interface LocationFilters {
+  difficulty?: Difficulty;
+  levelRangeMin?: number;
+  levelRangeMax?: number;
+  runTimeMax?: number;
+  setting?: string;
+  landscapeType?: string;
+  toneTag?: string;
+  partySizeMin?: number;
+  partySizeMax?: number;
+}
+
 export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   constructor(knex: Knex) {
     super(knex);
@@ -13,16 +25,42 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     return row ?? null;
   }
 
-  async findAll(): Promise<BookingLocation[]> {
-    return this.knex<BookingLocation>('booking_location').select('*');
+  async findAll(filters: LocationFilters = {}): Promise<BookingLocation[]> {
+    const query = this.knex<BookingLocation>('booking_location').select('*');
+
+    if (filters.difficulty) {
+      query.where('difficulty', filters.difficulty);
+    }
+    if (filters.levelRangeMin !== undefined) {
+      query.where('level_range_max', '>=', filters.levelRangeMin);
+    }
+    if (filters.levelRangeMax !== undefined) {
+      query.where('level_range_min', '<=', filters.levelRangeMax);
+    }
+    if (filters.runTimeMax !== undefined) {
+      query.where('run_time_minutes', '<=', filters.runTimeMax);
+    }
+    if (filters.setting) {
+      query.where('setting', filters.setting);
+    }
+    if (filters.landscapeType) {
+      query.where('landscape_type', filters.landscapeType);
+    }
+    if (filters.toneTag) {
+      query.whereRaw('? = ANY(tone_tags)', [filters.toneTag]);
+    }
+    if (filters.partySizeMin !== undefined) {
+      query.where('party_size_max', '>=', filters.partySizeMin);
+    }
+    if (filters.partySizeMax !== undefined) {
+      query.where('party_size_min', '<=', filters.partySizeMax);
+    }
+
+    return query;
   }
 
   async list(difficulty?: Difficulty): Promise<BookingLocation[]> {
-    const query = this.knex<BookingLocation>('booking_location').select('*');
-    if (difficulty) {
-      query.where('difficulty', difficulty);
-    }
-    return query;
+    return this.findAll(difficulty ? { difficulty } : {});
   }
 
   async findAllByProvider(providerId: string): Promise<BookingLocation[]> {
