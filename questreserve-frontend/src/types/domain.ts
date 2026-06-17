@@ -11,19 +11,19 @@ export type BookingType = 'concurrent' | 'exclusive'
 
 export const LANDSCAPE_TYPE_OPTIONS: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp']
 export const TONE_TAG_OPTIONS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political']
-export const SETTING_OPTIONS: LocationSetting[] = ['interior', 'exterior', 'both']
+export const SETTING_OPTIONS: LocationSetting[] = ['interior', 'exterior']
 export const PRIMARY_FOCUS_OPTIONS: PrimaryFocus[] = ['combat', 'puzzle', 'roleplay', 'mixed']
 export const LOOT_TYPE_OPTIONS: LootType[] = ['guaranteed', 'random', 'none']
 export const BOOKING_TYPE_OPTIONS: BookingType[] = ['concurrent', 'exclusive']
 
 export interface LocationFilters {
-  difficulty?: Difficulty
+  difficulties?: Difficulty[]
   levelRangeMin?: number
   levelRangeMax?: number
   runTimeMax?: number
   setting?: LocationSetting
   landscapeType?: LandscapeType
-  toneTag?: ToneTag
+  toneTags?: ToneTag[]
   partySizeMin?: number
   partySizeMax?: number
 }

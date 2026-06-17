@@ -222,9 +222,10 @@ function GalleryPanel({ location, rating, onNavigate }: GalleryPanelProps) {
 function readFiltersFromParams(searchParams: URLSearchParams): LocationFilters {
   const filters: LocationFilters = {}
 
-  const difficulty = searchParams.get('difficulty')
-  if (difficulty && DIFFICULTY_OPTIONS.includes(difficulty as Difficulty)) {
-    filters.difficulty = difficulty as Difficulty
+  const difficultiesParam = searchParams.get('difficulties')
+  if (difficultiesParam) {
+    const parsed = difficultiesParam.split(',').filter((d) => DIFFICULTY_OPTIONS.includes(d as Difficulty)) as Difficulty[]
+    if (parsed.length > 0) filters.difficulties = parsed
   }
 
   const levelRangeMin = searchParams.get('levelRangeMin')
@@ -255,9 +256,10 @@ function readFiltersFromParams(searchParams: URLSearchParams): LocationFilters {
     filters.landscapeType = landscapeType as LandscapeType
   }
 
-  const toneTag = searchParams.get('toneTag')
-  if (toneTag && TONE_TAG_OPTIONS.includes(toneTag as ToneTag)) {
-    filters.toneTag = toneTag as ToneTag
+  const toneTagsParam = searchParams.get('toneTags')
+  if (toneTagsParam) {
+    const parsed = toneTagsParam.split(',').filter((t) => TONE_TAG_OPTIONS.includes(t as ToneTag)) as ToneTag[]
+    if (parsed.length > 0) filters.toneTags = parsed
   }
 
   const partySizeMin = searchParams.get('partySizeMin')
@@ -278,13 +280,13 @@ function readFiltersFromParams(searchParams: URLSearchParams): LocationFilters {
 function writeFiltersToParams(filters: LocationFilters, setSearchParams: (fn: (prev: URLSearchParams) => URLSearchParams) => void) {
   setSearchParams(() => {
     const next = new URLSearchParams()
-    if (filters.difficulty) next.set('difficulty', filters.difficulty)
+    if (filters.difficulties && filters.difficulties.length > 0) next.set('difficulties', filters.difficulties.join(','))
     if (filters.levelRangeMin !== undefined) next.set('levelRangeMin', String(filters.levelRangeMin))
     if (filters.levelRangeMax !== undefined) next.set('levelRangeMax', String(filters.levelRangeMax))
     if (filters.runTimeMax !== undefined) next.set('runTimeMax', String(filters.runTimeMax))
     if (filters.setting) next.set('setting', filters.setting)
     if (filters.landscapeType) next.set('landscapeType', filters.landscapeType)
-    if (filters.toneTag) next.set('toneTag', filters.toneTag)
+    if (filters.toneTags && filters.toneTags.length > 0) next.set('toneTags', filters.toneTags.join(','))
     if (filters.partySizeMin !== undefined) next.set('partySizeMin', String(filters.partySizeMin))
     if (filters.partySizeMax !== undefined) next.set('partySizeMax', String(filters.partySizeMax))
     return next
@@ -306,7 +308,22 @@ export function BrowseLocations() {
   }, [])
 
   const appliedFilters: LocationFilters = readFiltersFromParams(searchParams)
-  const activeFilterCount = Object.values(appliedFilters).filter((v) => v !== undefined).length
+
+  function countActiveFilters(f: LocationFilters): number {
+    let count = 0
+    if (f.difficulties && f.difficulties.length > 0) count++
+    if (f.levelRangeMin !== undefined) count++
+    if (f.levelRangeMax !== undefined) count++
+    if (f.runTimeMax !== undefined) count++
+    if (f.setting) count++
+    if (f.landscapeType) count++
+    if (f.toneTags && f.toneTags.length > 0) count++
+    if (f.partySizeMin !== undefined) count++
+    if (f.partySizeMax !== undefined) count++
+    return count
+  }
+
+  const activeFilterCount = countActiveFilters(appliedFilters)
   const hasActiveFilters = activeFilterCount > 0
 
   const { data: locations, isLoading, error } = useBookingLocations(appliedFilters)
@@ -316,7 +333,7 @@ export function BrowseLocations() {
       ? locations.find((l) => l.id === focusedId) ?? locations[0]
       : null
 
-  function handleFiltersChange(filters: LocationFilters) {
+  function handleFiltersApply(filters: LocationFilters) {
     writeFiltersToParams(filters, setSearchParams)
     setFocusedId(null)
   }
@@ -524,7 +541,7 @@ export function BrowseLocations() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         filters={appliedFilters}
-        onChange={handleFiltersChange}
+        onApply={handleFiltersApply}
         onClearAll={handleClearFilters}
       />
     </div>

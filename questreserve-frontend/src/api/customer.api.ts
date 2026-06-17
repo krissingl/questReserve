@@ -39,13 +39,13 @@ export async function uploadCustomerProfilePicture(file: File): Promise<Customer
 
 export async function getBookingLocations(filters?: LocationFilters): Promise<BookingLocation[]> {
   const params: Record<string, string | number> = {}
-  if (filters?.difficulty) params.difficulty = filters.difficulty
+  if (filters?.difficulties && filters.difficulties.length > 0) params.difficulties = filters.difficulties.join(',')
   if (filters?.levelRangeMin !== undefined) params.levelRangeMin = filters.levelRangeMin
   if (filters?.levelRangeMax !== undefined) params.levelRangeMax = filters.levelRangeMax
   if (filters?.runTimeMax !== undefined) params.runTimeMax = filters.runTimeMax
   if (filters?.setting) params.setting = filters.setting
   if (filters?.landscapeType) params.landscapeType = filters.landscapeType
-  if (filters?.toneTag) params.toneTag = filters.toneTag
+  if (filters?.toneTags && filters.toneTags.length > 0) params.toneTags = filters.toneTags.join(',')
   if (filters?.partySizeMin !== undefined) params.partySizeMin = filters.partySizeMin
   if (filters?.partySizeMax !== undefined) params.partySizeMax = filters.partySizeMax
   const response = await apiClient.get<BookingLocation[]>('/customer/locations', { params })

@@ -66,11 +66,15 @@ function handleCustomerError(err: unknown, res: Response, next: NextFunction): v
 publicRouter.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const q = req.query as Record<string, string | undefined>;
 
-  if (q.difficulty !== undefined) {
-    if (!VALID_DIFFICULTIES.includes(q.difficulty as Difficulty)) {
-      res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
+  let parsedDifficulties: Difficulty[] | undefined;
+  if (q.difficulties !== undefined) {
+    const parts = q.difficulties.split(',').map((s) => s.trim());
+    const invalid = parts.filter((p) => !VALID_DIFFICULTIES.includes(p as Difficulty));
+    if (invalid.length > 0) {
+      res.status(400).json({ error: `difficulties contains invalid values: ${invalid.join(', ')}` });
       return;
     }
+    parsedDifficulties = parts as Difficulty[];
   }
 
   if (q.setting !== undefined) {
@@ -87,11 +91,15 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
     }
   }
 
-  if (q.toneTag !== undefined) {
-    if (!VALID_TONE_TAGS.includes(q.toneTag as ToneTag)) {
-      res.status(400).json({ error: `toneTag must be one of: ${VALID_TONE_TAGS.join(', ')}` });
+  let parsedToneTags: ToneTag[] | undefined;
+  if (q.toneTags !== undefined) {
+    const parts = q.toneTags.split(',').map((s) => s.trim());
+    const invalid = parts.filter((p) => !VALID_TONE_TAGS.includes(p as ToneTag));
+    if (invalid.length > 0) {
+      res.status(400).json({ error: `toneTags contains invalid values: ${invalid.join(', ')}` });
       return;
     }
+    parsedToneTags = parts as ToneTag[];
   }
 
   function parsePositiveInt(value: string | undefined, paramName: string): { value: number } | { error: string } | undefined {
@@ -120,10 +128,10 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
 
   try {
     const locations = await customerService.browseLocations({
-      difficulty: q.difficulty as Difficulty | undefined,
+      difficulties: parsedDifficulties,
       setting: q.setting,
       landscapeType: q.landscapeType,
-      toneTag: q.toneTag,
+      toneTags: parsedToneTags,
       levelRangeMin: levelRangeMinResult ? (levelRangeMinResult as { value: number }).value : undefined,
       levelRangeMax: levelRangeMaxResult ? (levelRangeMaxResult as { value: number }).value : undefined,
       runTimeMax: runTimeMaxResult ? (runTimeMaxResult as { value: number }).value : undefined,

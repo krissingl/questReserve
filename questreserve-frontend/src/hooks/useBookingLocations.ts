@@ -13,13 +13,13 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const difficulty = filters?.difficulty
+  const difficultiesKey = filters?.difficulties?.join(',')
   const levelRangeMin = filters?.levelRangeMin
   const levelRangeMax = filters?.levelRangeMax
   const runTimeMax = filters?.runTimeMax
   const setting = filters?.setting
   const landscapeType = filters?.landscapeType
-  const toneTag = filters?.toneTag
+  const toneTagsKey = filters?.toneTags?.join(',')
   const partySizeMin = filters?.partySizeMin
   const partySizeMax = filters?.partySizeMax
 
@@ -28,17 +28,7 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
     setIsLoading(true)
     setError(null)
 
-    getBookingLocations({
-      difficulty,
-      levelRangeMin,
-      levelRangeMax,
-      runTimeMax,
-      setting,
-      landscapeType,
-      toneTag,
-      partySizeMin,
-      partySizeMax,
-    })
+    getBookingLocations(filters)
       .then((result) => {
         if (!cancelled) {
           setData(result)
@@ -55,7 +45,7 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
     return () => {
       cancelled = true
     }
-  }, [difficulty, levelRangeMin, levelRangeMax, runTimeMax, setting, landscapeType, toneTag, partySizeMin, partySizeMax])
+  }, [difficultiesKey, levelRangeMin, levelRangeMax, runTimeMax, setting, landscapeType, toneTagsKey, partySizeMin, partySizeMax])
 
   return { data, isLoading, error }
 }

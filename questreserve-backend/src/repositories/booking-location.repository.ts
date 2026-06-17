@@ -4,13 +4,13 @@ import { BaseRepository } from '../infrastructure';
 import { BookingLocation, Difficulty } from '../types';
 
 export interface LocationFilters {
-  difficulty?: Difficulty;
+  difficulties?: Difficulty[];
   levelRangeMin?: number;
   levelRangeMax?: number;
   runTimeMax?: number;
   setting?: string;
   landscapeType?: string;
-  toneTag?: string;
+  toneTags?: string[];
   partySizeMin?: number;
   partySizeMax?: number;
 }
@@ -28,8 +28,8 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   async findAll(filters: LocationFilters = {}): Promise<BookingLocation[]> {
     const query = this.knex<BookingLocation>('booking_location').select('*');
 
-    if (filters.difficulty) {
-      query.where('difficulty', filters.difficulty);
+    if (filters.difficulties && filters.difficulties.length > 0) {
+      query.whereIn('difficulty', filters.difficulties);
     }
     if (filters.levelRangeMin !== undefined) {
       query.where('level_range_max', '>=', filters.levelRangeMin);
@@ -46,8 +46,8 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     if (filters.landscapeType) {
       query.where('landscape_type', filters.landscapeType);
     }
-    if (filters.toneTag) {
-      query.whereRaw('? = ANY(tone_tags)', [filters.toneTag]);
+    if (filters.toneTags && filters.toneTags.length > 0) {
+      query.whereRaw('tone_tags && ?::text[]', [filters.toneTags]);
     }
     if (filters.partySizeMin !== undefined) {
       query.where('party_size_max', '>=', filters.partySizeMin);
@@ -60,7 +60,7 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   }
 
   async list(difficulty?: Difficulty): Promise<BookingLocation[]> {
-    return this.findAll(difficulty ? { difficulty } : {});
+    return this.findAll(difficulty ? { difficulties: [difficulty] } : {});
   }
 
   async findAllByProvider(providerId: string): Promise<BookingLocation[]> {

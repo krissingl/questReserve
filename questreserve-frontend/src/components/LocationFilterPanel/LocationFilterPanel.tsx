@@ -6,10 +6,11 @@ import {
   SETTING_OPTIONS,
   TONE_TAG_OPTIONS,
 } from '@/types/domain'
+import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
 interface LocationFilterPanelProps {
-  filters: LocationFilters
-  onChange: (filters: LocationFilters) => void
+  draft: LocationFilters
+  onDraftChange: (filters: LocationFilters) => void
 }
 
 function CloseIcon() {
@@ -75,11 +76,12 @@ function ChipButton({
           : 'rgb(var(--foreground))',
         border: `1px solid ${active || hovered ? 'rgb(var(--accent))' : 'rgb(var(--border))'}`,
         borderRadius: 'var(--radius-pill)',
-        padding: '0.2rem 0.6rem',
+        padding: '0.2rem 0.65rem',
         fontSize: 'var(--text-sm)',
         fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
         cursor: 'pointer',
         transition: 'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+        lineHeight: 1.5,
       }}
     >
       {label}
@@ -87,7 +89,71 @@ function ChipButton({
   )
 }
 
-export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelProps) {
+function DifficultyRow({
+  difficulties,
+  onChange,
+}: {
+  difficulties: Difficulty[]
+  onChange: (v: Difficulty[]) => void
+}) {
+  function toggle(d: Difficulty) {
+    if (difficulties.includes(d)) {
+      onChange(difficulties.filter((x) => x !== d))
+    } else {
+      onChange([...difficulties, d])
+    }
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+      {DIFFICULTY_OPTIONS.map((d) => {
+        const active = difficulties.includes(d)
+        return (
+          <button
+            key={d}
+            type="button"
+            onClick={() => toggle(d)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              padding: '0.35rem 0.6rem',
+              borderRadius: 'var(--radius)',
+              border: `1px solid ${active ? 'rgb(var(--accent))' : 'rgb(var(--border))'}`,
+              backgroundColor: active ? 'rgb(var(--accent) / 0.07)' : 'transparent',
+              cursor: 'pointer',
+              textAlign: 'left',
+              fontSize: 'var(--text-sm)',
+              color: 'rgb(var(--foreground))',
+              transition: 'background-color 0.12s ease, border-color 0.12s ease',
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-block',
+                width: '10px',
+                height: '10px',
+                borderRadius: '50%',
+                flexShrink: 0,
+                backgroundColor: DIFFICULTY_COLOURS[d],
+              }}
+            />
+            <span style={{ flex: 1, fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)' }}>
+              {d.charAt(0) + d.slice(1).toLowerCase()}
+            </span>
+            {active && (
+              <span style={{ fontSize: '0.65rem', color: 'rgb(var(--accent))', fontWeight: 'var(--weight-bold)' }}>
+                &#10003;
+              </span>
+            )}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function LocationFilterPanel({ draft, onDraftChange }: LocationFilterPanelProps) {
   return (
     <div style={{ overflowY: 'auto', padding: '1rem 1.25rem', flex: 1 }}>
 
@@ -102,9 +168,9 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
               min={1}
               placeholder="1"
               style={inputStyle}
-              value={filters.levelRangeMin ?? ''}
+              value={draft.levelRangeMin ?? ''}
               onChange={(e) =>
-                onChange({ ...filters, levelRangeMin: e.target.value ? parseInt(e.target.value, 10) : undefined })
+                onDraftChange({ ...draft, levelRangeMin: e.target.value ? parseInt(e.target.value, 10) : undefined })
               }
             />
           </div>
@@ -115,9 +181,9 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
               min={1}
               placeholder="20"
               style={inputStyle}
-              value={filters.levelRangeMax ?? ''}
+              value={draft.levelRangeMax ?? ''}
               onChange={(e) =>
-                onChange({ ...filters, levelRangeMax: e.target.value ? parseInt(e.target.value, 10) : undefined })
+                onDraftChange({ ...draft, levelRangeMax: e.target.value ? parseInt(e.target.value, 10) : undefined })
               }
             />
           </div>
@@ -135,9 +201,9 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
               min={1}
               placeholder="1"
               style={inputStyle}
-              value={filters.partySizeMin ?? ''}
+              value={draft.partySizeMin ?? ''}
               onChange={(e) =>
-                onChange({ ...filters, partySizeMin: e.target.value ? parseInt(e.target.value, 10) : undefined })
+                onDraftChange({ ...draft, partySizeMin: e.target.value ? parseInt(e.target.value, 10) : undefined })
               }
             />
           </div>
@@ -148,9 +214,9 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
               min={1}
               placeholder="8"
               style={inputStyle}
-              value={filters.partySizeMax ?? ''}
+              value={draft.partySizeMax ?? ''}
               onChange={(e) =>
-                onChange({ ...filters, partySizeMax: e.target.value ? parseInt(e.target.value, 10) : undefined })
+                onDraftChange({ ...draft, partySizeMax: e.target.value ? parseInt(e.target.value, 10) : undefined })
               }
             />
           </div>
@@ -165,29 +231,29 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
           min={1}
           placeholder="e.g. 120"
           style={inputStyle}
-          value={filters.runTimeMax ?? ''}
+          value={draft.runTimeMax ?? ''}
           onChange={(e) =>
-            onChange({ ...filters, runTimeMax: e.target.value ? parseInt(e.target.value, 10) : undefined })
+            onDraftChange({ ...draft, runTimeMax: e.target.value ? parseInt(e.target.value, 10) : undefined })
           }
         />
       </div>
 
-      {/* Setting */}
+      {/* Setting — "Both" removed, Any deselects */}
       <div style={sectionStyle}>
         <span style={sectionLabelStyle}>Setting</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
           <ChipButton
             label="Any"
-            active={!filters.setting}
-            onClick={() => onChange({ ...filters, setting: undefined })}
+            active={!draft.setting}
+            onClick={() => onDraftChange({ ...draft, setting: undefined })}
           />
           {SETTING_OPTIONS.map((s) => (
             <ChipButton
               key={s}
               label={s.charAt(0).toUpperCase() + s.slice(1)}
-              active={filters.setting === s}
+              active={draft.setting === s}
               onClick={() =>
-                onChange({ ...filters, setting: filters.setting === s ? undefined : (s as LocationSetting) })
+                onDraftChange({ ...draft, setting: draft.setting === s ? undefined : (s as LocationSetting) })
               }
             />
           ))}
@@ -199,9 +265,9 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
         <span style={sectionLabelStyle}>Landscape</span>
         <select
           style={inputStyle}
-          value={filters.landscapeType ?? ''}
+          value={draft.landscapeType ?? ''}
           onChange={(e) =>
-            onChange({ ...filters, landscapeType: (e.target.value || undefined) as LandscapeType | undefined })
+            onDraftChange({ ...draft, landscapeType: (e.target.value || undefined) as LandscapeType | undefined })
           }
         >
           <option value="">Any landscape</option>
@@ -211,38 +277,35 @@ export function LocationFilterPanel({ filters, onChange }: LocationFilterPanelPr
         </select>
       </div>
 
-      {/* Tone */}
+      {/* Tone — multi-select */}
       <div style={sectionStyle}>
         <span style={sectionLabelStyle}>Tone</span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-          {TONE_TAG_OPTIONS.map((t) => (
-            <ChipButton
-              key={t}
-              label={t.charAt(0).toUpperCase() + t.slice(1)}
-              active={filters.toneTag === t}
-              onClick={() =>
-                onChange({ ...filters, toneTag: filters.toneTag === t ? undefined : (t as ToneTag) })
-              }
-            />
-          ))}
+          {TONE_TAG_OPTIONS.map((t) => {
+            const active = (draft.toneTags ?? []).includes(t)
+            return (
+              <ChipButton
+                key={t}
+                label={t.charAt(0).toUpperCase() + t.slice(1)}
+                active={active}
+                onClick={() => {
+                  const current = draft.toneTags ?? []
+                  const next = active ? current.filter((x) => x !== t) : [...current, t as ToneTag]
+                  onDraftChange({ ...draft, toneTags: next.length > 0 ? next : undefined })
+                }}
+              />
+            )
+          })}
         </div>
       </div>
 
-      {/* Difficulty */}
+      {/* Difficulty — colored dot row, multi-select */}
       <div style={{ marginBottom: '1.25rem' }}>
         <span style={sectionLabelStyle}>Difficulty</span>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-          {DIFFICULTY_OPTIONS.map((d) => (
-            <ChipButton
-              key={d}
-              label={d}
-              active={filters.difficulty === d}
-              onClick={() =>
-                onChange({ ...filters, difficulty: filters.difficulty === d ? undefined : (d as Difficulty) })
-              }
-            />
-          ))}
-        </div>
+        <DifficultyRow
+          difficulties={draft.difficulties ?? []}
+          onChange={(v) => onDraftChange({ ...draft, difficulties: v.length > 0 ? v : undefined })}
+        />
       </div>
 
     </div>
@@ -253,12 +316,28 @@ interface FilterPanelDrawerProps {
   open: boolean
   onClose: () => void
   filters: LocationFilters
-  onChange: (filters: LocationFilters) => void
+  onApply: (filters: LocationFilters) => void
   onClearAll: () => void
 }
 
-export function FilterPanelDrawer({ open, onClose, filters, onChange, onClearAll }: FilterPanelDrawerProps) {
+export function FilterPanelDrawer({ open, onClose, filters, onApply, onClearAll }: FilterPanelDrawerProps) {
   const [closeHovered, setCloseHovered] = useState(false)
+  const [draft, setDraft] = useState<LocationFilters>(filters)
+
+  function handleOpen() {
+    setDraft(filters)
+  }
+
+  function handleApply() {
+    onApply(draft)
+    onClose()
+  }
+
+  function handleClear() {
+    setDraft({})
+    onClearAll()
+    onClose()
+  }
 
   return (
     <>
@@ -278,6 +357,7 @@ export function FilterPanelDrawer({ open, onClose, filters, onChange, onClearAll
 
       <aside
         aria-label="Filters"
+        onTransitionEnd={() => { if (open) handleOpen() }}
         style={{
           position: 'fixed',
           top: '64px',
@@ -336,7 +416,7 @@ export function FilterPanelDrawer({ open, onClose, filters, onChange, onClearAll
           </button>
         </div>
 
-        <LocationFilterPanel filters={filters} onChange={onChange} />
+        <LocationFilterPanel draft={draft} onDraftChange={setDraft} />
 
         <div
           style={{
@@ -349,7 +429,7 @@ export function FilterPanelDrawer({ open, onClose, filters, onChange, onClearAll
         >
           <button
             type="button"
-            onClick={() => { onClearAll(); onClose(); }}
+            onClick={handleClear}
             style={{
               flex: 1,
               padding: '0.5rem',
@@ -365,7 +445,7 @@ export function FilterPanelDrawer({ open, onClose, filters, onChange, onClearAll
           </button>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleApply}
             style={{
               flex: 1,
               padding: '0.5rem',
@@ -378,7 +458,7 @@ export function FilterPanelDrawer({ open, onClose, filters, onChange, onClearAll
               fontWeight: 'var(--weight-semibold)',
             }}
           >
-            Done
+            Apply Filters
           </button>
         </div>
       </aside>
