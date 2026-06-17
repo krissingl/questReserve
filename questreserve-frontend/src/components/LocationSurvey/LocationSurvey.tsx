@@ -28,8 +28,6 @@ interface LocationSurveyProps {
   isSubmitting?: boolean
 }
 
-const TOTAL_STEPS = 6
-
 const inputStyle: React.CSSProperties = {
   width: '100%',
   padding: '0.5rem 0.75rem',
@@ -60,15 +58,6 @@ const errorStyle: React.CSSProperties = {
   color: 'rgb(var(--destructive))',
 }
 
-const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-heading)',
-  fontSize: '0.95rem',
-  fontWeight: 'var(--weight-semibold)',
-  color: 'rgb(var(--foreground))',
-  marginBottom: '1rem',
-  marginTop: '0.25rem',
-}
-
 const optionalLabel = (
   <span style={{ fontSize: '0.75rem', fontWeight: 'normal', color: 'rgb(var(--muted-foreground))' }}>
     {' '}(optional)
@@ -80,6 +69,25 @@ function parseTagInput(value: string): string[] {
     .split(',')
     .map((s) => s.trim())
     .filter((s) => s.length > 0)
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      style={{
+        fontSize: '0.7rem',
+        fontWeight: 'var(--weight-bold)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.07em',
+        color: 'rgb(var(--muted-foreground))',
+        marginBottom: '0.75rem',
+        paddingBottom: '0.4rem',
+        borderBottom: '1px solid rgb(var(--border))',
+      }}
+    >
+      {children}
+    </p>
+  )
 }
 
 function BooleanToggle({
@@ -140,7 +148,7 @@ function CheckboxGroup<T extends string>({
   return (
     <div style={fieldStyle}>
       <span style={labelStyle}>{label}{optionalLabel}</span>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
         {options.map((opt) => (
           <label
             key={opt}
@@ -189,7 +197,7 @@ function RadioGroup<T extends string>({
   return (
     <div style={fieldStyle}>
       <span style={labelStyle}>{label}{!required && optionalLabel}</span>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
         {options.map((opt) => (
           <label
             key={opt.value}
@@ -222,7 +230,7 @@ function RadioGroup<T extends string>({
   )
 }
 
-function StepA({
+function TabCoreInfo({
   state,
   onChange,
   errors,
@@ -232,8 +240,8 @@ function StepA({
   errors: Record<string, string>
 }) {
   return (
-    <>
-      <p style={sectionHeadingStyle}>Core Info</p>
+    <div>
+      <SectionLabel>Basic Information</SectionLabel>
 
       <div style={fieldStyle}>
         <label htmlFor="srv-name" style={labelStyle}>Name</label>
@@ -285,6 +293,8 @@ function StepA({
         />
       </div>
 
+      <SectionLabel>Party Requirements</SectionLabel>
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
         <div style={fieldStyle}>
           <label htmlFor="srv-pmin" style={labelStyle}>Party Size Min{optionalLabel}</label>
@@ -331,11 +341,11 @@ function StepA({
           />
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
-function StepB({
+function TabEnvironment({
   state,
   onChange,
 }: {
@@ -343,8 +353,8 @@ function StepB({
   onChange: (u: Partial<SurveyState>) => void
 }) {
   return (
-    <>
-      <p style={sectionHeadingStyle}>Environment</p>
+    <div>
+      <SectionLabel>Location & Landscape</SectionLabel>
 
       <div style={fieldStyle}>
         <label htmlFor="srv-landscape" style={labelStyle}>Landscape Type{optionalLabel}</label>
@@ -369,17 +379,19 @@ function StepB({
         onChange={(v) => onChange({ setting: v })}
       />
 
+      <SectionLabel>Special Environment Tags</SectionLabel>
+
       <CheckboxGroup
         label="Environment Tags"
         options={['lava', 'haunted', 'aerial', 'underwater', 'frozen', 'toxic', 'astral']}
         selected={(state.environment_tags as string[]) ?? []}
         onChange={(v) => onChange({ environment_tags: v })}
       />
-    </>
+    </div>
   )
 }
 
-function StepC({
+function TabRestrictions({
   state,
   onChange,
 }: {
@@ -387,8 +399,8 @@ function StepC({
   onChange: (u: Partial<SurveyState>) => void
 }) {
   return (
-    <>
-      <p style={sectionHeadingStyle}>Restrictions &amp; Access</p>
+    <div>
+      <SectionLabel>Magic & Access</SectionLabel>
 
       <CheckboxGroup
         label="Magic Restrictions"
@@ -396,6 +408,15 @@ function StepC({
         selected={(state.magic_restrictions as string[]) ?? []}
         onChange={(v) => onChange({ magic_restrictions: v })}
       />
+
+      <CheckboxGroup
+        label="Physical Access Requirements"
+        options={['vertical_traversal', 'water_traversal', 'narrow_passages', 'darkness']}
+        selected={(state.physical_access as string[]) ?? []}
+        onChange={(v) => onChange({ physical_access: v })}
+      />
+
+      <SectionLabel>Class, Race & Faction</SectionLabel>
 
       <div style={fieldStyle}>
         <label htmlFor="srv-class" style={labelStyle}>Class Restrictions{optionalLabel}</label>
@@ -433,6 +454,8 @@ function StepC({
         />
       </div>
 
+      <SectionLabel>Party Composition & Permits</SectionLabel>
+
       <div style={fieldStyle}>
         <label htmlFor="srv-comp" style={labelStyle}>Party Composition Tags{optionalLabel}</label>
         <input
@@ -445,14 +468,7 @@ function StepC({
         />
       </div>
 
-      <CheckboxGroup
-        label="Physical Access Requirements"
-        options={['vertical_traversal', 'water_traversal', 'narrow_passages', 'darkness']}
-        selected={(state.physical_access as string[]) ?? []}
-        onChange={(v) => onChange({ physical_access: v })}
-      />
-
-      <div style={{ marginBottom: '1rem' }}>
+      <div>
         <span style={labelStyle}>Permits</span>
         <BooleanToggle
           id="srv-mount"
@@ -474,18 +490,20 @@ function StepC({
         />
       </div>
 
-      <RadioGroup<BookingType>
-        id="srv-booking-type"
-        label="Booking Type"
-        options={BOOKING_TYPE_OPTIONS.map((bt) => ({ value: bt, label: bt.charAt(0).toUpperCase() + bt.slice(1) }))}
-        value={state.booking_type ?? undefined}
-        onChange={(v) => onChange({ booking_type: v })}
-      />
-    </>
+      <div style={{ marginTop: '1rem' }}>
+        <RadioGroup<BookingType>
+          id="srv-booking-type"
+          label="Booking Type"
+          options={BOOKING_TYPE_OPTIONS.map((bt) => ({ value: bt, label: bt.charAt(0).toUpperCase() + bt.slice(1) }))}
+          value={state.booking_type ?? undefined}
+          onChange={(v) => onChange({ booking_type: v })}
+        />
+      </div>
+    </div>
   )
 }
 
-function StepD({
+function TabTone({
   state,
   onChange,
 }: {
@@ -493,14 +511,22 @@ function StepD({
   onChange: (u: Partial<SurveyState>) => void
 }) {
   return (
-    <>
-      <p style={sectionHeadingStyle}>Tone &amp; Content</p>
+    <div>
+      <SectionLabel>Tone & Atmosphere</SectionLabel>
 
       <CheckboxGroup<ToneTag>
         label="Tone Tags"
         options={TONE_TAG_OPTIONS}
         selected={(state.tone_tags as ToneTag[]) ?? []}
         onChange={(v) => onChange({ tone_tags: v })}
+      />
+
+      <RadioGroup<PrimaryFocus>
+        id="srv-focus"
+        label="Primary Focus"
+        options={PRIMARY_FOCUS_OPTIONS.map((f) => ({ value: f, label: f.charAt(0).toUpperCase() + f.slice(1) }))}
+        value={state.primary_focus ?? undefined}
+        onChange={(v) => onChange({ primary_focus: v })}
       />
 
       <RadioGroup
@@ -516,52 +542,43 @@ function StepD({
         onChange={(v) => onChange({ gore_level: parseInt(v, 10) })}
       />
 
-      <RadioGroup<PrimaryFocus>
-        id="srv-focus"
-        label="Primary Focus"
-        options={PRIMARY_FOCUS_OPTIONS.map((f) => ({ value: f, label: f.charAt(0).toUpperCase() + f.slice(1) }))}
-        value={state.primary_focus ?? undefined}
-        onChange={(v) => onChange({ primary_focus: v })}
-      />
+      <SectionLabel>Content Flags</SectionLabel>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <span style={labelStyle}>Flags</span>
-        <BooleanToggle
-          id="srv-nonlethal"
-          label="Non-Lethal Mode"
-          value={state.non_lethal_mode ?? false}
-          onChange={(v) => onChange({ non_lethal_mode: v })}
-        />
-        <BooleanToggle
-          id="srv-permadeath"
-          label="Permadeath Risk"
-          value={state.permadeath_risk ?? false}
-          onChange={(v) => onChange({ permadeath_risk: v })}
-        />
-        <BooleanToggle
-          id="srv-boss"
-          label="Boss Encounter"
-          value={state.boss_encounter ?? false}
-          onChange={(v) => onChange({ boss_encounter: v })}
-        />
-        <BooleanToggle
-          id="srv-pvp"
-          label="PvP Permitted"
-          value={state.pvp_permitted ?? false}
-          onChange={(v) => onChange({ pvp_permitted: v })}
-        />
-        <BooleanToggle
-          id="srv-scouting"
-          label="Scouting Permitted"
-          value={state.scouting_permitted ?? false}
-          onChange={(v) => onChange({ scouting_permitted: v })}
-        />
-      </div>
-    </>
+      <BooleanToggle
+        id="srv-nonlethal"
+        label="Non-Lethal Mode Available"
+        value={state.non_lethal_mode ?? false}
+        onChange={(v) => onChange({ non_lethal_mode: v })}
+      />
+      <BooleanToggle
+        id="srv-permadeath"
+        label="Permadeath Risk"
+        value={state.permadeath_risk ?? false}
+        onChange={(v) => onChange({ permadeath_risk: v })}
+      />
+      <BooleanToggle
+        id="srv-boss"
+        label="Boss Encounter Present"
+        value={state.boss_encounter ?? false}
+        onChange={(v) => onChange({ boss_encounter: v })}
+      />
+      <BooleanToggle
+        id="srv-pvp"
+        label="PvP Within Party Permitted"
+        value={state.pvp_permitted ?? false}
+        onChange={(v) => onChange({ pvp_permitted: v })}
+      />
+      <BooleanToggle
+        id="srv-scouting"
+        label="Scouting Run Permitted"
+        value={state.scouting_permitted ?? false}
+        onChange={(v) => onChange({ scouting_permitted: v })}
+      />
+    </div>
   )
 }
 
-function StepE({
+function TabLogistics({
   state,
   onChange,
 }: {
@@ -569,8 +586,8 @@ function StepE({
   onChange: (u: Partial<SurveyState>) => void
 }) {
   return (
-    <>
-      <p style={sectionHeadingStyle}>Run Logistics</p>
+    <div>
+      <SectionLabel>Timing</SectionLabel>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
         <div style={fieldStyle}>
@@ -607,11 +624,11 @@ function StepE({
           />
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
-function StepF({
+function TabAmenities({
   state,
   onChange,
 }: {
@@ -619,36 +636,35 @@ function StepF({
   onChange: (u: Partial<SurveyState>) => void
 }) {
   return (
-    <>
-      <p style={sectionHeadingStyle}>Amenities &amp; Loot</p>
+    <div>
+      <SectionLabel>On-Site Amenities</SectionLabel>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <span style={labelStyle}>Amenities</span>
-        <BooleanToggle
-          id="srv-saferoom"
-          label="Has Safe Room"
-          value={state.has_safe_room ?? false}
-          onChange={(v) => onChange({ has_safe_room: v })}
-        />
-        <BooleanToggle
-          id="srv-merchant"
-          label="Has Merchant"
-          value={state.has_merchant ?? false}
-          onChange={(v) => onChange({ has_merchant: v })}
-        />
-        <BooleanToggle
-          id="srv-equipment"
-          label="Equipment Provided"
-          value={state.equipment_provided ?? false}
-          onChange={(v) => onChange({ equipment_provided: v })}
-        />
-        <BooleanToggle
-          id="srv-guide"
-          label="Guide / GM Provided"
-          value={state.guide_provided ?? false}
-          onChange={(v) => onChange({ guide_provided: v })}
-        />
-      </div>
+      <BooleanToggle
+        id="srv-saferoom"
+        label="Safe Room Present"
+        value={state.has_safe_room ?? false}
+        onChange={(v) => onChange({ has_safe_room: v })}
+      />
+      <BooleanToggle
+        id="srv-merchant"
+        label="On-Site Merchant"
+        value={state.has_merchant ?? false}
+        onChange={(v) => onChange({ has_merchant: v })}
+      />
+      <BooleanToggle
+        id="srv-equipment"
+        label="Equipment Provided"
+        value={state.equipment_provided ?? false}
+        onChange={(v) => onChange({ equipment_provided: v })}
+      />
+      <BooleanToggle
+        id="srv-guide"
+        label="Guide / GM Provided"
+        value={state.guide_provided ?? false}
+        onChange={(v) => onChange({ guide_provided: v })}
+      />
+
+      <SectionLabel>Loot</SectionLabel>
 
       <RadioGroup<LootType>
         id="srv-loot"
@@ -658,33 +674,32 @@ function StepF({
         onChange={(v) => onChange({ loot_type: v })}
       />
 
-      <div style={{ marginBottom: '1rem' }}>
-        <span style={labelStyle}>Loot Flags</span>
-        <BooleanToggle
-          id="srv-bossloot"
-          label="Boss Loot"
-          value={state.boss_loot ?? false}
-          onChange={(v) => onChange({ boss_loot: v })}
-        />
-        <BooleanToggle
-          id="srv-unique"
-          label="Unique Item Chance"
-          value={state.unique_item_chance ?? false}
-          onChange={(v) => onChange({ unique_item_chance: v })}
-        />
-      </div>
-    </>
+      <BooleanToggle
+        id="srv-bossloot"
+        label="Boss Loot Present"
+        value={state.boss_loot ?? false}
+        onChange={(v) => onChange({ boss_loot: v })}
+      />
+      <BooleanToggle
+        id="srv-unique"
+        label="Unique Item Chance"
+        value={state.unique_item_chance ?? false}
+        onChange={(v) => onChange({ unique_item_chance: v })}
+      />
+    </div>
   )
 }
 
-const STEP_TITLES = [
-  'Core Info',
-  'Environment',
-  'Restrictions & Access',
-  'Tone & Content',
-  'Run Logistics',
-  'Amenities & Loot',
-]
+const TAB_DEFS = [
+  { id: 'core', label: 'Core Info' },
+  { id: 'environment', label: 'Environment' },
+  { id: 'restrictions', label: 'Restrictions' },
+  { id: 'tone', label: 'Tone' },
+  { id: 'logistics', label: 'Logistics' },
+  { id: 'amenities', label: 'Amenities' },
+] as const
+
+type TabId = typeof TAB_DEFS[number]['id']
 
 export function LocationSurvey({
   formState,
@@ -694,62 +709,72 @@ export function LocationSurvey({
   apiError,
   isSubmitting = false,
 }: LocationSurveyProps) {
-  const [step, setStep] = useState(1)
-  const [stepErrors, setStepErrors] = useState<Record<string, string>>({})
+  const [activeTab, setActiveTab] = useState<TabId>('core')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
-  function validateStepA(): Record<string, string> {
+  function validateCore(): Record<string, string> {
     const errs: Record<string, string> = {}
     if (!formState.name?.trim()) errs.name = 'Name is required'
     if (!formState.difficulty) errs.difficulty = 'Please select a difficulty'
     return errs
   }
 
-  function handleNext() {
-    if (step === 1) {
-      const errs = validateStepA()
-      if (Object.keys(errs).length > 0) {
-        setStepErrors(errs)
-        return
-      }
-      setStepErrors({})
+  async function handleSave() {
+    const errs = validateCore()
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
+      setActiveTab('core')
+      return
     }
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS))
-  }
-
-  function handleBack() {
-    setStepErrors({})
-    setStep((s) => Math.max(s - 1, 1))
+    setFieldErrors({})
+    await onSubmit()
   }
 
   return (
     <div>
+      {/* Tab bar */}
       <div
         style={{
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          gap: '0.15rem',
           marginBottom: '1.5rem',
-          padding: '0.75rem 1rem',
-          borderRadius: 'var(--radius)',
-          backgroundColor: 'rgb(var(--muted))',
+          borderBottom: '1px solid rgb(var(--border))',
+          overflowX: 'auto',
         }}
       >
-        <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'rgb(var(--foreground))' }}>
-          Step {step} of {TOTAL_STEPS}: {STEP_TITLES[step - 1]}
-        </span>
-        <div style={{ display: 'flex', gap: '0.25rem' }}>
-          {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
-            <div
-              key={i}
+        {TAB_DEFS.map((tab) => {
+          const active = activeTab === tab.id
+          const hasError = tab.id === 'core' && Object.keys(fieldErrors).length > 0
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
               style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: i + 1 <= step ? 'rgb(var(--accent))' : 'rgb(var(--border))',
+                padding: '0.5rem 0.85rem',
+                fontSize: 'var(--text-sm)',
+                fontWeight: active ? 'var(--weight-semibold)' : 'var(--weight-regular)',
+                color: hasError
+                  ? 'rgb(var(--destructive))'
+                  : active
+                  ? 'rgb(var(--accent))'
+                  : 'rgb(var(--muted-foreground))',
+                background: 'none',
+                border: 'none',
+                borderBottom: `2px solid ${active ? 'rgb(var(--accent))' : 'transparent'}`,
+                marginBottom: '-1px',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'color 0.12s ease, border-color 0.12s ease',
               }}
-            />
-          ))}
-        </div>
+            >
+              {tab.label}
+              {hasError && (
+                <span style={{ marginLeft: '0.3rem', color: 'rgb(var(--destructive))' }}>*</span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       {apiError && (
@@ -769,18 +794,30 @@ export function LocationSurvey({
       )}
 
       <div style={{ minHeight: '280px' }}>
-        {step === 1 && <StepA state={formState} onChange={onChange} errors={stepErrors} />}
-        {step === 2 && <StepB state={formState} onChange={onChange} />}
-        {step === 3 && <StepC state={formState} onChange={onChange} />}
-        {step === 4 && <StepD state={formState} onChange={onChange} />}
-        {step === 5 && <StepE state={formState} onChange={onChange} />}
-        {step === 6 && <StepF state={formState} onChange={onChange} />}
+        {activeTab === 'core' && (
+          <TabCoreInfo state={formState} onChange={onChange} errors={fieldErrors} />
+        )}
+        {activeTab === 'environment' && (
+          <TabEnvironment state={formState} onChange={onChange} />
+        )}
+        {activeTab === 'restrictions' && (
+          <TabRestrictions state={formState} onChange={onChange} />
+        )}
+        {activeTab === 'tone' && (
+          <TabTone state={formState} onChange={onChange} />
+        )}
+        {activeTab === 'logistics' && (
+          <TabLogistics state={formState} onChange={onChange} />
+        )}
+        {activeTab === 'amenities' && (
+          <TabAmenities state={formState} onChange={onChange} />
+        )}
       </div>
 
       <div
         style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-end',
           marginTop: '1.5rem',
           paddingTop: '1rem',
           borderTop: '1px solid rgb(var(--border))',
@@ -788,62 +825,23 @@ export function LocationSurvey({
       >
         <button
           type="button"
-          onClick={handleBack}
-          disabled={step === 1}
+          onClick={handleSave}
+          disabled={isSubmitting}
           style={{
-            padding: '0.5rem 1.25rem',
+            padding: '0.5rem 1.5rem',
             borderRadius: 'var(--radius)',
-            border: '1px solid rgb(var(--border))',
-            backgroundColor: 'transparent',
-            color: step === 1 ? 'rgb(var(--muted-foreground))' : 'rgb(var(--foreground))',
+            backgroundColor: 'rgb(var(--accent))',
+            color: 'rgb(var(--accent-foreground))',
             fontSize: 'var(--text-sm)',
-            fontWeight: 'var(--weight-medium)',
-            cursor: step === 1 ? 'not-allowed' : 'pointer',
-            opacity: step === 1 ? 0.5 : 1,
+            fontWeight: 'var(--weight-semibold)',
+            border: 'none',
+            cursor: isSubmitting ? 'not-allowed' : 'pointer',
+            opacity: isSubmitting ? 0.6 : 1,
           }}
         >
-          Back
+          {isSubmitting ? 'Saving…' : submitLabel}
         </button>
-
-        {step < TOTAL_STEPS ? (
-          <button
-            type="button"
-            onClick={handleNext}
-            style={{
-              padding: '0.5rem 1.25rem',
-              borderRadius: 'var(--radius)',
-              backgroundColor: 'rgb(var(--accent))',
-              color: 'rgb(var(--accent-foreground))',
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-semibold)',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            Next
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onSubmit}
-            disabled={isSubmitting}
-            style={{
-              padding: '0.5rem 1.5rem',
-              borderRadius: 'var(--radius)',
-              backgroundColor: 'rgb(var(--accent))',
-              color: 'rgb(var(--accent-foreground))',
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-semibold)',
-              border: 'none',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.6 : 1,
-            }}
-          >
-            {isSubmitting ? 'Saving…' : submitLabel}
-          </button>
-        )}
       </div>
     </div>
   )
 }
-

@@ -5,6 +5,313 @@ import { TimeSlotManager } from '@/components/TimeSlotManager/TimeSlotManager'
 import { ReviewList, StarDisplay } from '@/components/ReviewList/ReviewList'
 import { getReviews } from '@/api/guest.api'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
+import type { BookingLocation } from '@/types/domain'
+
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+const GORE_LABELS: Record<number, string> = { 0: 'None', 1: 'Mild', 2: 'Moderate', 3: 'Graphic' }
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      style={{
+        fontSize: '0.7rem',
+        fontWeight: 'var(--weight-bold)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.07em',
+        color: 'rgb(var(--muted-foreground))',
+        marginBottom: '0.6rem',
+        paddingBottom: '0.35rem',
+        borderBottom: '1px solid rgb(var(--border))',
+      }}
+    >
+      {children}
+    </p>
+  )
+}
+
+function Tag({
+  label,
+  variant = 'neutral',
+}: {
+  label: string
+  variant?: 'neutral' | 'accent' | 'warning'
+}) {
+  const dotColor =
+    variant === 'accent'
+      ? 'rgb(var(--accent))'
+      : variant === 'warning'
+      ? 'rgb(var(--destructive))'
+      : 'rgb(var(--muted-foreground))'
+
+  const bg =
+    variant === 'accent'
+      ? 'rgb(var(--accent) / 0.08)'
+      : variant === 'warning'
+      ? 'rgb(var(--destructive) / 0.08)'
+      : 'rgb(var(--muted) / 0.4)'
+
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '0.35rem',
+        padding: '0.2rem 0.55rem 0.2rem 0.45rem',
+        borderRadius: 'var(--radius)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--weight-medium)',
+        backgroundColor: bg,
+        color: 'rgb(var(--foreground))',
+        border: '1px solid rgb(var(--border))',
+        lineHeight: 1.4,
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <span
+        style={{
+          display: 'inline-block',
+          width: '6px',
+          height: '6px',
+          borderRadius: '50%',
+          backgroundColor: dotColor,
+          flexShrink: 0,
+        }}
+      />
+      {label}
+    </span>
+  )
+}
+
+function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: '0.5rem',
+        marginBottom: '0.35rem',
+        fontSize: 'var(--text-sm)',
+        flexWrap: 'wrap',
+        alignItems: 'baseline',
+      }}
+    >
+      <span style={{ color: 'rgb(var(--muted-foreground))', flexShrink: 0, minWidth: '7rem' }}>{label}</span>
+      <span style={{ color: 'rgb(var(--foreground))' }}>{value}</span>
+    </div>
+  )
+}
+
+function TagRow({ tags }: { tags: { label: string; variant?: 'neutral' | 'accent' | 'warning' }[] }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.5rem' }}>
+      {tags.map((t) => (
+        <Tag key={t.label} label={t.label} variant={t.variant} />
+      ))}
+    </div>
+  )
+}
+
+function RulesetBlock({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: '1.25rem' }}>
+      <SectionHeading>{title}</SectionHeading>
+      {children}
+    </div>
+  )
+}
+
+function RulesetDisplay({ location }: { location: BookingLocation }) {
+  const hasCoreSpecs =
+    location.party_size_min != null ||
+    location.party_size_max != null ||
+    location.level_range_min != null ||
+    location.level_range_max != null
+
+  const hasEnvironment =
+    location.landscape_type != null ||
+    location.setting != null ||
+    (location.environment_tags && location.environment_tags.length > 0)
+
+  const hasRestrictions =
+    (location.magic_restrictions && location.magic_restrictions.length > 0) ||
+    (location.class_restrictions && location.class_restrictions.length > 0) ||
+    (location.race_restrictions && location.race_restrictions.length > 0) ||
+    (location.faction_restrictions && location.faction_restrictions.length > 0) ||
+    (location.physical_access && location.physical_access.length > 0) ||
+    (location.party_composition_tags && location.party_composition_tags.length > 0) ||
+    location.mount_permitted ||
+    location.familiar_permitted ||
+    location.solo_permitted ||
+    location.booking_type != null
+
+  const hasTone =
+    (location.tone_tags && location.tone_tags.length > 0) ||
+    location.gore_level != null ||
+    location.non_lethal_mode ||
+    location.permadeath_risk ||
+    location.primary_focus != null ||
+    location.boss_encounter ||
+    location.pvp_permitted ||
+    location.scouting_permitted
+
+  const hasRunLogistics =
+    location.run_time_minutes != null ||
+    location.reset_time_hours != null ||
+    location.time_limit_minutes != null
+
+  const hasAmenities =
+    location.has_safe_room ||
+    location.has_merchant ||
+    location.equipment_provided ||
+    location.guide_provided ||
+    location.loot_type != null ||
+    location.boss_loot ||
+    location.unique_item_chance
+
+  const hasAny = hasCoreSpecs || hasEnvironment || hasRestrictions || hasTone || hasRunLogistics || hasAmenities
+
+  if (!hasAny) {
+    return (
+      <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+        No adventure details configured yet.{' '}
+        <Link
+          to={`/provider/locations/${location.id}/edit`}
+          style={{ color: 'rgb(var(--accent))', textDecoration: 'none' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+        >
+          Edit adventure
+        </Link>
+        {' '}to fill in your ruleset.
+      </p>
+    )
+  }
+
+  return (
+    <div>
+      {hasCoreSpecs && (
+        <RulesetBlock title="Core Specs">
+          {(location.party_size_min != null || location.party_size_max != null) && (
+            <MetaRow
+              label="Party Size"
+              value={
+                location.party_size_min != null && location.party_size_max != null
+                  ? `${location.party_size_min}–${location.party_size_max} players`
+                  : location.party_size_min != null
+                  ? `Min ${location.party_size_min}`
+                  : `Max ${location.party_size_max}`
+              }
+            />
+          )}
+          {(location.level_range_min != null || location.level_range_max != null) && (
+            <MetaRow
+              label="Level Range"
+              value={
+                location.level_range_min != null && location.level_range_max != null
+                  ? `${location.level_range_min}–${location.level_range_max}`
+                  : location.level_range_min != null
+                  ? `Level ${location.level_range_min}+`
+                  : `Up to level ${location.level_range_max}`
+              }
+            />
+          )}
+        </RulesetBlock>
+      )}
+
+      {hasEnvironment && (
+        <RulesetBlock title="Environment">
+          {location.landscape_type && <MetaRow label="Landscape" value={capitalize(location.landscape_type)} />}
+          {location.setting && <MetaRow label="Setting" value={capitalize(location.setting)} />}
+          {location.environment_tags && location.environment_tags.length > 0 && (
+            <TagRow tags={location.environment_tags.map((t) => ({ label: capitalize(t.replace(/_/g, ' ')), variant: 'neutral' as const }))} />
+          )}
+        </RulesetBlock>
+      )}
+
+      {hasRestrictions && (
+        <RulesetBlock title="Restrictions & Access">
+          {location.magic_restrictions && location.magic_restrictions.length > 0 && (
+            <TagRow tags={location.magic_restrictions.map((r) => ({ label: capitalize(r.replace(/_/g, ' ')), variant: 'warning' as const }))} />
+          )}
+          {location.class_restrictions && location.class_restrictions.length > 0 && (
+            <MetaRow label="Class" value={location.class_restrictions.map(capitalize).join(', ')} />
+          )}
+          {location.race_restrictions && location.race_restrictions.length > 0 && (
+            <MetaRow label="Race" value={location.race_restrictions.map(capitalize).join(', ')} />
+          )}
+          {location.faction_restrictions && location.faction_restrictions.length > 0 && (
+            <MetaRow label="Faction" value={location.faction_restrictions.map(capitalize).join(', ')} />
+          )}
+          {location.physical_access && location.physical_access.length > 0 && (
+            <TagRow tags={location.physical_access.map((a) => ({ label: capitalize(a.replace(/_/g, ' ')), variant: 'warning' as const }))} />
+          )}
+          {location.party_composition_tags && location.party_composition_tags.length > 0 && (
+            <TagRow tags={location.party_composition_tags.map((t) => ({ label: capitalize(t.replace(/_/g, ' ')), variant: 'neutral' as const }))} />
+          )}
+          {(location.mount_permitted || location.familiar_permitted || location.solo_permitted) && (
+            <TagRow tags={[
+              ...(location.mount_permitted ? [{ label: 'Mount Permitted', variant: 'accent' as const }] : []),
+              ...(location.familiar_permitted ? [{ label: 'Familiar Permitted', variant: 'accent' as const }] : []),
+              ...(location.solo_permitted ? [{ label: 'Solo Permitted', variant: 'accent' as const }] : []),
+            ]} />
+          )}
+          {location.booking_type && <MetaRow label="Booking" value={capitalize(location.booking_type)} />}
+        </RulesetBlock>
+      )}
+
+      {hasTone && (
+        <RulesetBlock title="Tone & Content">
+          {location.tone_tags && location.tone_tags.length > 0 && (
+            <TagRow tags={location.tone_tags.map((t) => ({ label: capitalize(t), variant: 'accent' as const }))} />
+          )}
+          {location.primary_focus && <MetaRow label="Primary Focus" value={capitalize(location.primary_focus)} />}
+          {location.gore_level != null && (
+            <MetaRow label="Gore Level" value={GORE_LABELS[location.gore_level] ?? String(location.gore_level)} />
+          )}
+          {(location.permadeath_risk || location.pvp_permitted || location.boss_encounter || location.non_lethal_mode || location.scouting_permitted) && (
+            <TagRow tags={[
+              ...(location.permadeath_risk ? [{ label: 'Permadeath Risk', variant: 'warning' as const }] : []),
+              ...(location.pvp_permitted ? [{ label: 'PvP Permitted', variant: 'warning' as const }] : []),
+              ...(location.boss_encounter ? [{ label: 'Boss Encounter', variant: 'accent' as const }] : []),
+              ...(location.non_lethal_mode ? [{ label: 'Non-Lethal Mode', variant: 'accent' as const }] : []),
+              ...(location.scouting_permitted ? [{ label: 'Scouting Permitted', variant: 'neutral' as const }] : []),
+            ]} />
+          )}
+        </RulesetBlock>
+      )}
+
+      {hasRunLogistics && (
+        <RulesetBlock title="Run Logistics">
+          {location.run_time_minutes != null && <MetaRow label="Est. Run Time" value={`${location.run_time_minutes} min`} />}
+          {location.reset_time_hours != null && <MetaRow label="Reset Time" value={`${location.reset_time_hours} hr`} />}
+          {location.time_limit_minutes != null && <MetaRow label="Time Limit" value={`${location.time_limit_minutes} min`} />}
+        </RulesetBlock>
+      )}
+
+      {hasAmenities && (
+        <RulesetBlock title="Amenities & Loot">
+          {(location.has_safe_room || location.has_merchant || location.equipment_provided || location.guide_provided) && (
+            <TagRow tags={[
+              ...(location.has_safe_room ? [{ label: 'Safe Room', variant: 'accent' as const }] : []),
+              ...(location.has_merchant ? [{ label: 'Merchant', variant: 'accent' as const }] : []),
+              ...(location.equipment_provided ? [{ label: 'Equipment Provided', variant: 'accent' as const }] : []),
+              ...(location.guide_provided ? [{ label: 'Guide Provided', variant: 'accent' as const }] : []),
+            ]} />
+          )}
+          {location.loot_type && <MetaRow label="Loot" value={capitalize(location.loot_type)} />}
+          {(location.boss_loot || location.unique_item_chance) && (
+            <TagRow tags={[
+              ...(location.boss_loot ? [{ label: 'Boss Loot', variant: 'accent' as const }] : []),
+              ...(location.unique_item_chance ? [{ label: 'Unique Item Chance', variant: 'accent' as const }] : []),
+            ]} />
+          )}
+        </RulesetBlock>
+      )}
+    </div>
+  )
+}
 
 export function ProviderLocationDetail() {
   const { id } = useParams<{ id: string }>()
@@ -72,6 +379,7 @@ export function ProviderLocationDetail() {
         </Link>
       </div>
 
+      {/* Header card */}
       <div
         style={{
           padding: '1.5rem',
@@ -105,10 +413,11 @@ export function ProviderLocationDetail() {
             <span
               style={{
                 display: 'inline-block',
-                padding: '0.15rem 0.6rem',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: '0.7rem',
-                fontWeight: 'var(--weight-medium)',
+                padding: '0.2rem 0.65rem',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 'var(--weight-bold)',
+                letterSpacing: '0.04em',
                 backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
                 color: 'rgb(var(--primary-foreground, 255 255 255))',
               }}
@@ -155,17 +464,18 @@ export function ProviderLocationDetail() {
 
         {location.description && (
           <div style={{ marginBottom: '1.25rem' }}>
-            <h2
+            <p
               style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1rem',
-                fontWeight: 'var(--weight-semibold)',
-                color: 'rgb(var(--foreground))',
-                marginBottom: '0.5rem',
+                fontSize: '0.7rem',
+                fontWeight: 'var(--weight-bold)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
+                color: 'rgb(var(--muted-foreground))',
+                marginBottom: '0.4rem',
               }}
             >
               Description
-            </h2>
+            </p>
             <p
               style={{
                 fontSize: 'var(--text-sm)',
@@ -179,17 +489,18 @@ export function ProviderLocationDetail() {
         )}
 
         <div>
-          <h2
+          <p
             style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '1rem',
-              fontWeight: 'var(--weight-semibold)',
-              color: 'rgb(var(--foreground))',
-              marginBottom: '0.5rem',
+              fontSize: '0.7rem',
+              fontWeight: 'var(--weight-bold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              color: 'rgb(var(--muted-foreground))',
+              marginBottom: '0.4rem',
             }}
           >
             Cancellation Policy
-          </h2>
+          </p>
           <p
             style={{
               fontSize: 'var(--text-sm)',
@@ -202,8 +513,35 @@ export function ProviderLocationDetail() {
         </div>
       </div>
 
+      {/* Ruleset card */}
+      <div
+        style={{
+          padding: '1.5rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--card))',
+          boxShadow: 'var(--shadow-card)',
+          marginBottom: '1.5rem',
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1rem',
+            fontWeight: 'var(--weight-bold)',
+            color: 'rgb(var(--foreground))',
+            marginBottom: '1rem',
+            paddingBottom: '0.5rem',
+            borderBottom: '2px solid rgb(var(--accent) / 0.3)',
+          }}
+        >
+          Adventure Details
+        </h2>
+        <RulesetDisplay location={location} />
+      </div>
+
       <TimeSlotManager locationId={id} />
 
+      {/* Reviews accordion */}
       <div
         style={{
           marginTop: '1.5rem',
