@@ -736,10 +736,10 @@ export function LocationSurvey({
       <div
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: '0.15rem',
           marginBottom: '1.5rem',
           borderBottom: '1px solid rgb(var(--border))',
-          overflowX: 'auto',
         }}
       >
         {TAB_DEFS.map((tab) => {
