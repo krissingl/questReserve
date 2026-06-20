@@ -154,59 +154,6 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Tag({
-  label,
-  variant = 'neutral',
-}: {
-  label: string
-  variant?: 'neutral' | 'accent' | 'warning'
-}) {
-  const dotColor =
-    variant === 'accent'
-      ? 'rgb(var(--accent))'
-      : variant === 'warning'
-      ? 'rgb(var(--destructive))'
-      : 'rgb(var(--muted-foreground))'
-
-  const bg =
-    variant === 'accent'
-      ? 'rgb(var(--accent) / 0.08)'
-      : variant === 'warning'
-      ? 'rgb(var(--destructive) / 0.08)'
-      : 'rgb(var(--muted) / 0.4)'
-
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.35rem',
-        padding: '0.2rem 0.55rem 0.2rem 0.45rem',
-        borderRadius: 'var(--radius)',
-        fontSize: 'var(--text-xs)',
-        fontWeight: 'var(--weight-medium)',
-        backgroundColor: bg,
-        color: 'rgb(var(--foreground))',
-        border: '1px solid rgb(var(--border))',
-        lineHeight: 1.4,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <span
-        style={{
-          display: 'inline-block',
-          width: '6px',
-          height: '6px',
-          borderRadius: '50%',
-          backgroundColor: dotColor,
-          flexShrink: 0,
-        }}
-      />
-      {label}
-    </span>
-  )
-}
-
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div
@@ -219,18 +166,8 @@ function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
         alignItems: 'baseline',
       }}
     >
-      <span style={{ color: 'rgb(var(--muted-foreground))', flexShrink: 0, minWidth: '6rem' }}>{label}</span>
+      <span style={{ color: 'rgb(var(--muted-foreground))', flexShrink: 0, minWidth: '8rem' }}>{label}</span>
       <span style={{ color: 'rgb(var(--foreground))' }}>{value}</span>
-    </div>
-  )
-}
-
-function TagRow({ tags }: { tags: { label: string; variant?: 'neutral' | 'accent' | 'warning' }[] }) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.5rem' }}>
-      {tags.map((t) => (
-        <Tag key={t.label} label={t.label} variant={t.variant} />
-      ))}
     </div>
   )
 }
@@ -346,7 +283,10 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
           {location.landscape_type && <MetaRow label="Landscape" value={capitalize(location.landscape_type)} />}
           {location.setting && <MetaRow label="Setting" value={capitalize(location.setting)} />}
           {location.environment_tags && location.environment_tags.length > 0 && (
-            <TagRow tags={location.environment_tags.map((t) => ({ label: capitalize(t.replace(/_/g, ' ')), variant: 'neutral' as const }))} />
+            <MetaRow
+              label="Environment"
+              value={location.environment_tags.map((t) => capitalize(t.replace(/_/g, ' '))).join(', ')}
+            />
           )}
         </RulesetBlock>
       )}
@@ -354,7 +294,10 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
       {hasRestrictions && (
         <RulesetBlock title="Restrictions & Access">
           {location.magic_restrictions && location.magic_restrictions.length > 0 && (
-            <TagRow tags={location.magic_restrictions.map((r) => ({ label: capitalize(r.replace(/_/g, ' ')), variant: 'warning' as const }))} />
+            <MetaRow
+              label="Magic"
+              value={location.magic_restrictions.map((r) => capitalize(r.replace(/_/g, ' '))).join(', ')}
+            />
           )}
           {location.class_restrictions && location.class_restrictions.length > 0 && (
             <MetaRow label="Class" value={location.class_restrictions.map(capitalize).join(', ')} />
@@ -366,39 +309,54 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
             <MetaRow label="Faction" value={location.faction_restrictions.map(capitalize).join(', ')} />
           )}
           {location.physical_access && location.physical_access.length > 0 && (
-            <TagRow tags={location.physical_access.map((a) => ({ label: capitalize(a.replace(/_/g, ' ')), variant: 'warning' as const }))} />
+            <MetaRow
+              label="Physical Access"
+              value={location.physical_access.map((a) => capitalize(a.replace(/_/g, ' '))).join(', ')}
+            />
           )}
           {location.party_composition_tags && location.party_composition_tags.length > 0 && (
-            <TagRow tags={location.party_composition_tags.map((t) => ({ label: capitalize(t.replace(/_/g, ' ')), variant: 'neutral' as const }))} />
-          )}
-          {(location.mount_permitted || location.familiar_permitted || location.solo_permitted) && (
-            <TagRow tags={[
-              ...(location.mount_permitted ? [{ label: 'Mount Permitted', variant: 'accent' as const }] : []),
-              ...(location.familiar_permitted ? [{ label: 'Familiar Permitted', variant: 'accent' as const }] : []),
-              ...(location.solo_permitted ? [{ label: 'Solo Permitted', variant: 'accent' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Party Composition"
+              value={location.party_composition_tags.map((t) => capitalize(t.replace(/_/g, ' '))).join(', ')}
+            />
           )}
           {location.booking_type && <MetaRow label="Booking" value={capitalize(location.booking_type)} />}
+          {(location.mount_permitted || location.familiar_permitted || location.solo_permitted) && (
+            <MetaRow
+              label="Permits"
+              value={[
+                location.mount_permitted ? 'Mount' : null,
+                location.familiar_permitted ? 'Familiar' : null,
+                location.solo_permitted ? 'Solo' : null,
+              ].filter(Boolean).join(', ')}
+            />
+          )}
         </RulesetBlock>
       )}
 
       {hasTone && (
         <RulesetBlock title="Tone & Content">
           {location.tone_tags && location.tone_tags.length > 0 && (
-            <TagRow tags={location.tone_tags.map((t) => ({ label: capitalize(t), variant: 'accent' as const }))} />
+            <MetaRow
+              label="Tone"
+              value={location.tone_tags.map((t) => capitalize(t)).join(', ')}
+            />
           )}
           {location.primary_focus && <MetaRow label="Primary Focus" value={capitalize(location.primary_focus)} />}
           {location.gore_level != null && (
             <MetaRow label="Gore Level" value={GORE_LABELS[location.gore_level] ?? String(location.gore_level)} />
           )}
           {(location.permadeath_risk || location.pvp_permitted || location.boss_encounter || location.non_lethal_mode || location.scouting_permitted) && (
-            <TagRow tags={[
-              ...(location.permadeath_risk ? [{ label: 'Permadeath Risk', variant: 'warning' as const }] : []),
-              ...(location.pvp_permitted ? [{ label: 'PvP Permitted', variant: 'warning' as const }] : []),
-              ...(location.boss_encounter ? [{ label: 'Boss Encounter', variant: 'accent' as const }] : []),
-              ...(location.non_lethal_mode ? [{ label: 'Non-Lethal Mode', variant: 'accent' as const }] : []),
-              ...(location.scouting_permitted ? [{ label: 'Scouting Permitted', variant: 'neutral' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Content Flags"
+              value={[
+                location.permadeath_risk ? 'Permadeath Risk' : null,
+                location.pvp_permitted ? 'PvP Permitted' : null,
+                location.boss_encounter ? 'Boss Encounter' : null,
+                location.non_lethal_mode ? 'Non-Lethal Mode' : null,
+                location.scouting_permitted ? 'Scouting Permitted' : null,
+              ].filter(Boolean).join(', ')}
+            />
           )}
         </RulesetBlock>
       )}
@@ -414,19 +372,25 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
       {hasAmenities && (
         <RulesetBlock title="Amenities & Loot">
           {(location.has_safe_room || location.has_merchant || location.equipment_provided || location.guide_provided) && (
-            <TagRow tags={[
-              ...(location.has_safe_room ? [{ label: 'Safe Room', variant: 'accent' as const }] : []),
-              ...(location.has_merchant ? [{ label: 'Merchant', variant: 'accent' as const }] : []),
-              ...(location.equipment_provided ? [{ label: 'Equipment Provided', variant: 'accent' as const }] : []),
-              ...(location.guide_provided ? [{ label: 'Guide Provided', variant: 'accent' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Amenities"
+              value={[
+                location.has_safe_room ? 'Safe Room' : null,
+                location.has_merchant ? 'Merchant' : null,
+                location.equipment_provided ? 'Equipment Provided' : null,
+                location.guide_provided ? 'Guide Provided' : null,
+              ].filter(Boolean).join(', ')}
+            />
           )}
           {location.loot_type && <MetaRow label="Loot" value={capitalize(location.loot_type)} />}
           {(location.boss_loot || location.unique_item_chance) && (
-            <TagRow tags={[
-              ...(location.boss_loot ? [{ label: 'Boss Loot', variant: 'accent' as const }] : []),
-              ...(location.unique_item_chance ? [{ label: 'Unique Item Chance', variant: 'accent' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Loot Features"
+              value={[
+                location.boss_loot ? 'Boss Loot' : null,
+                location.unique_item_chance ? 'Unique Item Chance' : null,
+              ].filter(Boolean).join(', ')}
+            />
           )}
         </RulesetBlock>
       )}
@@ -489,33 +453,6 @@ function BookingPanel({
         top: '1.5rem',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-        <DifficultyBadge difficulty={location.difficulty} />
-        {location.provider_first_name && location.provider_last_name && (
-          <Link
-            to={`/providers/${location.provider_id}/profile`}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              fontSize: 'var(--text-sm)',
-              color: 'rgb(var(--muted-foreground))',
-              textDecoration: 'none',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--accent))' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--muted-foreground))' }}
-          >
-            <AvatarIcon
-              firstName={location.provider_first_name}
-              lastName={location.provider_last_name}
-              size="sm"
-              pictureUrl={location.provider_profile_picture_url}
-            />
-            <span>{location.provider_first_name} {location.provider_last_name}</span>
-          </Link>
-        )}
-      </div>
-
       {location.cancellation_policy && (
         <div style={{ marginBottom: '1.25rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgb(var(--border))' }}>
           <p
@@ -738,6 +675,49 @@ export function LocationDetail() {
 
   if (!location) return null
 
+  const hasCoreSpecs =
+    location.party_size_min != null ||
+    location.party_size_max != null ||
+    location.level_range_min != null ||
+    location.level_range_max != null
+  const hasEnvironment =
+    location.landscape_type != null ||
+    location.setting != null ||
+    (location.environment_tags && location.environment_tags.length > 0)
+  const hasRestrictions =
+    (location.magic_restrictions && location.magic_restrictions.length > 0) ||
+    (location.class_restrictions && location.class_restrictions.length > 0) ||
+    (location.race_restrictions && location.race_restrictions.length > 0) ||
+    (location.faction_restrictions && location.faction_restrictions.length > 0) ||
+    (location.physical_access && location.physical_access.length > 0) ||
+    (location.party_composition_tags && location.party_composition_tags.length > 0) ||
+    location.mount_permitted ||
+    location.familiar_permitted ||
+    location.solo_permitted ||
+    location.booking_type != null
+  const hasTone =
+    (location.tone_tags && location.tone_tags.length > 0) ||
+    location.gore_level != null ||
+    location.non_lethal_mode ||
+    location.permadeath_risk ||
+    location.primary_focus != null ||
+    location.boss_encounter ||
+    location.pvp_permitted ||
+    location.scouting_permitted
+  const hasRunLogistics =
+    location.run_time_minutes != null ||
+    location.reset_time_hours != null ||
+    location.time_limit_minutes != null
+  const hasAmenities =
+    location.has_safe_room ||
+    location.has_merchant ||
+    location.equipment_provided ||
+    location.guide_provided ||
+    location.loot_type != null ||
+    location.boss_loot ||
+    location.unique_item_chance
+  const hasRuleset = hasCoreSpecs || hasEnvironment || hasRestrictions || hasTone || hasRunLogistics || hasAmenities
+
   return (
     <main
       style={{
@@ -757,165 +737,102 @@ export function LocationDetail() {
         &larr; Back to Adventures
       </Link>
 
+      {/* Hero card — full width */}
+      <div
+        style={{
+          borderRadius: 'var(--radius)',
+          overflow: 'hidden',
+          backgroundColor: 'rgb(var(--card))',
+          boxShadow: 'var(--shadow-card)',
+          marginBottom: '1.5rem',
+        }}
+      >
+        {images && images.length > 0 && (
+          <div style={{ height: '340px' }}>
+            <LocationGallery images={images} locationName={location.name} />
+          </div>
+        )}
+        <div style={{ padding: '1.5rem' }}>
+          <h1
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.75rem',
+              fontWeight: 'var(--weight-bold)',
+              color: 'rgb(var(--foreground))',
+              marginBottom: '0.5rem',
+              lineHeight: 1.2,
+            }}
+          >
+            {location.name}
+          </h1>
+
+          {/* Difficulty + provider under the title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+            <DifficultyBadge difficulty={location.difficulty} />
+            {location.provider_first_name && location.provider_last_name && (
+              <Link
+                to={`/providers/${location.provider_id}/profile`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: 'var(--text-sm)',
+                  color: 'rgb(var(--muted-foreground))',
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--accent))' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--muted-foreground))' }}
+              >
+                <AvatarIcon
+                  firstName={location.provider_first_name}
+                  lastName={location.provider_last_name}
+                  size="sm"
+                  pictureUrl={location.provider_profile_picture_url}
+                />
+                <span>{location.provider_first_name} {location.provider_last_name}</span>
+              </Link>
+            )}
+          </div>
+
+          {location.description && (
+            <p
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'rgb(var(--foreground))',
+                lineHeight: 1.7,
+              }}
+            >
+              {location.description}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Two-column section: Adventure Details (left) + Available Times (right) */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) 320px',
+          gridTemplateColumns: hasRuleset ? 'minmax(0, 1fr) 320px' : '1fr',
           gap: '1.5rem',
           alignItems: 'start',
+          marginBottom: '1.5rem',
         }}
       >
-        {/* Left column — content */}
-        <div>
-          {/* Hero card */}
+        {/* Left column — Adventure Details */}
+        {hasRuleset && (
           <div
             style={{
               borderRadius: 'var(--radius)',
-              overflow: 'hidden',
               backgroundColor: 'rgb(var(--card))',
               boxShadow: 'var(--shadow-card)',
-              marginBottom: '1.5rem',
+              padding: '1.5rem',
             }}
           >
-            {images && images.length > 0 && (
-              <div style={{ height: '340px' }}>
-                <LocationGallery images={images} locationName={location.name} />
-              </div>
-            )}
-            <div style={{ padding: '1.5rem' }}>
-              <h1
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '1.75rem',
-                  fontWeight: 'var(--weight-bold)',
-                  color: 'rgb(var(--foreground))',
-                  marginBottom: '0.75rem',
-                  lineHeight: 1.2,
-                }}
-              >
-                {location.name}
-              </h1>
-
-              {location.description && (
-                <p
-                  style={{
-                    fontSize: 'var(--text-sm)',
-                    color: 'rgb(var(--foreground))',
-                    lineHeight: 1.7,
-                  }}
-                >
-                  {location.description}
-                </p>
-              )}
-            </div>
+            <RulesetDisplay location={location} />
           </div>
+        )}
 
-          {/* Ruleset details */}
-          {(() => {
-            const hasCoreSpecs =
-              location.party_size_min != null ||
-              location.party_size_max != null ||
-              location.level_range_min != null ||
-              location.level_range_max != null
-            const hasEnvironment =
-              location.landscape_type != null ||
-              location.setting != null ||
-              (location.environment_tags && location.environment_tags.length > 0)
-            const hasRestrictions =
-              (location.magic_restrictions && location.magic_restrictions.length > 0) ||
-              (location.class_restrictions && location.class_restrictions.length > 0) ||
-              (location.race_restrictions && location.race_restrictions.length > 0) ||
-              (location.faction_restrictions && location.faction_restrictions.length > 0) ||
-              (location.physical_access && location.physical_access.length > 0) ||
-              (location.party_composition_tags && location.party_composition_tags.length > 0) ||
-              location.mount_permitted ||
-              location.familiar_permitted ||
-              location.solo_permitted ||
-              location.booking_type != null
-            const hasTone =
-              (location.tone_tags && location.tone_tags.length > 0) ||
-              location.gore_level != null ||
-              location.non_lethal_mode ||
-              location.permadeath_risk ||
-              location.primary_focus != null ||
-              location.boss_encounter ||
-              location.pvp_permitted ||
-              location.scouting_permitted
-            const hasRunLogistics =
-              location.run_time_minutes != null ||
-              location.reset_time_hours != null ||
-              location.time_limit_minutes != null
-            const hasAmenities =
-              location.has_safe_room ||
-              location.has_merchant ||
-              location.equipment_provided ||
-              location.guide_provided ||
-              location.loot_type != null ||
-              location.boss_loot ||
-              location.unique_item_chance
-
-            if (!(hasCoreSpecs || hasEnvironment || hasRestrictions || hasTone || hasRunLogistics || hasAmenities)) return null
-
-            return (
-              <div
-                style={{
-                  borderRadius: 'var(--radius)',
-                  backgroundColor: 'rgb(var(--card))',
-                  boxShadow: 'var(--shadow-card)',
-                  padding: '1.5rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <RulesetDisplay location={location} />
-              </div>
-            )
-          })()}
-
-          {/* Reviews */}
-          {id && (
-            <div
-              style={{
-                borderRadius: 'var(--radius)',
-                backgroundColor: 'rgb(var(--card))',
-                boxShadow: 'var(--shadow-card)',
-                padding: '1.5rem',
-              }}
-            >
-              <h2
-                style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '1.05rem',
-                  fontWeight: 'var(--weight-bold)',
-                  color: 'rgb(var(--foreground))',
-                  marginBottom: '1rem',
-                  paddingBottom: '0.5rem',
-                  borderBottom: '2px solid rgb(var(--accent) / 0.3)',
-                }}
-              >
-                Reviews
-              </h2>
-              <ReviewList targetId={id} targetType="location" refreshKey={reviewRefreshKey} />
-              {role === 'customer' && (
-                <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
-                  {eligibleBooking ? (
-                    <ReviewForm
-                      bookingId={eligibleBooking.id}
-                      targetId={id}
-                      targetType="location"
-                      onSuccess={() => setReviewRefreshKey((k) => k + 1)}
-                    />
-                  ) : (
-                    <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
-                      Book this adventure to leave a review.
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right column — booking panel */}
+        {/* Right column — Available Times */}
         <div>
           <BookingPanel
             location={location}
@@ -932,6 +849,49 @@ export function LocationDetail() {
           />
         </div>
       </div>
+
+      {/* Reviews — full width */}
+      {id && (
+        <div
+          style={{
+            borderRadius: 'var(--radius)',
+            backgroundColor: 'rgb(var(--card))',
+            boxShadow: 'var(--shadow-card)',
+            padding: '1.5rem',
+          }}
+        >
+          <h2
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.05rem',
+              fontWeight: 'var(--weight-bold)',
+              color: 'rgb(var(--foreground))',
+              marginBottom: '1rem',
+              paddingBottom: '0.5rem',
+              borderBottom: '2px solid rgb(var(--accent) / 0.3)',
+            }}
+          >
+            Reviews
+          </h2>
+          <ReviewList targetId={id} targetType="location" refreshKey={reviewRefreshKey} />
+          {role === 'customer' && (
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
+              {eligibleBooking ? (
+                <ReviewForm
+                  bookingId={eligibleBooking.id}
+                  targetId={id}
+                  targetType="location"
+                  onSuccess={() => setReviewRefreshKey((k) => k + 1)}
+                />
+              ) : (
+                <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+                  Book this adventure to leave a review.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </main>
   )
 }
