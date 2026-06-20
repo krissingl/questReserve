@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { LocationFilters, Difficulty, LandscapeType, LocationSetting, ToneTag } from '@/types/domain'
 import {
   DIFFICULTY_OPTIONS,
@@ -323,10 +323,14 @@ interface FilterPanelDrawerProps {
 export function FilterPanelDrawer({ open, onClose, filters, onApply, onClearAll }: FilterPanelDrawerProps) {
   const [closeHovered, setCloseHovered] = useState(false)
   const [draft, setDraft] = useState<LocationFilters>(filters)
+  const prevOpenRef = useRef(open)
 
-  function handleOpen() {
-    setDraft(filters)
-  }
+  useEffect(() => {
+    if (open && !prevOpenRef.current) {
+      setDraft(filters)
+    }
+    prevOpenRef.current = open
+  }, [open, filters])
 
   function handleApply() {
     onApply(draft)
@@ -357,7 +361,6 @@ export function FilterPanelDrawer({ open, onClose, filters, onApply, onClearAll 
 
       <aside
         aria-label="Filters"
-        onTransitionEnd={() => { if (open) handleOpen() }}
         style={{
           position: 'fixed',
           top: '64px',
