@@ -26,6 +26,7 @@ interface LocationSurveyProps {
   submitLabel?: string
   apiError?: string | null
   isSubmitting?: boolean
+  submitDisabled?: boolean
 }
 
 const inputStyle: React.CSSProperties = {
@@ -708,6 +709,7 @@ export function LocationSurvey({
   submitLabel = 'Publish Location',
   apiError,
   isSubmitting = false,
+  submitDisabled = false,
 }: LocationSurveyProps) {
   const [activeTab, setActiveTab] = useState<TabId>('core')
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -826,7 +828,7 @@ export function LocationSurvey({
         <button
           type="button"
           onClick={handleSave}
-          disabled={isSubmitting}
+          disabled={isSubmitting || submitDisabled}
           style={{
             padding: '0.5rem 1.5rem',
             borderRadius: 'var(--radius)',
@@ -835,8 +837,9 @@ export function LocationSurvey({
             fontSize: 'var(--text-sm)',
             fontWeight: 'var(--weight-semibold)',
             border: 'none',
-            cursor: isSubmitting ? 'not-allowed' : 'pointer',
-            opacity: isSubmitting ? 0.6 : 1,
+            cursor: isSubmitting || submitDisabled ? 'not-allowed' : 'pointer',
+            opacity: isSubmitting || submitDisabled ? 0.45 : 1,
+            transition: 'opacity 0.15s ease',
           }}
         >
           {isSubmitting ? 'Saving…' : submitLabel}

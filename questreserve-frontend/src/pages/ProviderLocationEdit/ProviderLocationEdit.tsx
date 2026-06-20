@@ -5,7 +5,7 @@ import { useProviderLocationImages } from '@/hooks/useProviderLocationImages'
 import { LocationSurvey, type SurveyState } from '@/components/LocationSurvey/LocationSurvey'
 import { updateLocation, deleteProviderLocationImage } from '@/api/provider.api'
 import type { UpdateLocationPayload } from '@/api/provider.api'
-import type { LocationImage } from '@/types/domain'
+import type { BookingLocation, LocationImage } from '@/types/domain'
 
 const MAX_GALLERY_IMAGES = 15
 
@@ -318,6 +318,50 @@ function GallerySection({
   )
 }
 
+function buildSurveyFromLocation(location: BookingLocation): SurveyState {
+  return {
+    name: location.name,
+    description: location.description ?? '',
+    difficulty: location.difficulty,
+    cancellation_policy: location.cancellation_policy,
+    party_size_min: location.party_size_min ?? undefined,
+    party_size_max: location.party_size_max ?? undefined,
+    level_range_min: location.level_range_min ?? undefined,
+    level_range_max: location.level_range_max ?? undefined,
+    landscape_type: location.landscape_type ?? undefined,
+    setting: location.setting ?? undefined,
+    environment_tags: location.environment_tags ?? [],
+    magic_restrictions: location.magic_restrictions ?? [],
+    class_restrictions: location.class_restrictions ?? [],
+    race_restrictions: location.race_restrictions ?? [],
+    faction_restrictions: location.faction_restrictions ?? [],
+    party_composition_tags: location.party_composition_tags ?? [],
+    physical_access: location.physical_access ?? [],
+    mount_permitted: location.mount_permitted,
+    familiar_permitted: location.familiar_permitted,
+    solo_permitted: location.solo_permitted,
+    booking_type: location.booking_type ?? undefined,
+    tone_tags: location.tone_tags ?? [],
+    gore_level: location.gore_level ?? undefined,
+    non_lethal_mode: location.non_lethal_mode,
+    permadeath_risk: location.permadeath_risk,
+    primary_focus: location.primary_focus ?? undefined,
+    boss_encounter: location.boss_encounter,
+    pvp_permitted: location.pvp_permitted,
+    scouting_permitted: location.scouting_permitted,
+    run_time_minutes: location.run_time_minutes ?? undefined,
+    reset_time_hours: location.reset_time_hours ?? undefined,
+    time_limit_minutes: location.time_limit_minutes ?? undefined,
+    has_safe_room: location.has_safe_room,
+    has_merchant: location.has_merchant,
+    equipment_provided: location.equipment_provided,
+    guide_provided: location.guide_provided,
+    loot_type: location.loot_type ?? undefined,
+    boss_loot: location.boss_loot,
+    unique_item_chance: location.unique_item_chance,
+  }
+}
+
 export function ProviderLocationEdit() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -326,52 +370,17 @@ export function ProviderLocationEdit() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [surveyState, setSurveyState] = useState<SurveyState>({})
+  const [savedSnapshot, setSavedSnapshot] = useState<string>('')
 
   useEffect(() => {
     if (location) {
-      setSurveyState({
-        name: location.name,
-        description: location.description ?? '',
-        difficulty: location.difficulty,
-        cancellation_policy: location.cancellation_policy,
-        party_size_min: location.party_size_min ?? undefined,
-        party_size_max: location.party_size_max ?? undefined,
-        level_range_min: location.level_range_min ?? undefined,
-        level_range_max: location.level_range_max ?? undefined,
-        landscape_type: location.landscape_type ?? undefined,
-        setting: location.setting ?? undefined,
-        environment_tags: location.environment_tags ?? [],
-        magic_restrictions: location.magic_restrictions ?? [],
-        class_restrictions: location.class_restrictions ?? [],
-        race_restrictions: location.race_restrictions ?? [],
-        faction_restrictions: location.faction_restrictions ?? [],
-        party_composition_tags: location.party_composition_tags ?? [],
-        physical_access: location.physical_access ?? [],
-        mount_permitted: location.mount_permitted,
-        familiar_permitted: location.familiar_permitted,
-        solo_permitted: location.solo_permitted,
-        booking_type: location.booking_type ?? undefined,
-        tone_tags: location.tone_tags ?? [],
-        gore_level: location.gore_level ?? undefined,
-        non_lethal_mode: location.non_lethal_mode,
-        permadeath_risk: location.permadeath_risk,
-        primary_focus: location.primary_focus ?? undefined,
-        boss_encounter: location.boss_encounter,
-        pvp_permitted: location.pvp_permitted,
-        scouting_permitted: location.scouting_permitted,
-        run_time_minutes: location.run_time_minutes ?? undefined,
-        reset_time_hours: location.reset_time_hours ?? undefined,
-        time_limit_minutes: location.time_limit_minutes ?? undefined,
-        has_safe_room: location.has_safe_room,
-        has_merchant: location.has_merchant,
-        equipment_provided: location.equipment_provided,
-        guide_provided: location.guide_provided,
-        loot_type: location.loot_type ?? undefined,
-        boss_loot: location.boss_loot,
-        unique_item_chance: location.unique_item_chance,
-      })
+      const initial = buildSurveyFromLocation(location)
+      setSurveyState(initial)
+      setSavedSnapshot(JSON.stringify(initial))
     }
   }, [location])
+
+  const isDirty = JSON.stringify(surveyState) !== savedSnapshot
 
   function handleChange(updates: Partial<SurveyState>) {
     setSurveyState((prev) => ({ ...prev, ...updates }))
@@ -384,6 +393,7 @@ export function ProviderLocationEdit() {
     try {
       const payload: UpdateLocationPayload = { ...surveyState }
       await updateLocation(id, payload)
+      setSavedSnapshot(JSON.stringify(surveyState))
       navigate(`/provider/locations/${id}`)
     } catch (err: unknown) {
       setApiError(err instanceof Error ? err.message : 'Failed to update adventure. Please try again.')
@@ -473,6 +483,7 @@ export function ProviderLocationEdit() {
           submitLabel="Save Changes"
           apiError={apiError}
           isSubmitting={isSubmitting}
+          submitDisabled={!isDirty}
         />
       </div>
 
