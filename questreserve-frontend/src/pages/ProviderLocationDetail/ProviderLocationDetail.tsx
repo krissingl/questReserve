@@ -11,6 +11,14 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+function primaryFocusLabel(value: number): string {
+  if (value === 0) return 'Balanced'
+  const abs = Math.abs(value)
+  const side = value < 0 ? 'Puzzle' : 'Combat'
+  const pct = abs === 5 ? 100 : abs === 4 ? 80 : abs === 3 ? 60 : abs === 2 ? 40 : 20
+  return `${pct}% ${side}`
+}
+
 const GORE_LABELS: Record<number, string> = { 0: 'None', 1: 'Mild', 2: 'Moderate', 3: 'Graphic' }
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
@@ -221,7 +229,7 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
               value={location.tone_tags.map((t) => capitalize(t)).join(', ')}
             />
           )}
-          {location.primary_focus && <MetaRow label="Primary Focus" value={capitalize(location.primary_focus)} />}
+          {location.primary_focus != null && <MetaRow label="Primary Focus" value={primaryFocusLabel(location.primary_focus)} />}
           {location.gore_level != null && (
             <MetaRow label="Gore Level" value={GORE_LABELS[location.gore_level] ?? String(location.gore_level)} />
           )}

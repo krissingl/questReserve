@@ -47,7 +47,7 @@ export interface EndUser {
 export type LandscapeType = 'tundra' | 'forest' | 'desert' | 'cave' | 'coastal' | 'volcanic' | 'urban' | 'plains' | 'mountain' | 'swamp';
 export type LocationSetting = 'interior' | 'exterior' | 'both';
 export type ToneTag = 'horror' | 'heroic' | 'comedic' | 'mystery' | 'political';
-export type PrimaryFocus = 'combat' | 'puzzle' | 'roleplay' | 'mixed';
+export type PrimaryFocus = number;
 export type LootType = 'guaranteed' | 'random' | 'none';
 export type BookingType = 'concurrent' | 'exclusive';
 

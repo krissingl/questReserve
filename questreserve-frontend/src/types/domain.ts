@@ -5,14 +5,14 @@ export const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'] as con
 export type LandscapeType = 'tundra' | 'forest' | 'desert' | 'cave' | 'coastal' | 'volcanic' | 'urban' | 'plains' | 'mountain' | 'swamp'
 export type LocationSetting = 'interior' | 'exterior' | 'both'
 export type ToneTag = 'horror' | 'heroic' | 'comedic' | 'mystery' | 'political'
-export type PrimaryFocus = 'combat' | 'puzzle' | 'roleplay' | 'mixed'
+export type PrimaryFocus = number
 export type LootType = 'guaranteed' | 'random' | 'none'
 export type BookingType = 'concurrent' | 'exclusive'
 
 export const LANDSCAPE_TYPE_OPTIONS: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp']
 export const TONE_TAG_OPTIONS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political']
 export const SETTING_OPTIONS: LocationSetting[] = ['interior', 'exterior']
-export const PRIMARY_FOCUS_OPTIONS: PrimaryFocus[] = ['combat', 'puzzle', 'roleplay', 'mixed']
+export const PRIMARY_FOCUS_OPTIONS: PrimaryFocus[] = [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5]
 export const LOOT_TYPE_OPTIONS: LootType[] = ['guaranteed', 'random', 'none']
 export const BOOKING_TYPE_OPTIONS: BookingType[] = ['concurrent', 'exclusive']
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react'
+import React, { useState } from 'react'
 import type { CreateLocationPayload } from '@/api/provider.api'
 import {
   DIFFICULTY_OPTIONS,
@@ -503,29 +503,12 @@ function TabRestrictions({
   )
 }
 
-const PRIMARY_FOCUS_SCALE: { value: PrimaryFocus; label: string; pct: number }[] = [
-  { value: 'puzzle', label: 'Puzzle', pct: 0 },
-  { value: 'mixed', label: 'Mixed', pct: 33 },
-  { value: 'roleplay', label: 'Roleplay', pct: 67 },
-  { value: 'combat', label: 'Combat', pct: 100 },
-]
-
-function pctToFocus(pct: number): PrimaryFocus {
-  let closest = PRIMARY_FOCUS_SCALE[0]
-  let minDist = Math.abs(pct - closest.pct)
-  for (const entry of PRIMARY_FOCUS_SCALE) {
-    const dist = Math.abs(pct - entry.pct)
-    if (dist < minDist) {
-      minDist = dist
-      closest = entry
-    }
-  }
-  return closest.value
-}
-
-function focusToPct(focus: PrimaryFocus | undefined): number {
-  const entry = PRIMARY_FOCUS_SCALE.find((e) => e.value === focus)
-  return entry?.pct ?? 33
+function primaryFocusLabel(value: number): string {
+  if (value === 0) return 'Balanced'
+  const abs = Math.abs(value)
+  const side = value < 0 ? 'Puzzle' : 'Combat'
+  const pct = abs === 5 ? 100 : abs === 4 ? 80 : abs === 3 ? 60 : abs === 2 ? 40 : 20
+  return `${pct}% ${side}`
 }
 
 function PrimaryFocusScale({
@@ -535,135 +518,34 @@ function PrimaryFocusScale({
   value: PrimaryFocus | undefined
   onChange: (v: PrimaryFocus) => void
 }) {
-  const trackRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef(false)
-  const currentPct = focusToPct(value)
-  const [dragPct, setDragPct] = useState<number | null>(null)
-  const displayPct = dragPct ?? currentPct
-
-  const getPctFromEvent = useCallback((clientX: number): number => {
-    if (!trackRef.current) return 0
-    const rect = trackRef.current.getBoundingClientRect()
-    const raw = ((clientX - rect.left) / rect.width) * 100
-    return Math.max(0, Math.min(100, raw))
-  }, [])
-
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    e.currentTarget.setPointerCapture(e.pointerId)
-    dragging.current = true
-    const pct = getPctFromEvent(e.clientX)
-    setDragPct(pct)
-  }, [getPctFromEvent])
-
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!dragging.current) return
-    const pct = getPctFromEvent(e.clientX)
-    setDragPct(pct)
-  }, [getPctFromEvent])
-
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!dragging.current) return
-    dragging.current = false
-    const pct = getPctFromEvent(e.clientX)
-    setDragPct(null)
-    onChange(pctToFocus(pct))
-  }, [getPctFromEvent, onChange])
-
-  const handleTrackClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const pct = getPctFromEvent(e.clientX)
-    onChange(pctToFocus(pct))
-  }, [getPctFromEvent, onChange])
-
-  const snappedFocus = dragPct !== null ? pctToFocus(dragPct) : value
-  const snappedLabel = PRIMARY_FOCUS_SCALE.find((e) => e.value === snappedFocus)?.label ?? ''
+  const displayValue = value ?? 0
 
   return (
     <div style={fieldStyle}>
       <span style={labelStyle}>Primary Focus{optionalLabel}</span>
-      <div style={{ userSelect: 'none' }}>
-        <div
-          ref={trackRef}
-          onClick={handleTrackClick}
+      <div style={{ textAlign: 'center', marginBottom: '0.35rem' }}>
+        <span
           style={{
-            position: 'relative',
-            height: '6px',
-            borderRadius: '9999px',
-            backgroundColor: 'rgb(var(--border))',
-            margin: '1.5rem 0.5rem 0.75rem',
-            cursor: 'pointer',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--weight-semibold)',
+            color: value !== undefined ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground))',
           }}
         >
-          {/* Filled portion */}
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              height: '100%',
-              width: `${displayPct}%`,
-              borderRadius: '9999px',
-              backgroundColor: 'rgb(var(--accent))',
-              pointerEvents: 'none',
-            }}
-          />
-
-          {/* Snap point markers */}
-          {PRIMARY_FOCUS_SCALE.map((entry) => (
-            <div
-              key={entry.value}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: `${entry.pct}%`,
-                transform: 'translate(-50%, -50%)',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: displayPct >= entry.pct ? 'rgb(var(--accent))' : 'rgb(var(--muted-foreground) / 0.4)',
-                pointerEvents: 'none',
-              }}
-            />
-          ))}
-
-          {/* Draggable thumb */}
-          <div
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: `${displayPct}%`,
-              transform: 'translate(-50%, -50%)',
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              backgroundColor: 'rgb(var(--accent))',
-              border: '2px solid rgb(var(--card))',
-              boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
-              cursor: 'grab',
-              zIndex: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          />
-        </div>
-
-        {/* End labels */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <span style={{ fontSize: '0.72rem', color: 'rgb(var(--muted-foreground))' }}>Puzzle</span>
-          <span
-            style={{
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--weight-semibold)',
-              color: 'rgb(var(--accent))',
-            }}
-          >
-            {snappedLabel || <span style={{ color: 'rgb(var(--muted-foreground))' }}>Not set</span>}
-          </span>
-          <span style={{ fontSize: '0.72rem', color: 'rgb(var(--muted-foreground))' }}>Combat</span>
-        </div>
+          {value !== undefined ? primaryFocusLabel(displayValue) : 'Not set'}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={-5}
+        max={5}
+        step={1}
+        value={displayValue}
+        onChange={(e) => onChange(parseInt(e.target.value, 10))}
+        style={{ width: '100%', accentColor: 'rgb(var(--accent))', cursor: 'pointer' }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.25rem' }}>
+        <span style={{ fontSize: '0.72rem', color: 'rgb(var(--muted-foreground))' }}>Puzzle</span>
+        <span style={{ fontSize: '0.72rem', color: 'rgb(var(--muted-foreground))' }}>Combat</span>
       </div>
     </div>
   )
