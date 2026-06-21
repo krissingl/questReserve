@@ -59,10 +59,6 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     return query;
   }
 
-  async list(difficulty?: Difficulty): Promise<BookingLocation[]> {
-    return this.findAll(difficulty ? { difficulties: [difficulty] } : {});
-  }
-
   async findAllByProvider(providerId: string): Promise<BookingLocation[]> {
     return this.knex<BookingLocation>('booking_location')
       .where({ provider_id: providerId })
