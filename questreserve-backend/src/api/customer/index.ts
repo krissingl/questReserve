@@ -34,7 +34,7 @@ const bookingRepo = new BookingRepository(db);
 const customerService = new CustomerService(locationRepo, locationImagesRepo, slotRepo, bookingRepo);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
-const VALID_SETTINGS: LocationSetting[] = ['interior', 'exterior', 'both'];
+const VALID_SETTINGS: LocationSetting[] = ['interior', 'exterior'];
 const VALID_LANDSCAPE_TYPES: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp'];
 const VALID_TONE_TAGS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political'];
 

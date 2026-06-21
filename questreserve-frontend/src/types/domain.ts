@@ -3,7 +3,7 @@ export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'LEGENDARY'
 export const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'] as const satisfies ReadonlyArray<Difficulty>
 
 export type LandscapeType = 'tundra' | 'forest' | 'desert' | 'cave' | 'coastal' | 'volcanic' | 'urban' | 'plains' | 'mountain' | 'swamp'
-export type LocationSetting = 'interior' | 'exterior' | 'both'
+export type LocationSetting = 'interior' | 'exterior'
 export type ToneTag = 'horror' | 'heroic' | 'comedic' | 'mystery' | 'political'
 export type PrimaryFocus = number
 export type LootType = 'guaranteed' | 'random' | 'none'
