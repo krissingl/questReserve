@@ -283,14 +283,15 @@ function TabCoreInfo({
       </div>
 
       <div style={fieldStyle}>
-        <label htmlFor="srv-cancel" style={labelStyle}>Cancellation Policy{optionalLabel}</label>
+        <label htmlFor="srv-cancel" style={labelStyle}>Cancellation Policy</label>
         <textarea
           id="srv-cancel"
           rows={3}
-          style={{ ...inputStyle, resize: 'vertical' }}
+          style={{ ...inputStyle, resize: 'vertical', borderColor: errors.cancellation_policy ? 'rgb(var(--destructive))' : 'rgb(var(--border))' }}
           value={state.cancellation_policy ?? ''}
           onChange={(e) => onChange({ cancellation_policy: e.target.value })}
         />
+        {errors.cancellation_policy && <p style={errorStyle}>{errors.cancellation_policy}</p>}
       </div>
 
       <SectionLabel>Party Requirements</SectionLabel>
@@ -762,6 +763,7 @@ export function LocationSurvey({
     const errs: Record<string, string> = {}
     if (!formState.name?.trim()) errs.name = 'Name is required'
     if (!formState.difficulty) errs.difficulty = 'Please select a difficulty'
+    if (!formState.cancellation_policy?.trim()) errs.cancellation_policy = 'Cancellation policy is required'
     return errs
   }
 
