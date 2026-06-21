@@ -196,11 +196,11 @@ export function ProviderLocationNew() {
     setIsSubmitting(true)
     try {
       const payload: CreateLocationPayload = {
+        ...surveyState,
         name: surveyState.name.trim(),
         description: surveyState.description || undefined,
         difficulty: surveyState.difficulty,
         cancellation_policy: surveyState.cancellation_policy ?? '',
-        ...surveyState,
       }
       const location = await createLocation(payload)
       navigate(`/provider/locations/${location.id}`)
