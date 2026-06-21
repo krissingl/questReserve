@@ -370,20 +370,18 @@ export function ProviderLocationEdit() {
   const [apiError, setApiError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [surveyState, setSurveyState] = useState<SurveyState>({})
-  const [savedSnapshot, setSavedSnapshot] = useState<string>('')
+  const [isDirty, setIsDirty] = useState(false)
 
   useEffect(() => {
     if (location) {
-      const initial = buildSurveyFromLocation(location)
-      setSurveyState(initial)
-      setSavedSnapshot(JSON.stringify(initial))
+      setSurveyState(buildSurveyFromLocation(location))
+      setIsDirty(false)
     }
   }, [location])
 
-  const isDirty = JSON.stringify(surveyState) !== savedSnapshot
-
   function handleChange(updates: Partial<SurveyState>) {
     setSurveyState((prev) => ({ ...prev, ...updates }))
+    setIsDirty(true)
   }
 
   async function handleSubmit() {
@@ -393,7 +391,6 @@ export function ProviderLocationEdit() {
     try {
       const payload: UpdateLocationPayload = { ...surveyState }
       await updateLocation(id, payload)
-      setSavedSnapshot(JSON.stringify(surveyState))
       navigate(`/provider/locations/${id}`)
     } catch (err: unknown) {
       setApiError(err instanceof Error ? err.message : 'Failed to update adventure. Please try again.')
