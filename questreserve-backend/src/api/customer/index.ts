@@ -38,6 +38,15 @@ const VALID_SETTINGS: LocationSetting[] = ['interior', 'exterior', 'both'];
 const VALID_LANDSCAPE_TYPES: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp'];
 const VALID_TONE_TAGS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political'];
 
+function parsePositiveInt(value: string | undefined, paramName: string): { value: number } | { error: string } | undefined {
+  if (value === undefined) return undefined;
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed) || parsed <= 0 || String(parsed) !== value) {
+    return { error: `${paramName} must be a positive integer` };
+  }
+  return { value: parsed };
+}
+
 function getUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthenticatedError();
   return req.user;
@@ -100,15 +109,6 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
       return;
     }
     parsedToneTags = parts as ToneTag[];
-  }
-
-  function parsePositiveInt(value: string | undefined, paramName: string): { value: number } | { error: string } | undefined {
-    if (value === undefined) return undefined;
-    const parsed = parseInt(value, 10);
-    if (isNaN(parsed) || parsed <= 0 || String(parsed) !== value) {
-      return { error: `${paramName} must be a positive integer` };
-    }
-    return { value: parsed };
   }
 
   const levelRangeMinResult = parsePositiveInt(q.levelRangeMin, 'levelRangeMin');
