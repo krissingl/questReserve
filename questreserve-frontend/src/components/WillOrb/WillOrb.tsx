@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { askWill } from '@/api/will.api'
-import type { WillLocationFilters } from '@/types/will.types'
+import { filtersToParams } from '@/utils/filters'
+import type { LocationFilters } from '@/types/domain'
 
 // ASSET: replace with approved orb illustration
 
@@ -40,17 +42,14 @@ const WILL_ORB_KEYFRAMES = `
 }
 `
 
-interface WillOrbProps {
-  onFiltersResolved?: (filters: WillLocationFilters) => void
-}
+const orbDiameter = 56
 
-export function WillOrb({ onFiltersResolved }: WillOrbProps) {
+export function WillOrb() {
+  const [, setSearchParams] = useSearchParams()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [response, setResponse] = useState('')
   const [loading, setLoading] = useState(false)
-
-  const orbDiameter = 56
 
   async function handleSubmit() {
     if (!input.trim() || loading) return
@@ -60,9 +59,11 @@ export function WillOrb({ onFiltersResolved }: WillOrbProps) {
     try {
       const result = await askWill(input.trim())
       setResponse(result.message)
-      onFiltersResolved?.(result.filters)
+      const filters = result.filters as LocationFilters
+      setSearchParams(filtersToParams(filters))
     } catch {
       setResponse("The mist grows thick… I've lost the thread. Speak to me again, traveler.")
+      setSearchParams(new URLSearchParams())
     } finally {
       setLoading(false)
     }
@@ -78,7 +79,7 @@ export function WillOrb({ onFiltersResolved }: WillOrbProps) {
   function handleClear() {
     setInput('')
     setResponse('')
-    onFiltersResolved?.({})
+    setSearchParams(new URLSearchParams())
   }
 
   return (

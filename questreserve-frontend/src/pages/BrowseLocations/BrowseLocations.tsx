@@ -10,6 +10,7 @@ import type { LocationRatingSummary } from '@/api/guest.api'
 import type { BookingLocation, LocationFilters, Difficulty, LandscapeType, LocationSetting, ToneTag } from '@/types/domain'
 import { DIFFICULTY_OPTIONS, LANDSCAPE_TYPE_OPTIONS, SETTING_OPTIONS, TONE_TAG_OPTIONS } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
+import { filtersToParams } from '@/utils/filters'
 
 interface LocationListItemProps {
   location: BookingLocation
@@ -289,20 +290,6 @@ function countActiveFilters(f: LocationFilters): number {
   if (f.partySizeMin !== undefined) count++
   if (f.partySizeMax !== undefined) count++
   return count
-}
-
-function filtersToParams(filters: LocationFilters): URLSearchParams {
-  const next = new URLSearchParams()
-  if (filters.difficulties && filters.difficulties.length > 0) next.set('difficulties', filters.difficulties.join(','))
-  if (filters.levelRangeMin !== undefined) next.set('levelRangeMin', String(filters.levelRangeMin))
-  if (filters.levelRangeMax !== undefined) next.set('levelRangeMax', String(filters.levelRangeMax))
-  if (filters.runTimeMax !== undefined) next.set('runTimeMax', String(filters.runTimeMax))
-  if (filters.setting) next.set('setting', filters.setting)
-  if (filters.landscapeType) next.set('landscapeType', filters.landscapeType)
-  if (filters.toneTags && filters.toneTags.length > 0) next.set('toneTags', filters.toneTags.join(','))
-  if (filters.partySizeMin !== undefined) next.set('partySizeMin', String(filters.partySizeMin))
-  if (filters.partySizeMax !== undefined) next.set('partySizeMax', String(filters.partySizeMax))
-  return next
 }
 
 export function BrowseLocations() {
