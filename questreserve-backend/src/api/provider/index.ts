@@ -18,7 +18,7 @@ import {
   CustomerNotFoundError,
 } from '../../services/provider.service';
 import { BookingRepository } from '../../repositories/booking.repository';
-import { Difficulty } from '../../types';
+import { Difficulty, LandscapeType, LocationSetting, LootType, BookingType, ToneTag } from '../../types';
 import { validateRequiredStrings } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
@@ -82,6 +82,85 @@ function extractRulesetFields(body: Record<string, unknown>): Record<string, unk
     if (field in body) result[field] = body[field];
   }
   return result;
+}
+
+const VALID_LANDSCAPE_TYPES: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp'];
+const VALID_SETTINGS: LocationSetting[] = ['interior', 'exterior'];
+const VALID_LOOT_TYPES: LootType[] = ['guaranteed', 'random', 'none'];
+const VALID_BOOKING_TYPES: BookingType[] = ['concurrent', 'exclusive'];
+const VALID_TONE_TAGS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political'];
+
+const RULESET_BOOLEAN_FIELDS = [
+  'mount_permitted', 'familiar_permitted', 'solo_permitted',
+  'non_lethal_mode', 'permadeath_risk', 'boss_encounter',
+  'pvp_permitted', 'scouting_permitted', 'has_safe_room',
+  'has_merchant', 'equipment_provided', 'guide_provided',
+  'boss_loot', 'unique_item_chance',
+] as const;
+
+const RULESET_INTEGER_FIELDS: Array<{ field: string; min: number; max: number }> = [
+  { field: 'party_size_min', min: 1, max: 999 },
+  { field: 'party_size_max', min: 1, max: 999 },
+  { field: 'level_range_min', min: 1, max: 9999 },
+  { field: 'level_range_max', min: 1, max: 9999 },
+  { field: 'gore_level', min: 0, max: 3 },
+  { field: 'primary_focus', min: -5, max: 5 },
+  { field: 'run_time_minutes', min: 1, max: 99999 },
+  { field: 'reset_time_hours', min: 0, max: 9999 },
+  { field: 'time_limit_minutes', min: 1, max: 99999 },
+];
+
+const RULESET_STRING_ARRAY_FIELDS = [
+  'environment_tags', 'magic_restrictions', 'class_restrictions',
+  'race_restrictions', 'faction_restrictions', 'party_composition_tags',
+  'physical_access', 'tone_tags',
+] as const;
+
+function validateRulesetFields(fields: Record<string, unknown>): string | null {
+  if ('landscape_type' in fields && fields.landscape_type !== null && !VALID_LANDSCAPE_TYPES.includes(fields.landscape_type as LandscapeType)) {
+    return `landscape_type must be one of: ${VALID_LANDSCAPE_TYPES.join(', ')}`;
+  }
+  if ('setting' in fields && fields.setting !== null && !VALID_SETTINGS.includes(fields.setting as LocationSetting)) {
+    return `setting must be one of: ${VALID_SETTINGS.join(', ')}`;
+  }
+  if ('loot_type' in fields && fields.loot_type !== null && !VALID_LOOT_TYPES.includes(fields.loot_type as LootType)) {
+    return `loot_type must be one of: ${VALID_LOOT_TYPES.join(', ')}`;
+  }
+  if ('booking_type' in fields && fields.booking_type !== null && !VALID_BOOKING_TYPES.includes(fields.booking_type as BookingType)) {
+    return `booking_type must be one of: ${VALID_BOOKING_TYPES.join(', ')}`;
+  }
+
+  for (const boolField of RULESET_BOOLEAN_FIELDS) {
+    if (boolField in fields && typeof fields[boolField] !== 'boolean') {
+      return `${boolField} must be a boolean`;
+    }
+  }
+
+  for (const { field, min, max } of RULESET_INTEGER_FIELDS) {
+    if (field in fields && fields[field] !== null) {
+      const val = fields[field];
+      if (typeof val !== 'number' || !Number.isInteger(val) || val < min || val > max) {
+        return `${field} must be an integer between ${min} and ${max}`;
+      }
+    }
+  }
+
+  if ('tone_tags' in fields && fields.tone_tags !== null) {
+    if (!Array.isArray(fields.tone_tags) || !(fields.tone_tags as unknown[]).every((t) => VALID_TONE_TAGS.includes(t as ToneTag))) {
+      return `tone_tags must be an array of: ${VALID_TONE_TAGS.join(', ')}`;
+    }
+  }
+
+  for (const arrField of RULESET_STRING_ARRAY_FIELDS) {
+    if (arrField === 'tone_tags') continue;
+    if (arrField in fields && fields[arrField] !== null) {
+      if (!Array.isArray(fields[arrField]) || !(fields[arrField] as unknown[]).every((v) => typeof v === 'string')) {
+        return `${arrField} must be an array of strings`;
+      }
+    }
+  }
+
+  return null;
 }
 
 function getUser(req: Request): NonNullable<Request['user']> {
@@ -207,13 +286,16 @@ router.post('/locations', async (req: Request, res: Response, next: NextFunction
     res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
     return;
   }
+  const rulesetFields = extractRulesetFields(b);
+  const rulesetError = validateRulesetFields(rulesetFields);
+  if (rulesetError) { res.status(400).json({ error: rulesetError }); return; }
   try {
     const location = await providerService.createLocation(getUser(req).sub, {
       name: b.name as string,
       description: b.description as string | undefined,
       difficulty: b.difficulty as Difficulty,
       cancellation_policy: b.cancellation_policy as string,
-      ...extractRulesetFields(b),
+      ...rulesetFields,
     });
     res.status(201).json(location);
   } catch (err) {
@@ -262,7 +344,10 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
     if (typeof b.cancellation_policy !== 'string') { res.status(400).json({ error: 'cancellation_policy must be a string' }); return; }
     updates.cancellation_policy = b.cancellation_policy;
   }
-  Object.assign(updates, extractRulesetFields(b));
+  const rulesetFields = extractRulesetFields(b);
+  const rulesetError = validateRulesetFields(rulesetFields);
+  if (rulesetError) { res.status(400).json({ error: rulesetError }); return; }
+  Object.assign(updates, rulesetFields);
   try {
     const location = await providerService.updateLocation(getUser(req).sub, req.params.id, updates as import('../../services/provider.service').UpdateLocationInput);
     res.json(location);
