@@ -11,6 +11,7 @@ import type { BookingLocation, LocationFilters, Difficulty, LandscapeType, Locat
 import { DIFFICULTY_OPTIONS, LANDSCAPE_TYPE_OPTIONS, SETTING_OPTIONS, TONE_TAG_OPTIONS } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 import { filtersToParams } from '@/utils/filters'
+import { WillOrb } from '@/components/WillOrb/WillOrb'
 
 interface LocationListItemProps {
   location: BookingLocation
@@ -529,6 +530,7 @@ export function BrowseLocations() {
         onApply={handleFiltersApply}
         onClearAll={handleClearFilters}
       />
+      <WillOrb />
     </div>
   )
 }
