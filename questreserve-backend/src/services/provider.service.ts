@@ -182,7 +182,21 @@ export class ProviderService {
       cancellation_policy,
       image_url: null,
       ...rulesetFields,
-    } as Omit<BookingLocation, 'id' | 'created_at' | 'updated_at'>);
+      mount_permitted: rulesetFields.mount_permitted ?? false,
+      familiar_permitted: rulesetFields.familiar_permitted ?? false,
+      solo_permitted: rulesetFields.solo_permitted ?? false,
+      non_lethal_mode: rulesetFields.non_lethal_mode ?? false,
+      permadeath_risk: rulesetFields.permadeath_risk ?? false,
+      boss_encounter: rulesetFields.boss_encounter ?? false,
+      pvp_permitted: rulesetFields.pvp_permitted ?? false,
+      scouting_permitted: rulesetFields.scouting_permitted ?? false,
+      has_safe_room: rulesetFields.has_safe_room ?? false,
+      has_merchant: rulesetFields.has_merchant ?? false,
+      equipment_provided: rulesetFields.equipment_provided ?? false,
+      guide_provided: rulesetFields.guide_provided ?? false,
+      boss_loot: rulesetFields.boss_loot ?? false,
+      unique_item_chance: rulesetFields.unique_item_chance ?? false,
+    });
   }
 
   async getLocations(providerId: string): Promise<BookingLocationWithSlotCount[]> {
