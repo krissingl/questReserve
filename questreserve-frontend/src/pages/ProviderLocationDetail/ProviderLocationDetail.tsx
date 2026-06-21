@@ -32,59 +32,6 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Tag({
-  label,
-  variant = 'neutral',
-}: {
-  label: string
-  variant?: 'neutral' | 'accent' | 'warning'
-}) {
-  const dotColor =
-    variant === 'accent'
-      ? 'rgb(var(--accent))'
-      : variant === 'warning'
-      ? 'rgb(var(--destructive))'
-      : 'rgb(var(--muted-foreground))'
-
-  const bg =
-    variant === 'accent'
-      ? 'rgb(var(--accent) / 0.08)'
-      : variant === 'warning'
-      ? 'rgb(var(--destructive) / 0.08)'
-      : 'rgb(var(--muted) / 0.4)'
-
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.35rem',
-        padding: '0.2rem 0.55rem 0.2rem 0.45rem',
-        borderRadius: 'var(--radius)',
-        fontSize: 'var(--text-xs)',
-        fontWeight: 'var(--weight-medium)',
-        backgroundColor: bg,
-        color: 'rgb(var(--foreground))',
-        border: '1px solid rgb(var(--border))',
-        lineHeight: 1.4,
-        whiteSpace: 'nowrap',
-      }}
-    >
-      <span
-        style={{
-          display: 'inline-block',
-          width: '6px',
-          height: '6px',
-          borderRadius: '50%',
-          backgroundColor: dotColor,
-          flexShrink: 0,
-        }}
-      />
-      {label}
-    </span>
-  )
-}
-
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div
@@ -99,16 +46,6 @@ function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
     >
       <span style={{ color: 'rgb(var(--muted-foreground))', flexShrink: 0, minWidth: '7rem' }}>{label}</span>
       <span style={{ color: 'rgb(var(--foreground))' }}>{value}</span>
-    </div>
-  )
-}
-
-function TagRow({ tags }: { tags: { label: string; variant?: 'neutral' | 'accent' | 'warning' }[] }) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.5rem' }}>
-      {tags.map((t) => (
-        <Tag key={t.label} label={t.label} variant={t.variant} />
-      ))}
     </div>
   )
 }
@@ -225,7 +162,10 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
           {location.landscape_type && <MetaRow label="Landscape" value={capitalize(location.landscape_type)} />}
           {location.setting && <MetaRow label="Setting" value={capitalize(location.setting)} />}
           {location.environment_tags && location.environment_tags.length > 0 && (
-            <TagRow tags={location.environment_tags.map((t) => ({ label: capitalize(t.replace(/_/g, ' ')), variant: 'neutral' as const }))} />
+            <MetaRow
+              label="Environment"
+              value={location.environment_tags.map((t) => capitalize(t.replace(/_/g, ' '))).join(', ')}
+            />
           )}
         </RulesetBlock>
       )}
@@ -233,7 +173,10 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
       {hasRestrictions && (
         <RulesetBlock title="Restrictions & Access">
           {location.magic_restrictions && location.magic_restrictions.length > 0 && (
-            <TagRow tags={location.magic_restrictions.map((r) => ({ label: capitalize(r.replace(/_/g, ' ')), variant: 'warning' as const }))} />
+            <MetaRow
+              label="Magic"
+              value={location.magic_restrictions.map((r) => capitalize(r.replace(/_/g, ' '))).join(', ')}
+            />
           )}
           {location.class_restrictions && location.class_restrictions.length > 0 && (
             <MetaRow label="Class" value={location.class_restrictions.map(capitalize).join(', ')} />
@@ -245,39 +188,54 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
             <MetaRow label="Faction" value={location.faction_restrictions.map(capitalize).join(', ')} />
           )}
           {location.physical_access && location.physical_access.length > 0 && (
-            <TagRow tags={location.physical_access.map((a) => ({ label: capitalize(a.replace(/_/g, ' ')), variant: 'warning' as const }))} />
+            <MetaRow
+              label="Physical Access"
+              value={location.physical_access.map((a) => capitalize(a.replace(/_/g, ' '))).join(', ')}
+            />
           )}
           {location.party_composition_tags && location.party_composition_tags.length > 0 && (
-            <TagRow tags={location.party_composition_tags.map((t) => ({ label: capitalize(t.replace(/_/g, ' ')), variant: 'neutral' as const }))} />
-          )}
-          {(location.mount_permitted || location.familiar_permitted || location.solo_permitted) && (
-            <TagRow tags={[
-              ...(location.mount_permitted ? [{ label: 'Mount Permitted', variant: 'accent' as const }] : []),
-              ...(location.familiar_permitted ? [{ label: 'Familiar Permitted', variant: 'accent' as const }] : []),
-              ...(location.solo_permitted ? [{ label: 'Solo Permitted', variant: 'accent' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Party Composition"
+              value={location.party_composition_tags.map((t) => capitalize(t.replace(/_/g, ' '))).join(', ')}
+            />
           )}
           {location.booking_type && <MetaRow label="Booking" value={capitalize(location.booking_type)} />}
+          {(location.mount_permitted || location.familiar_permitted || location.solo_permitted) && (
+            <MetaRow
+              label="Permits"
+              value={[
+                location.mount_permitted ? 'Mount' : null,
+                location.familiar_permitted ? 'Familiar' : null,
+                location.solo_permitted ? 'Solo' : null,
+              ].filter(Boolean).join(', ')}
+            />
+          )}
         </RulesetBlock>
       )}
 
       {hasTone && (
         <RulesetBlock title="Tone & Content">
           {location.tone_tags && location.tone_tags.length > 0 && (
-            <TagRow tags={location.tone_tags.map((t) => ({ label: capitalize(t), variant: 'accent' as const }))} />
+            <MetaRow
+              label="Tone"
+              value={location.tone_tags.map((t) => capitalize(t)).join(', ')}
+            />
           )}
           {location.primary_focus && <MetaRow label="Primary Focus" value={capitalize(location.primary_focus)} />}
           {location.gore_level != null && (
             <MetaRow label="Gore Level" value={GORE_LABELS[location.gore_level] ?? String(location.gore_level)} />
           )}
           {(location.permadeath_risk || location.pvp_permitted || location.boss_encounter || location.non_lethal_mode || location.scouting_permitted) && (
-            <TagRow tags={[
-              ...(location.permadeath_risk ? [{ label: 'Permadeath Risk', variant: 'warning' as const }] : []),
-              ...(location.pvp_permitted ? [{ label: 'PvP Permitted', variant: 'warning' as const }] : []),
-              ...(location.boss_encounter ? [{ label: 'Boss Encounter', variant: 'accent' as const }] : []),
-              ...(location.non_lethal_mode ? [{ label: 'Non-Lethal Mode', variant: 'accent' as const }] : []),
-              ...(location.scouting_permitted ? [{ label: 'Scouting Permitted', variant: 'neutral' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Content Flags"
+              value={[
+                location.permadeath_risk ? 'Permadeath Risk' : null,
+                location.pvp_permitted ? 'PvP Permitted' : null,
+                location.boss_encounter ? 'Boss Encounter' : null,
+                location.non_lethal_mode ? 'Non-Lethal Mode' : null,
+                location.scouting_permitted ? 'Scouting Permitted' : null,
+              ].filter(Boolean).join(', ')}
+            />
           )}
         </RulesetBlock>
       )}
@@ -293,19 +251,25 @@ function RulesetDisplay({ location }: { location: BookingLocation }) {
       {hasAmenities && (
         <RulesetBlock title="Amenities & Loot">
           {(location.has_safe_room || location.has_merchant || location.equipment_provided || location.guide_provided) && (
-            <TagRow tags={[
-              ...(location.has_safe_room ? [{ label: 'Safe Room', variant: 'accent' as const }] : []),
-              ...(location.has_merchant ? [{ label: 'Merchant', variant: 'accent' as const }] : []),
-              ...(location.equipment_provided ? [{ label: 'Equipment Provided', variant: 'accent' as const }] : []),
-              ...(location.guide_provided ? [{ label: 'Guide Provided', variant: 'accent' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Amenities"
+              value={[
+                location.has_safe_room ? 'Safe Room' : null,
+                location.has_merchant ? 'Merchant' : null,
+                location.equipment_provided ? 'Equipment Provided' : null,
+                location.guide_provided ? 'Guide Provided' : null,
+              ].filter(Boolean).join(', ')}
+            />
           )}
           {location.loot_type && <MetaRow label="Loot" value={capitalize(location.loot_type)} />}
           {(location.boss_loot || location.unique_item_chance) && (
-            <TagRow tags={[
-              ...(location.boss_loot ? [{ label: 'Boss Loot', variant: 'accent' as const }] : []),
-              ...(location.unique_item_chance ? [{ label: 'Unique Item Chance', variant: 'accent' as const }] : []),
-            ]} />
+            <MetaRow
+              label="Loot Features"
+              value={[
+                location.boss_loot ? 'Boss Loot' : null,
+                location.unique_item_chance ? 'Unique Item Chance' : null,
+              ].filter(Boolean).join(', ')}
+            />
           )}
         </RulesetBlock>
       )}
