@@ -18,13 +18,13 @@ const TONE_KEYWORDS: Array<[RegExp, ToneTag]> = [
   [/\b(heroic|glorious|valiant|noble quest|brave|chivalric)\b/, 'heroic'],
   [/\b(epic|legendary)\b(?!\s+(difficulty|challenge|tier|mode))/, 'heroic'],
   [/\b(funny|comedic|silly|lighthearted|whimsical|humorous|comic|jovial)\b/, 'comedic'],
-  [/\b(mystery|mysterious|investigative|detective|whodunit|enigmatic|puzzling|riddle)\b/, 'mystery'],
+  [/\b(mystery|mysterious|investigative|detective|whodunit|enigmatic|puzzling|riddle|puzzle|puzzles|puzzle-based|puzzle-heavy)\b/, 'mystery'],
   [/\b(political|intrigue|court|noble(s)?|diplomacy|faction|power play|scheming)\b/, 'political'],
 ]
 
 const DIFFICULTY_KEYWORDS: Array<[RegExp, Difficulty]> = [
-  [/\b(easy|beginner|simple|starter|novice|newbie|casual|relaxed)\b/, 'EASY'],
-  [/\b(medium|moderate|average|balanced|middling)\b/, 'MEDIUM'],
+  [/\b(easy|beginner|beginners|beginner-friendly|for beginners|simple|starter|novice|newbie|casual|relaxed)\b/, 'EASY'],
+  [/\b(medium|moderate|average|balanced|middling|beginner|beginners|beginner-friendly|for beginners)\b/, 'MEDIUM'],
   [/\b(hard|difficult|challenging|tough|demanding)\b/, 'HARD'],
   [/\b(deadly|lethal|extreme|brutal|punishing|merciless|legendary (difficulty|challenge|tier|mode)|death trap|lethal)\b/, 'LEGENDARY'],
 ]
@@ -130,28 +130,16 @@ export interface CannedPrompt {
 
 export const CANNED_PROMPTS: CannedPrompt[] = [
   {
-    label: 'A spooky cave for beginners',
-    filters: { landscapeType: 'cave', toneTags: ['horror'], difficulties: ['EASY'] },
+    label: 'Something spooky underground',
+    filters: { landscapeType: 'cave', toneTags: ['horror'] },
   },
   {
-    label: 'Epic outdoor adventure for veterans',
-    filters: { setting: 'exterior', toneTags: ['heroic'], difficulties: ['HARD'], levelRangeMin: 10 },
+    label: 'A heroic outdoor quest',
+    filters: { setting: 'exterior', toneTags: ['heroic'] },
   },
   {
-    label: 'Quick dungeon crawl, 1–4 players',
-    filters: { landscapeType: 'cave', setting: 'interior', runTimeMax: 90, partySizeMax: 4 },
-  },
-  {
-    label: 'Mystery and intrigue in the city',
-    filters: { landscapeType: 'urban', toneTags: ['mystery', 'political'] },
-  },
-  {
-    label: 'Brutal endgame raid',
-    filters: { difficulties: ['LEGENDARY'], levelRangeMin: 15 },
-  },
-  {
-    label: 'Light-hearted romp for all levels',
-    filters: { toneTags: ['comedic'], difficulties: ['EASY'] },
+    label: 'Easy adventure for beginners',
+    filters: { difficulties: ['EASY', 'MEDIUM'] },
   },
 ]
 

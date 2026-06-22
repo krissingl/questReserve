@@ -2,19 +2,22 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { matchFilters, CANNED_PROMPTS } from '@/utils/willMatcher'
 import { filtersToParams } from '@/utils/filters'
+import { useAuth } from '@/contexts/AuthContext'
 import type { LocationFilters } from '@/types/domain'
 
 // ASSET: replace with approved orb illustration
 
+const WILL_BLUE = '135 206 250'
+
 const WILL_ORB_KEYFRAMES = `
 @keyframes will-orb-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px 2px rgb(var(--accent) / 0.6), 0 0 20px 6px rgb(var(--accent) / 0.25);
+    box-shadow: 0 0 8px 2px rgb(${WILL_BLUE} / 0.6), 0 0 20px 6px rgb(${WILL_BLUE} / 0.25);
     transform: scale(1);
     opacity: 1;
   }
   50% {
-    box-shadow: 0 0 14px 5px rgb(var(--accent) / 0.85), 0 0 32px 10px rgb(var(--accent) / 0.4);
+    box-shadow: 0 0 14px 5px rgb(${WILL_BLUE} / 0.85), 0 0 32px 10px rgb(${WILL_BLUE} / 0.4);
     transform: scale(1.06);
     opacity: 0.9;
   }
@@ -82,6 +85,9 @@ export function WillOrb() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [response, setResponse] = useState('')
+  const { user } = useAuth()
+  const adventurerName = user?.displayName ?? 'Adventurer'
+  const greeting = `Welcome, ${adventurerName} — what can I help you find?`
 
   function applyFilters(filters: Partial<LocationFilters>, message: string) {
     const hasAnyFilter = Object.keys(filters).length > 0
@@ -122,7 +128,7 @@ export function WillOrb() {
       <div
         style={{
           position: 'fixed',
-          bottom: '2rem',
+          bottom: '5rem',
           right: '2rem',
           zIndex: 100,
           display: 'flex',
@@ -163,7 +169,7 @@ export function WillOrb() {
                     width: '22px',
                     height: '22px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgb(var(--accent))',
+                    backgroundColor: `rgb(${WILL_BLUE})`,
                     flexShrink: 0,
                   }}
                 />
@@ -209,7 +215,7 @@ export function WillOrb() {
                 borderBottom: '1px solid rgb(var(--border))',
               }}
             >
-              {response || 'Ask Will to help you find an adventure.'}
+              {response || greeting}
             </div>
 
             {/* Canned prompt chips */}
@@ -229,7 +235,7 @@ export function WillOrb() {
                   style={{
                     padding: '0.2rem 0.5rem',
                     borderRadius: '999px',
-                    border: '1px solid rgb(var(--border))',
+                    border: `1px solid rgb(${WILL_BLUE} / 0.5)`,
                     backgroundColor: 'rgb(var(--card))',
                     color: 'rgb(var(--muted-foreground))',
                     fontSize: '0.7rem',
@@ -257,7 +263,7 @@ export function WillOrb() {
                   borderRadius: 'var(--radius)',
                   border: '1px solid rgb(var(--border))',
                   backgroundColor: 'rgb(var(--input, var(--background)))',
-                  color: 'rgb(var(--foreground))',
+                  color: '#1a1a1a',
                   padding: '0.5rem',
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'inherit',
@@ -316,7 +322,7 @@ export function WillOrb() {
             height: `${orbDiameter}px`,
             borderRadius: '50%',
             border: 'none',
-            backgroundColor: 'rgb(var(--accent))',
+            backgroundColor: `rgb(${WILL_BLUE})`,
             cursor: 'pointer',
             padding: 0,
             flexShrink: 0,
