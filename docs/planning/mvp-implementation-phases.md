@@ -113,7 +113,7 @@ Two workstreams planned for this phase:
 **Branding & Styling Cleanup** — Audit and improve visual consistency across the app. Make styling more uniform and visually interesting throughout the customer, provider, and guest portals.
 
 ## Phase 11.7: Expanded Location Rulesets & Provider Survey
-Status : In Progress
+Status : ✅ COMPLETE
 
 A rich location metadata system with a structured provider survey and expanded customer filters.
 
@@ -136,7 +136,7 @@ Survey should feel guided — fields grouped by category with clear section head
 **Customer Side** — Expanded browse/filter UI exposing new fields as filterable options. Priority filters for MVP: level range, run time, setting, landscape, magic environment, tone, party size. Secondary filters: access requirements, amenities, restrictions. Filter state persists in URL params.
 
 ## Phase 11.8: "Will" AI Location Assistant (Will-o'-the-Wisp)
-Status : NOT STARTED
+Status : ✅ COMPLETE
 
 A conversational AI helper for customers named Will, styled as a will-o'-the-wisp (glowing orb with soft pulse animation). Will takes a natural language request and translates it into filter selections on the browse page.
 
