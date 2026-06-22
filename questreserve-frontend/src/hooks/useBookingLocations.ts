@@ -22,6 +22,8 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
   const toneTagsKey = filters?.toneTags?.join(',')
   const partySizeMin = filters?.partySizeMin
   const partySizeMax = filters?.partySizeMax
+  const primaryFocusMin = filters?.primaryFocusMin
+  const primaryFocusMax = filters?.primaryFocusMax
 
   useEffect(() => {
     let cancelled = false
@@ -45,7 +47,7 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
     return () => {
       cancelled = true
     }
-  }, [difficultiesKey, levelRangeMin, levelRangeMax, runTimeMax, setting, landscapeType, toneTagsKey, partySizeMin, partySizeMax])
+  }, [difficultiesKey, levelRangeMin, levelRangeMax, runTimeMax, setting, landscapeType, toneTagsKey, partySizeMin, partySizeMax, primaryFocusMin, primaryFocusMax])
 
   return { data, isLoading, error }
 }

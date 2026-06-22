@@ -48,6 +48,8 @@ export async function getBookingLocations(filters?: LocationFilters): Promise<Bo
   if (filters?.toneTags && filters.toneTags.length > 0) params.toneTags = filters.toneTags.join(',')
   if (filters?.partySizeMin !== undefined) params.partySizeMin = filters.partySizeMin
   if (filters?.partySizeMax !== undefined) params.partySizeMax = filters.partySizeMax
+  if (filters?.primaryFocusMin !== undefined) params.primaryFocusMin = filters.primaryFocusMin
+  if (filters?.primaryFocusMax !== undefined) params.primaryFocusMax = filters.primaryFocusMax
   const response = await apiClient.get<BookingLocation[]>('/customer/locations', { params })
   return response.data
 }
