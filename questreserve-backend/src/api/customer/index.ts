@@ -47,6 +47,15 @@ function parsePositiveInt(value: string | undefined, paramName: string): { value
   return { value: parsed };
 }
 
+function parseSignedInt(value: string | undefined, paramName: string): { value: number } | { error: string } | undefined {
+  if (value === undefined) return undefined;
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed) || String(parsed) !== value) {
+    return { error: `${paramName} must be an integer` };
+  }
+  return { value: parsed };
+}
+
 function getUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthenticatedError();
   return req.user;
@@ -126,6 +135,12 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
   const partySizeMaxResult = parsePositiveInt(q.partySizeMax, 'partySizeMax');
   if (partySizeMaxResult && 'error' in partySizeMaxResult) { res.status(400).json({ error: partySizeMaxResult.error }); return; }
 
+  const primaryFocusMinResult = parseSignedInt(q.primaryFocusMin, 'primaryFocusMin');
+  if (primaryFocusMinResult && 'error' in primaryFocusMinResult) { res.status(400).json({ error: primaryFocusMinResult.error }); return; }
+
+  const primaryFocusMaxResult = parseSignedInt(q.primaryFocusMax, 'primaryFocusMax');
+  if (primaryFocusMaxResult && 'error' in primaryFocusMaxResult) { res.status(400).json({ error: primaryFocusMaxResult.error }); return; }
+
   try {
     const locations = await customerService.browseLocations({
       difficulties: parsedDifficulties,
@@ -137,6 +152,8 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
       runTimeMax: runTimeMaxResult ? (runTimeMaxResult as { value: number }).value : undefined,
       partySizeMin: partySizeMinResult ? (partySizeMinResult as { value: number }).value : undefined,
       partySizeMax: partySizeMaxResult ? (partySizeMaxResult as { value: number }).value : undefined,
+      primaryFocusMin: primaryFocusMinResult ? (primaryFocusMinResult as { value: number }).value : undefined,
+      primaryFocusMax: primaryFocusMaxResult ? (primaryFocusMaxResult as { value: number }).value : undefined,
     });
     res.json(locations);
   } catch (err) {

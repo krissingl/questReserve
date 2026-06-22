@@ -29,6 +29,12 @@ const DIFFICULTY_KEYWORDS: Array<[RegExp, Difficulty]> = [
   [/\b(deadly|lethal|extreme|brutal|punishing|merciless|legendary (difficulty|challenge|tier|mode)|death trap|lethal)\b/, 'LEGENDARY'],
 ]
 
+const PRIMARY_FOCUS_KEYWORDS: Array<[RegExp, Pick<LocationFilters, 'primaryFocusMin' | 'primaryFocusMax'>]> = [
+  [/\b(puzzle|puzzles|puzzle-based|puzzle-heavy|puzzle-focused|riddles|riddle)\b/, { primaryFocusMax: -2 }],
+  [/\b(combat|combat-heavy|combat-focused|fighting|battle|battles|hack and slash)\b/, { primaryFocusMin: 2 }],
+  [/\b(balanced|mixed|both|variety)\b/, { primaryFocusMin: -1, primaryFocusMax: 1 }],
+]
+
 const SETTING_KEYWORDS: Array<[RegExp, LocationSetting]> = [
   [/\b(indoor|inside|interior|enclosed|indoors|underground)\b/, 'interior'],
   [/\b(outdoor|outside|exterior|open[\s-]air|outdoors|open world)\b/, 'exterior'],
@@ -173,6 +179,13 @@ export function matchFilters(input: string): Partial<LocationFilters> {
   for (const [pattern, setting] of SETTING_KEYWORDS) {
     if (pattern.test(lower)) {
       filters.setting = setting
+      break
+    }
+  }
+
+  for (const [pattern, focusBounds] of PRIMARY_FOCUS_KEYWORDS) {
+    if (pattern.test(lower)) {
+      Object.assign(filters, focusBounds)
       break
     }
   }

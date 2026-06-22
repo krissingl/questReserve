@@ -13,6 +13,8 @@ export interface LocationFilters {
   toneTags?: string[];
   partySizeMin?: number;
   partySizeMax?: number;
+  primaryFocusMin?: number;
+  primaryFocusMax?: number;
 }
 
 export class BookingLocationRepository extends BaseRepository<BookingLocation> {
@@ -54,6 +56,12 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     }
     if (filters.partySizeMax !== undefined) {
       query.where('party_size_min', '<=', filters.partySizeMax);
+    }
+    if (filters.primaryFocusMin !== undefined) {
+      query.where('primary_focus', '>=', filters.primaryFocusMin);
+    }
+    if (filters.primaryFocusMax !== undefined) {
+      query.where('primary_focus', '<=', filters.primaryFocusMax);
     }
 
     return query;

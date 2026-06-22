@@ -25,6 +25,8 @@ export interface LocationFilters {
   toneTags?: ToneTag[]
   partySizeMin?: number
   partySizeMax?: number
+  primaryFocusMin?: number
+  primaryFocusMax?: number
 }
 
 export type BookingStatus = 'BOOKED' | 'CANCELLED'

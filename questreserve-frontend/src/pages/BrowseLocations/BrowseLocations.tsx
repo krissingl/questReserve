@@ -276,6 +276,18 @@ function readFiltersFromParams(searchParams: URLSearchParams): LocationFilters {
     if (!isNaN(n) && n > 0) filters.partySizeMax = n
   }
 
+  const primaryFocusMin = searchParams.get('primaryFocusMin')
+  if (primaryFocusMin) {
+    const n = parseInt(primaryFocusMin, 10)
+    if (!isNaN(n)) filters.primaryFocusMin = n
+  }
+
+  const primaryFocusMax = searchParams.get('primaryFocusMax')
+  if (primaryFocusMax) {
+    const n = parseInt(primaryFocusMax, 10)
+    if (!isNaN(n)) filters.primaryFocusMax = n
+  }
+
   return filters
 }
 
@@ -290,6 +302,8 @@ function countActiveFilters(f: LocationFilters): number {
   if (f.toneTags && f.toneTags.length > 0) count++
   if (f.partySizeMin !== undefined) count++
   if (f.partySizeMax !== undefined) count++
+  if (f.primaryFocusMin !== undefined) count++
+  if (f.primaryFocusMax !== undefined) count++
   return count
 }
 

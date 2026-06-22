@@ -11,5 +11,7 @@ export function filtersToParams(filters: LocationFilters): URLSearchParams {
   if (filters.toneTags && filters.toneTags.length > 0) next.set('toneTags', filters.toneTags.join(','))
   if (filters.partySizeMin !== undefined) next.set('partySizeMin', String(filters.partySizeMin))
   if (filters.partySizeMax !== undefined) next.set('partySizeMax', String(filters.partySizeMax))
+  if (filters.primaryFocusMin !== undefined) next.set('primaryFocusMin', String(filters.primaryFocusMin))
+  if (filters.primaryFocusMax !== undefined) next.set('primaryFocusMax', String(filters.primaryFocusMax))
   return next
 }

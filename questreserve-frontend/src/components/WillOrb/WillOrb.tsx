@@ -32,6 +32,19 @@ const orbDiameter = 56
 function buildResponseMessage(filters: Partial<LocationFilters>): string {
   const parts: string[] = []
 
+  if (filters.primaryFocusMax !== undefined && filters.primaryFocusMax <= -2) {
+    parts.push('the halls echo with riddles and hidden mechanisms')
+  } else if (filters.primaryFocusMin !== undefined && filters.primaryFocusMin >= 2) {
+    parts.push('the clash of steel and the roar of battle')
+  } else if (
+    filters.primaryFocusMin !== undefined &&
+    filters.primaryFocusMax !== undefined &&
+    filters.primaryFocusMin >= -1 &&
+    filters.primaryFocusMax <= 1
+  ) {
+    parts.push('a path balanced between mind and blade')
+  }
+
   if (filters.landscapeType) {
     const descriptions: Record<string, string> = {
       cave: 'the damp chill of stone and shadow',
@@ -69,7 +82,9 @@ function buildResponseMessage(filters: Partial<LocationFilters>): string {
       filters.levelRangeMax !== undefined ||
       filters.partySizeMin !== undefined ||
       filters.partySizeMax !== undefined ||
-      filters.runTimeMax !== undefined
+      filters.runTimeMax !== undefined ||
+      filters.primaryFocusMin !== undefined ||
+      filters.primaryFocusMax !== undefined
     ) {
       return "The path shifts… I've set the course by what you seek."
     }
