@@ -113,7 +113,7 @@ Two workstreams planned for this phase:
 **Branding & Styling Cleanup** — Audit and improve visual consistency across the app. Make styling more uniform and visually interesting throughout the customer, provider, and guest portals.
 
 ## Phase 11.7: Expanded Location Rulesets & Provider Survey
-Status : NOT STARTED
+Status : In Progress
 
 A rich location metadata system with a structured provider survey and expanded customer filters.
 
