@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { matchFilters, CANNED_PROMPTS } from '@/utils/willMatcher'
 import { filtersToParams } from '@/utils/filters'
-import { useAuth } from '@/contexts/AuthContext'
 import type { LocationFilters } from '@/types/domain'
 
 // ASSET: replace with approved orb illustration
@@ -85,9 +84,7 @@ export function WillOrb() {
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [response, setResponse] = useState('')
-  const { user } = useAuth()
-  const adventurerName = user?.displayName ?? 'Adventurer'
-  const greeting = `Welcome, ${adventurerName} — what can I help you find?`
+  const greeting = 'Welcome Adventurer — what can I help you find?'
 
   function applyFilters(filters: Partial<LocationFilters>, message: string) {
     const hasAnyFilter = Object.keys(filters).length > 0
