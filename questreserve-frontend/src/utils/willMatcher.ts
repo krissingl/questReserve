@@ -24,7 +24,7 @@ const TONE_KEYWORDS: Array<[RegExp, ToneTag]> = [
 
 const DIFFICULTY_KEYWORDS: Array<[RegExp, Difficulty]> = [
   [/\b(easy|beginner|beginners|beginner-friendly|for beginners|simple|starter|novice|newbie|casual|relaxed)\b/, 'EASY'],
-  [/\b(medium|moderate|average|balanced|middling|beginner|beginners|beginner-friendly|for beginners)\b/, 'MEDIUM'],
+  [/\b(medium|moderate|average|balanced|middling)\b/, 'MEDIUM'],
   [/\b(hard|difficult|challenging|tough|demanding)\b/, 'HARD'],
   [/\b(deadly|lethal|extreme|brutal|punishing|merciless|legendary (difficulty|challenge|tier|mode)|death trap|lethal)\b/, 'LEGENDARY'],
 ]
@@ -140,12 +140,12 @@ export const CANNED_PROMPTS: CannedPrompt[] = [
     filters: { landscapeType: 'cave', toneTags: ['horror'] },
   },
   {
-    label: 'A heroic outdoor quest',
-    filters: { setting: 'exterior', toneTags: ['heroic'] },
+    label: 'Something legendary and heroic',
+    filters: { toneTags: ['heroic'] },
   },
   {
     label: 'Easy adventure for beginners',
-    filters: { difficulties: ['EASY', 'MEDIUM'] },
+    filters: { difficulties: ['EASY'] },
   },
 ]
 
