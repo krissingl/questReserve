@@ -1,6 +1,6 @@
 import type { LocationFilters } from '@/types/domain'
 
-export function filtersToParams(filters: LocationFilters): URLSearchParams {
+export function filtersToParams(filters: Partial<LocationFilters>): URLSearchParams {
   const next = new URLSearchParams()
   if (filters.difficulties && filters.difficulties.length > 0) next.set('difficulties', filters.difficulties.join(','))
   if (filters.levelRangeMin !== undefined) next.set('levelRangeMin', String(filters.levelRangeMin))

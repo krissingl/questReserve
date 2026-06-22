@@ -747,7 +747,7 @@ export async function seed(knex: Knex): Promise<void> {
         level_range_min: 10,
         level_range_max: 20,
         landscape_type: "coastal",
-        setting: "both",
+        setting: "exterior",
         environment_tags: [],
         magic_restrictions: ["none"],
         tone_tags: ["heroic"],

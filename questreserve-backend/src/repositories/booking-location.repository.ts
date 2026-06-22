@@ -1,21 +1,7 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseRepository } from '../infrastructure';
-import { BookingLocation, Difficulty } from '../types';
-
-export interface LocationFilters {
-  difficulties?: Difficulty[];
-  levelRangeMin?: number;
-  levelRangeMax?: number;
-  runTimeMax?: number;
-  setting?: string;
-  landscapeType?: string;
-  toneTags?: string[];
-  partySizeMin?: number;
-  partySizeMax?: number;
-  primaryFocusMin?: number;
-  primaryFocusMax?: number;
-}
+import { BookingLocation, LocationFilters } from '../types';
 
 export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   constructor(knex: Knex) {
@@ -31,37 +17,37 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     const query = this.knex<BookingLocation>('booking_location').select('*');
 
     if (filters.difficulties && filters.difficulties.length > 0) {
-      query.whereIn('difficulty', filters.difficulties);
+      query = query.whereIn('difficulty', filters.difficulties);
     }
     if (filters.levelRangeMin !== undefined) {
-      query.where('level_range_max', '>=', filters.levelRangeMin);
+      query = query.where('level_range_max', '>=', filters.levelRangeMin);
     }
     if (filters.levelRangeMax !== undefined) {
-      query.where('level_range_min', '<=', filters.levelRangeMax);
+      query = query.where('level_range_min', '<=', filters.levelRangeMax);
     }
     if (filters.runTimeMax !== undefined) {
-      query.where('run_time_minutes', '<=', filters.runTimeMax);
+      query = query.where('run_time_minutes', '<=', filters.runTimeMax);
     }
     if (filters.setting) {
-      query.where('setting', filters.setting);
+      query = query.where('setting', filters.setting);
     }
     if (filters.landscapeType) {
-      query.where('landscape_type', filters.landscapeType);
+      query = query.where('landscape_type', filters.landscapeType);
     }
     if (filters.toneTags && filters.toneTags.length > 0) {
-      query.whereRaw('tone_tags && ?::text[]', [filters.toneTags]);
+      query = query.whereRaw('tone_tags && ?::text[]', [filters.toneTags]);
     }
     if (filters.partySizeMin !== undefined) {
-      query.where('party_size_max', '>=', filters.partySizeMin);
+      query = query.where('party_size_max', '>=', filters.partySizeMin);
     }
     if (filters.partySizeMax !== undefined) {
-      query.where('party_size_min', '<=', filters.partySizeMax);
+      query = query.where('party_size_min', '<=', filters.partySizeMax);
     }
     if (filters.primaryFocusMin !== undefined) {
-      query.where('primary_focus', '>=', filters.primaryFocusMin);
+      query = query.where('primary_focus', '>=', filters.primaryFocusMin);
     }
     if (filters.primaryFocusMax !== undefined) {
-      query.where('primary_focus', '<=', filters.primaryFocusMax);
+      query = query.where('primary_focus', '<=', filters.primaryFocusMax);
     }
 
     return query;

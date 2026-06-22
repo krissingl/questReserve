@@ -193,6 +193,20 @@ export interface Review {
   created_at: Date;
 }
 
+export interface LocationFilters {
+  difficulties?: Difficulty[];
+  levelRangeMin?: number;
+  levelRangeMax?: number;
+  runTimeMax?: number;
+  setting?: LocationSetting;
+  landscapeType?: LandscapeType;
+  toneTags?: ToneTag[];
+  partySizeMin?: number;
+  partySizeMax?: number;
+  primaryFocusMin?: number;
+  primaryFocusMax?: number;
+}
+
 export interface AdminBookingView {
   id: string;
   time_slot_id: string;

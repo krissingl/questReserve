@@ -18,7 +18,7 @@ import {
   LocationNotFoundError,
 } from '../../services/customer.service';
 import { Booking, Difficulty, LandscapeType, LocationSetting, ToneTag } from '../../types';
-import { validateRequiredStrings } from '../../utils/validation';
+import { validateRequiredStrings, parsePositiveInt, parseSignedInt } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
@@ -37,24 +37,6 @@ const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY']
 const VALID_SETTINGS: LocationSetting[] = ['interior', 'exterior'];
 const VALID_LANDSCAPE_TYPES: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp'];
 const VALID_TONE_TAGS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political'];
-
-function parsePositiveInt(value: string | undefined, paramName: string): { value: number } | { error: string } | undefined {
-  if (value === undefined) return undefined;
-  const parsed = parseInt(value, 10);
-  if (isNaN(parsed) || parsed <= 0 || String(parsed) !== value) {
-    return { error: `${paramName} must be a positive integer` };
-  }
-  return { value: parsed };
-}
-
-function parseSignedInt(value: string | undefined, paramName: string): { value: number } | { error: string } | undefined {
-  if (value === undefined) return undefined;
-  const parsed = parseInt(value, 10);
-  if (isNaN(parsed) || String(parsed) !== value) {
-    return { error: `${paramName} must be an integer` };
-  }
-  return { value: parsed };
-}
 
 function getUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthenticatedError();
@@ -121,39 +103,39 @@ publicRouter.get('/locations', async (req: Request, res: Response, next: NextFun
   }
 
   const levelRangeMinResult = parsePositiveInt(q.levelRangeMin, 'levelRangeMin');
-  if (levelRangeMinResult && 'error' in levelRangeMinResult) { res.status(400).json({ error: levelRangeMinResult.error }); return; }
+  if (levelRangeMinResult && !levelRangeMinResult.ok) { res.status(400).json({ error: levelRangeMinResult.error }); return; }
 
   const levelRangeMaxResult = parsePositiveInt(q.levelRangeMax, 'levelRangeMax');
-  if (levelRangeMaxResult && 'error' in levelRangeMaxResult) { res.status(400).json({ error: levelRangeMaxResult.error }); return; }
+  if (levelRangeMaxResult && !levelRangeMaxResult.ok) { res.status(400).json({ error: levelRangeMaxResult.error }); return; }
 
   const runTimeMaxResult = parsePositiveInt(q.runTimeMax, 'runTimeMax');
-  if (runTimeMaxResult && 'error' in runTimeMaxResult) { res.status(400).json({ error: runTimeMaxResult.error }); return; }
+  if (runTimeMaxResult && !runTimeMaxResult.ok) { res.status(400).json({ error: runTimeMaxResult.error }); return; }
 
   const partySizeMinResult = parsePositiveInt(q.partySizeMin, 'partySizeMin');
-  if (partySizeMinResult && 'error' in partySizeMinResult) { res.status(400).json({ error: partySizeMinResult.error }); return; }
+  if (partySizeMinResult && !partySizeMinResult.ok) { res.status(400).json({ error: partySizeMinResult.error }); return; }
 
   const partySizeMaxResult = parsePositiveInt(q.partySizeMax, 'partySizeMax');
-  if (partySizeMaxResult && 'error' in partySizeMaxResult) { res.status(400).json({ error: partySizeMaxResult.error }); return; }
+  if (partySizeMaxResult && !partySizeMaxResult.ok) { res.status(400).json({ error: partySizeMaxResult.error }); return; }
 
   const primaryFocusMinResult = parseSignedInt(q.primaryFocusMin, 'primaryFocusMin');
-  if (primaryFocusMinResult && 'error' in primaryFocusMinResult) { res.status(400).json({ error: primaryFocusMinResult.error }); return; }
+  if (primaryFocusMinResult && !primaryFocusMinResult.ok) { res.status(400).json({ error: primaryFocusMinResult.error }); return; }
 
   const primaryFocusMaxResult = parseSignedInt(q.primaryFocusMax, 'primaryFocusMax');
-  if (primaryFocusMaxResult && 'error' in primaryFocusMaxResult) { res.status(400).json({ error: primaryFocusMaxResult.error }); return; }
+  if (primaryFocusMaxResult && !primaryFocusMaxResult.ok) { res.status(400).json({ error: primaryFocusMaxResult.error }); return; }
 
   try {
     const locations = await customerService.browseLocations({
       difficulties: parsedDifficulties,
-      setting: q.setting,
-      landscapeType: q.landscapeType,
+      setting: q.setting as LocationSetting | undefined,
+      landscapeType: q.landscapeType as LandscapeType | undefined,
       toneTags: parsedToneTags,
-      levelRangeMin: levelRangeMinResult ? (levelRangeMinResult as { value: number }).value : undefined,
-      levelRangeMax: levelRangeMaxResult ? (levelRangeMaxResult as { value: number }).value : undefined,
-      runTimeMax: runTimeMaxResult ? (runTimeMaxResult as { value: number }).value : undefined,
-      partySizeMin: partySizeMinResult ? (partySizeMinResult as { value: number }).value : undefined,
-      partySizeMax: partySizeMaxResult ? (partySizeMaxResult as { value: number }).value : undefined,
-      primaryFocusMin: primaryFocusMinResult ? (primaryFocusMinResult as { value: number }).value : undefined,
-      primaryFocusMax: primaryFocusMaxResult ? (primaryFocusMaxResult as { value: number }).value : undefined,
+      levelRangeMin: levelRangeMinResult ? levelRangeMinResult.value : undefined,
+      levelRangeMax: levelRangeMaxResult ? levelRangeMaxResult.value : undefined,
+      runTimeMax: runTimeMaxResult ? runTimeMaxResult.value : undefined,
+      partySizeMin: partySizeMinResult ? partySizeMinResult.value : undefined,
+      partySizeMax: partySizeMaxResult ? partySizeMaxResult.value : undefined,
+      primaryFocusMin: primaryFocusMinResult ? primaryFocusMinResult.value : undefined,
+      primaryFocusMax: primaryFocusMaxResult ? primaryFocusMaxResult.value : undefined,
     });
     res.json(locations);
   } catch (err) {

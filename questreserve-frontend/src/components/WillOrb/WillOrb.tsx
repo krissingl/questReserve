@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { matchFilters, CANNED_PROMPTS } from '@/utils/willMatcher'
+import { matchFilters, buildResponseMessage, CANNED_PROMPTS } from '@/utils/willMatcher'
 import { filtersToParams } from '@/utils/filters'
 import type { LocationFilters } from '@/types/domain'
-
-// ASSET: replace with approved orb illustration
 
 const WILL_BLUE = '135 206 250'
 
@@ -29,71 +27,6 @@ const WILL_ORB_KEYFRAMES = `
 
 const orbDiameter = 56
 
-function buildResponseMessage(filters: Partial<LocationFilters>): string {
-  const parts: string[] = []
-
-  if (filters.primaryFocusMax !== undefined && filters.primaryFocusMax <= -2) {
-    parts.push('the halls echo with riddles and hidden mechanisms')
-  } else if (filters.primaryFocusMin !== undefined && filters.primaryFocusMin >= 2) {
-    parts.push('the clash of steel and the roar of battle')
-  } else if (
-    filters.primaryFocusMin !== undefined &&
-    filters.primaryFocusMax !== undefined &&
-    filters.primaryFocusMin >= -1 &&
-    filters.primaryFocusMax <= 1
-  ) {
-    parts.push('a path balanced between mind and blade')
-  }
-
-  if (filters.landscapeType) {
-    const descriptions: Record<string, string> = {
-      cave: 'the damp chill of stone and shadow',
-      forest: 'the whisper of ancient boughs',
-      desert: 'the scorching breath of endless sand',
-      mountain: 'the thin, cold air of the high peaks',
-      swamp: 'the murk of deep, still waters',
-      coastal: 'the salt-sting of crashing waves',
-      volcanic: 'the heat of smoldering earth below',
-      tundra: 'the biting frost of the frozen wastes',
-      urban: 'the smoke and cunning of crowded streets',
-      plains: 'the open sky and windswept grass',
-    }
-    const desc = descriptions[filters.landscapeType]
-    if (desc) parts.push(`I sense ${desc}`)
-  }
-
-  if (filters.toneTags && filters.toneTags.length > 0) {
-    const toneDesc: Record<string, string> = {
-      horror: 'shadow and dread',
-      heroic: 'glory and valor',
-      comedic: 'laughter and mischief',
-      mystery: 'secrets and hidden truths',
-      political: 'intrigue and power',
-    }
-    const toneList = filters.toneTags.map((t) => toneDesc[t]).filter(Boolean).join(' and ')
-    if (toneList) parts.push(`the air smells of ${toneList}`)
-  }
-
-  if (parts.length === 0) {
-    if (
-      filters.difficulties ||
-      filters.setting ||
-      filters.levelRangeMin !== undefined ||
-      filters.levelRangeMax !== undefined ||
-      filters.partySizeMin !== undefined ||
-      filters.partySizeMax !== undefined ||
-      filters.runTimeMax !== undefined ||
-      filters.primaryFocusMin !== undefined ||
-      filters.primaryFocusMax !== undefined
-    ) {
-      return "The path shifts… I've set the course by what you seek."
-    }
-    return "The mist swirls without direction… try describing the peril or terrain you seek."
-  }
-
-  return `${parts.join(', ')}… I've set your path.`
-}
-
 export function WillOrb() {
   const [, setSearchParams] = useSearchParams()
   const [open, setOpen] = useState(false)
@@ -104,7 +37,7 @@ export function WillOrb() {
   function applyFilters(filters: Partial<LocationFilters>, message: string) {
     const hasAnyFilter = Object.keys(filters).length > 0
     setResponse(message)
-    setSearchParams(hasAnyFilter ? filtersToParams(filters as LocationFilters) : new URLSearchParams())
+    setSearchParams(hasAnyFilter ? filtersToParams(filters) : new URLSearchParams())
   }
 
   function handleSubmit() {
@@ -174,7 +107,6 @@ export function WillOrb() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {/* ASSET: replace with approved orb illustration */}
                 <div
                   className="will-orb-idle"
                   style={{
@@ -275,7 +207,7 @@ export function WillOrb() {
                   borderRadius: 'var(--radius)',
                   border: '1px solid rgb(var(--border))',
                   backgroundColor: 'rgb(var(--input, var(--background)))',
-                  color: '#1a1a1a',
+                  color: 'rgb(var(--foreground))',
                   padding: '0.5rem',
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'inherit',

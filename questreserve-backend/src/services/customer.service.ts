@@ -1,8 +1,8 @@
-import { BookingLocationRepository, LocationFilters } from '../repositories/booking-location.repository';
+import { BookingLocationRepository } from '../repositories/booking-location.repository';
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
-import { Booking, BookingLocation, Difficulty, LocationImage, TimeSlot } from '../types';
+import { Booking, BookingLocation, Difficulty, LocationFilters, LocationImage, TimeSlot } from '../types';
 
 export class CustomerNotFoundError extends Error {
   constructor() {

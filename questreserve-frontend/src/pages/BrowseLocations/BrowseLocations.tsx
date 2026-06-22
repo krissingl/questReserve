@@ -318,7 +318,7 @@ export function BrowseLocations() {
   useEffect(() => {
     getLocationAverages()
       .then(setLocationRatings)
-      .catch(() => {})
+      .catch((err) => console.error('getLocationAverages failed:', err))
   }, [])
 
   const appliedFilters: LocationFilters = readFiltersFromParams(searchParams)
