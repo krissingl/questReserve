@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useBookingLocations } from '@/hooks/useBookingLocations'
 import { useLocationImages } from '@/hooks/useLocationImages'
-import { FilterDrawer } from '@/components/FilterDrawer/FilterDrawer'
+import { FilterPanelDrawer } from '@/components/LocationFilterPanel/LocationFilterPanel'
 import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import { StarDisplay } from '@/components/ReviewList/ReviewList'
 import { getLocationAverages } from '@/api/guest.api'
 import type { LocationRatingSummary } from '@/api/guest.api'
-import type { BookingLocation, LocationFilters } from '@/types/domain'
-import { DIFFICULTY_OPTIONS } from '@/types/domain'
+import type { BookingLocation, LocationFilters, Difficulty, LandscapeType, LocationSetting, ToneTag } from '@/types/domain'
+import { DIFFICULTY_OPTIONS, LANDSCAPE_TYPE_OPTIONS, SETTING_OPTIONS, TONE_TAG_OPTIONS } from '@/types/domain'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
+import { filtersToParams } from '@/utils/filters'
+import { WillOrb } from '@/components/WillOrb/WillOrb'
 
 interface LocationListItemProps {
   location: BookingLocation
@@ -106,7 +108,6 @@ function LocationListItem({ location, isFocused, onClick }: LocationListItemProp
           </span>
         </div>
       </button>
-
     </div>
   )
 }
@@ -220,6 +221,92 @@ function GalleryPanel({ location, rating, onNavigate }: GalleryPanelProps) {
   )
 }
 
+function readFiltersFromParams(searchParams: URLSearchParams): LocationFilters {
+  const filters: LocationFilters = {}
+
+  const difficultiesParam = searchParams.get('difficulties')
+  if (difficultiesParam) {
+    const parsed = difficultiesParam.split(',').filter((d) => DIFFICULTY_OPTIONS.includes(d as Difficulty)) as Difficulty[]
+    if (parsed.length > 0) filters.difficulties = parsed
+  }
+
+  const levelRangeMin = searchParams.get('levelRangeMin')
+  if (levelRangeMin) {
+    const n = parseInt(levelRangeMin, 10)
+    if (!isNaN(n) && n > 0) filters.levelRangeMin = n
+  }
+
+  const levelRangeMax = searchParams.get('levelRangeMax')
+  if (levelRangeMax) {
+    const n = parseInt(levelRangeMax, 10)
+    if (!isNaN(n) && n > 0) filters.levelRangeMax = n
+  }
+
+  const runTimeMax = searchParams.get('runTimeMax')
+  if (runTimeMax) {
+    const n = parseInt(runTimeMax, 10)
+    if (!isNaN(n) && n > 0) filters.runTimeMax = n
+  }
+
+  const setting = searchParams.get('setting')
+  if (setting && SETTING_OPTIONS.includes(setting as LocationSetting)) {
+    filters.setting = setting as LocationSetting
+  }
+
+  const landscapeType = searchParams.get('landscapeType')
+  if (landscapeType && LANDSCAPE_TYPE_OPTIONS.includes(landscapeType as LandscapeType)) {
+    filters.landscapeType = landscapeType as LandscapeType
+  }
+
+  const toneTagsParam = searchParams.get('toneTags')
+  if (toneTagsParam) {
+    const parsed = toneTagsParam.split(',').filter((t) => TONE_TAG_OPTIONS.includes(t as ToneTag)) as ToneTag[]
+    if (parsed.length > 0) filters.toneTags = parsed
+  }
+
+  const partySizeMin = searchParams.get('partySizeMin')
+  if (partySizeMin) {
+    const n = parseInt(partySizeMin, 10)
+    if (!isNaN(n) && n > 0) filters.partySizeMin = n
+  }
+
+  const partySizeMax = searchParams.get('partySizeMax')
+  if (partySizeMax) {
+    const n = parseInt(partySizeMax, 10)
+    if (!isNaN(n) && n > 0) filters.partySizeMax = n
+  }
+
+  const primaryFocusMin = searchParams.get('primaryFocusMin')
+  if (primaryFocusMin) {
+    const n = parseInt(primaryFocusMin, 10)
+    if (!isNaN(n)) filters.primaryFocusMin = n
+  }
+
+  const primaryFocusMax = searchParams.get('primaryFocusMax')
+  if (primaryFocusMax) {
+    const n = parseInt(primaryFocusMax, 10)
+    if (!isNaN(n)) filters.primaryFocusMax = n
+  }
+
+  return filters
+}
+
+function countActiveFilters(f: LocationFilters): number {
+  let count = 0
+  if (f.difficulties && f.difficulties.length > 0) count++
+  if (f.levelRangeMin !== undefined) count++
+  if (f.levelRangeMax !== undefined) count++
+  if (f.runTimeMax !== undefined) count++
+  if (f.setting) count++
+  if (f.landscapeType) count++
+  if (f.toneTags && f.toneTags.length > 0) count++
+  if (f.partySizeMin !== undefined) count++
+  if (f.partySizeMax !== undefined) count++
+  if (f.primaryFocusMin !== undefined) count++
+  if (f.primaryFocusMax !== undefined) count++
+  return count
+}
+
 export function BrowseLocations() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -231,15 +318,12 @@ export function BrowseLocations() {
   useEffect(() => {
     getLocationAverages()
       .then(setLocationRatings)
-      .catch((err) => console.error('BrowseLocations: failed to load location averages', err))
+      .catch((err) => console.error('getLocationAverages failed:', err))
   }, [])
 
-  const rawDifficulty = searchParams.get('difficulty')
-  const appliedFilters: LocationFilters = {
-    difficulty: DIFFICULTY_OPTIONS.find((d) => d === rawDifficulty),
-  }
+  const appliedFilters: LocationFilters = readFiltersFromParams(searchParams)
 
-  const activeFilterCount = Object.values(appliedFilters).filter(Boolean).length
+  const activeFilterCount = countActiveFilters(appliedFilters)
   const hasActiveFilters = activeFilterCount > 0
 
   const { data: locations, isLoading, error } = useBookingLocations(appliedFilters)
@@ -249,25 +333,13 @@ export function BrowseLocations() {
       ? locations.find((l) => l.id === focusedId) ?? locations[0]
       : null
 
-  function handleApply(filters: LocationFilters) {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      if (filters.difficulty) {
-        next.set('difficulty', filters.difficulty)
-      } else {
-        next.delete('difficulty')
-      }
-      return next
-    })
+  function handleFiltersApply(filters: LocationFilters) {
+    setSearchParams(filtersToParams(filters))
     setFocusedId(null)
   }
 
   function handleClearFilters() {
-    setSearchParams((prev) => {
-      const next = new URLSearchParams(prev)
-      next.delete('difficulty')
-      return next
-    })
+    setSearchParams(() => new URLSearchParams())
     setFocusedId(null)
   }
 
@@ -355,6 +427,24 @@ export function BrowseLocations() {
             </span>
           )}
         </button>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={handleClearFilters}
+            style={{
+              padding: '0.4rem 0.9rem',
+              border: '1px solid rgb(var(--border))',
+              borderRadius: 'var(--radius-pill)',
+              background: 'transparent',
+              color: 'rgb(var(--muted-foreground))',
+              cursor: 'pointer',
+              fontSize: 'var(--text-sm)',
+            }}
+          >
+            Clear All Filters
+          </button>
+        )}
       </div>
 
       {/* Loading / error / empty states */}
@@ -447,12 +537,14 @@ export function BrowseLocations() {
         </div>
       )}
 
-      <FilterDrawer
+      <FilterPanelDrawer
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        applied={appliedFilters}
-        onApply={handleApply}
+        filters={appliedFilters}
+        onApply={handleFiltersApply}
+        onClearAll={handleClearFilters}
       />
+      <WillOrb />
     </div>
   )
 }

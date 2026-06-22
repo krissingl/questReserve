@@ -10,9 +10,10 @@ import { LocationGallery } from '@/components/LocationGallery/LocationGallery'
 import { AvatarIcon } from '@/components/AvatarIcon/AvatarIcon'
 import { ReviewList } from '@/components/ReviewList/ReviewList'
 import { ReviewForm } from '@/components/ReviewForm/ReviewForm'
+import { RulesetDisplay } from '@/components/RulesetDisplay/RulesetDisplay'
 import { getMyBookings } from '@/api/customer.api'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
-import type { TimeSlot, Booking } from '@/types/domain'
+import type { TimeSlot, Booking, BookingLocation } from '@/types/domain'
 
 interface SlotCardProps {
   slot: TimeSlot
@@ -31,26 +32,20 @@ function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCan
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="rounded-lg p-4"
       style={{
-        backgroundColor: hovered ? 'rgb(var(--accent) / 0.06)' : 'rgb(var(--card))',
-        boxShadow: 'var(--shadow-card)',
-        border: `1px solid ${hovered ? 'rgb(var(--accent) / 0.35)' : 'transparent'}`,
+        borderRadius: 'var(--radius)',
+        padding: '0.65rem 0.75rem',
+        backgroundColor: hovered ? 'rgb(var(--accent) / 0.06)' : 'rgb(var(--background))',
+        border: `1px solid ${hovered ? 'rgb(var(--accent) / 0.35)' : 'rgb(var(--border))'}`,
         transition: 'background-color 0.15s ease, border-color 0.15s ease',
       }}
     >
-      <div className="flex items-center justify-between">
-        <div className="text-sm">
-          <span style={{ color: 'rgb(var(--foreground))' }}>
-            {formatSlotTime(slot.start_time)}
-          </span>
-          <span className="mx-2" style={{ color: 'rgb(var(--muted-foreground))' }}>
-            &ndash;
-          </span>
-          <span style={{ color: 'rgb(var(--foreground))' }}>
-            {formatSlotTime(slot.end_time)}
-          </span>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+        <span style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))' }}>
+          {formatSlotTime(slot.start_time)}
+          <span style={{ margin: '0 0.35rem', color: 'rgb(var(--muted-foreground))' }}>&ndash;</span>
+          {formatSlotTime(slot.end_time)}
+        </span>
 
         {!isPending && (
           <button
@@ -58,10 +53,16 @@ function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCan
             onClick={() => onReserve(slot)}
             onMouseEnter={() => setReserveHovered(true)}
             onMouseLeave={() => setReserveHovered(false)}
-            className="rounded px-4 py-1.5 text-sm font-medium"
             style={{
+              flexShrink: 0,
+              borderRadius: 'var(--radius)',
+              padding: '0.3rem 0.85rem',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--weight-medium)',
               backgroundColor: reserveHovered ? 'rgb(var(--accent) / 0.85)' : 'rgb(var(--accent))',
               color: 'rgb(var(--accent-foreground))',
+              border: 'none',
+              cursor: 'pointer',
               transition: 'background-color 0.15s ease',
             }}
           >
@@ -72,25 +73,34 @@ function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCan
 
       {isPending && (
         <div
-          className="mt-3 rounded p-3 text-sm"
-          style={{ backgroundColor: 'rgb(var(--primary) / 0.08)' }}
+          style={{
+            marginTop: '0.6rem',
+            borderRadius: 'var(--radius)',
+            padding: '0.6rem 0.75rem',
+            backgroundColor: 'rgb(var(--primary) / 0.08)',
+          }}
         >
-          <p className="mb-2 font-medium" style={{ color: 'rgb(var(--foreground))' }}>
-            Confirm reservation for{' '}
+          <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'rgb(var(--foreground))', marginBottom: '0.5rem' }}>
+            Confirm{' '}
             <span style={{ color: 'rgb(var(--accent))' }}>
               {formatSlotTime(slot.start_time)} &ndash; {formatSlotTime(slot.end_time)}
             </span>
             ?
           </p>
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
               type="button"
               onClick={onConfirm}
               disabled={bookingLoading}
-              className="rounded px-4 py-1.5 text-sm font-medium"
               style={{
+                borderRadius: 'var(--radius)',
+                padding: '0.3rem 0.85rem',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-medium)',
                 backgroundColor: 'rgb(var(--accent))',
                 color: 'rgb(var(--accent-foreground))',
+                border: 'none',
+                cursor: bookingLoading ? 'not-allowed' : 'pointer',
                 opacity: bookingLoading ? 0.6 : 1,
               }}
             >
@@ -100,12 +110,175 @@ function SlotCard({ slot, isPending, bookingLoading, onReserve, onConfirm, onCan
               type="button"
               onClick={onCancel}
               disabled={bookingLoading}
-              className="rounded px-4 py-1.5 text-sm font-medium"
-              style={{ color: 'rgb(var(--muted-foreground))' }}
+              style={{
+                borderRadius: 'var(--radius)',
+                padding: '0.3rem 0.85rem',
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--weight-medium)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'rgb(var(--muted-foreground))',
+              }}
             >
               Cancel
             </button>
           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DifficultyBadge({ difficulty }: { difficulty: string }) {
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '0.2rem 0.65rem',
+        borderRadius: 'var(--radius)',
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--weight-bold)',
+        letterSpacing: '0.04em',
+        backgroundColor: DIFFICULTY_COLOURS[difficulty as keyof typeof DIFFICULTY_COLOURS] ?? 'rgb(var(--muted))',
+        color: 'rgb(var(--primary-foreground, 255 255 255))',
+      }}
+    >
+      {difficulty}
+    </span>
+  )
+}
+
+function BookingPanel({
+  location,
+  slots,
+  slotsLoading,
+  slotsError,
+  pendingSlot,
+  bookingLoading,
+  conflictError,
+  bookingError,
+  onReserve,
+  onConfirm,
+  onCancel,
+}: {
+  location: BookingLocation
+  slots: TimeSlot[] | null | undefined
+  slotsLoading: boolean
+  slotsError: unknown
+  pendingSlot: TimeSlot | null
+  bookingLoading: boolean
+  conflictError: string | null
+  bookingError: string | null
+  onReserve: (slot: TimeSlot) => void
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div
+      style={{
+        borderRadius: 'var(--radius)',
+        backgroundColor: 'rgb(var(--card))',
+        boxShadow: 'var(--shadow-card)',
+        padding: '1.25rem',
+        position: 'sticky',
+        top: '1.5rem',
+      }}
+    >
+      {location.cancellation_policy && (
+        <div style={{ marginBottom: '1.25rem', paddingBottom: '1.25rem', borderBottom: '1px solid rgb(var(--border))' }}>
+          <p
+            style={{
+              fontSize: '0.7rem',
+              fontWeight: 'var(--weight-bold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              color: 'rgb(var(--muted-foreground))',
+              marginBottom: '0.3rem',
+            }}
+          >
+            Cancellation Policy
+          </p>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--foreground))', lineHeight: 1.5 }}>
+            {location.cancellation_policy}
+          </p>
+        </div>
+      )}
+
+      <h2
+        style={{
+          fontSize: '0.7rem',
+          fontWeight: 'var(--weight-bold)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.07em',
+          color: 'rgb(var(--muted-foreground))',
+          marginBottom: '0.75rem',
+        }}
+      >
+        Available Times
+      </h2>
+
+      {conflictError && (
+        <p
+          style={{
+            marginBottom: '0.75rem',
+            borderRadius: 'var(--radius)',
+            padding: '0.5rem 0.75rem',
+            fontSize: 'var(--text-sm)',
+            backgroundColor: 'rgb(var(--destructive) / 0.1)',
+            color: 'rgb(var(--destructive))',
+          }}
+        >
+          {conflictError}
+        </p>
+      )}
+
+      {bookingError && (
+        <p
+          style={{
+            marginBottom: '0.75rem',
+            borderRadius: 'var(--radius)',
+            padding: '0.5rem 0.75rem',
+            fontSize: 'var(--text-sm)',
+            backgroundColor: 'rgb(var(--destructive) / 0.1)',
+            color: 'rgb(var(--destructive))',
+          }}
+        >
+          {bookingError}
+        </p>
+      )}
+
+      {slotsLoading && (
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+          Loading available slots…
+        </p>
+      )}
+
+      {!slotsLoading && slotsError && (
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--destructive))' }}>
+          Failed to load available times.
+        </p>
+      )}
+
+      {!slotsLoading && !slotsError && slots && slots.length === 0 && (
+        <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
+          No available time slots at this time.
+        </p>
+      )}
+
+      {!slotsLoading && !slotsError && slots && slots.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {slots.map((slot) => (
+            <SlotCard
+              key={slot.id}
+              slot={slot}
+              isPending={pendingSlot?.id === slot.id}
+              bookingLoading={bookingLoading}
+              onReserve={onReserve}
+              onConfirm={onConfirm}
+              onCancel={onCancel}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -208,7 +381,7 @@ export function LocationDetail() {
 
   if (isLoading) {
     return (
-      <main className="p-8">
+      <main style={{ padding: '2rem' }}>
         <p style={{ color: 'rgb(var(--muted-foreground))' }}>Loading location…</p>
       </main>
     )
@@ -216,15 +389,16 @@ export function LocationDetail() {
 
   if (error) {
     return (
-      <main className="p-8">
+      <main style={{ padding: '2rem' }}>
         <Link
           to="/locations"
-          className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
-          style={{ color: 'rgb(var(--accent))' }}
+          style={{ display: 'inline-block', marginBottom: '1rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--accent))', textDecoration: 'none' }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
         >
           &larr; Back to Adventures
         </Link>
-        <p className="mt-4" style={{ color: 'rgb(var(--destructive))' }}>
+        <p style={{ marginTop: '1rem', color: 'rgb(var(--destructive))' }}>
           Location not found or an error occurred.
         </p>
       </main>
@@ -233,181 +407,200 @@ export function LocationDetail() {
 
   if (!location) return null
 
+  const hasRuleset =
+    location.party_size_min != null || location.party_size_max != null ||
+    location.level_range_min != null || location.level_range_max != null ||
+    location.landscape_type != null || location.setting != null ||
+    (location.environment_tags && location.environment_tags.length > 0) ||
+    (location.magic_restrictions && location.magic_restrictions.length > 0) ||
+    (location.class_restrictions && location.class_restrictions.length > 0) ||
+    (location.race_restrictions && location.race_restrictions.length > 0) ||
+    (location.faction_restrictions && location.faction_restrictions.length > 0) ||
+    (location.physical_access && location.physical_access.length > 0) ||
+    (location.party_composition_tags && location.party_composition_tags.length > 0) ||
+    location.mount_permitted || location.familiar_permitted || location.solo_permitted ||
+    location.booking_type != null ||
+    (location.tone_tags && location.tone_tags.length > 0) ||
+    location.gore_level != null || location.non_lethal_mode || location.permadeath_risk ||
+    location.primary_focus != null || location.boss_encounter ||
+    location.pvp_permitted || location.scouting_permitted ||
+    location.run_time_minutes != null || location.reset_time_hours != null ||
+    location.time_limit_minutes != null ||
+    location.has_safe_room || location.has_merchant ||
+    location.equipment_provided || location.guide_provided ||
+    location.loot_type != null || location.boss_loot || location.unique_item_chance
+
   return (
-    <main className="p-8" style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <main
+      style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '1.5rem 2rem 3rem',
+        width: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
       <Link
         to="/locations"
-        className="mb-4 inline-block text-sm underline-offset-4 hover:underline"
-        style={{ color: 'rgb(var(--accent))' }}
+        style={{ display: 'inline-block', marginBottom: '1.25rem', fontSize: 'var(--text-sm)', color: 'rgb(var(--accent))', textDecoration: 'none' }}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
       >
         &larr; Back to Adventures
       </Link>
 
+      {/* Hero card — full width */}
       <div
-        className="mt-4 rounded-lg overflow-hidden"
         style={{
+          borderRadius: 'var(--radius)',
+          overflow: 'hidden',
           backgroundColor: 'rgb(var(--card))',
           boxShadow: 'var(--shadow-card)',
+          marginBottom: '1.5rem',
         }}
       >
         {images && images.length > 0 && (
-          <div style={{ padding: '1rem 1rem 0', height: '420px' }}>
+          <div style={{ height: '340px' }}>
             <LocationGallery images={images} locationName={location.name} />
           </div>
         )}
-
-        <div className="p-8">
-        <h1
-          className="mb-2 text-3xl font-bold"
-          style={{
-            fontFamily: 'var(--font-heading)',
-            color: 'rgb(var(--foreground))',
-          }}
-        >
-          {location.name}
-        </h1>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <span
-            className="inline-block rounded px-2 py-0.5 text-xs font-medium"
+        <div style={{ padding: '1.5rem' }}>
+          <h1
             style={{
-              backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
-              color: 'rgb(var(--primary-foreground, 255 255 255))',
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.75rem',
+              fontWeight: 'var(--weight-bold)',
+              color: 'rgb(var(--foreground))',
+              marginBottom: '0.5rem',
+              lineHeight: 1.2,
             }}
           >
-            {location.difficulty}
-          </span>
+            {location.name}
+          </h1>
 
-          {location.provider_first_name && location.provider_last_name && (
-            <Link
-              to={`/providers/${location.provider_id}/profile`}
+          {/* Difficulty + provider under the title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
+            <DifficultyBadge difficulty={location.difficulty} />
+            {location.provider_first_name && location.provider_last_name && (
+              <Link
+                to={`/providers/${location.provider_id}/profile`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontSize: 'var(--text-sm)',
+                  color: 'rgb(var(--muted-foreground))',
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--accent))' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--muted-foreground))' }}
+              >
+                <AvatarIcon
+                  firstName={location.provider_first_name}
+                  lastName={location.provider_last_name}
+                  size="sm"
+                  pictureUrl={location.provider_profile_picture_url}
+                />
+                <span>{location.provider_first_name} {location.provider_last_name}</span>
+              </Link>
+            )}
+          </div>
+
+          {location.description && (
+            <p
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
                 fontSize: 'var(--text-sm)',
-                color: 'rgb(var(--muted-foreground))',
-                textDecoration: 'none',
+                color: 'rgb(var(--foreground))',
+                lineHeight: 1.7,
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--accent))' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgb(var(--muted-foreground))' }}
             >
-              <AvatarIcon
-                firstName={location.provider_first_name}
-                lastName={location.provider_last_name}
-                size="sm"
-                pictureUrl={location.provider_profile_picture_url}
-              />
-              <span>{location.provider_first_name} {location.provider_last_name}</span>
-            </Link>
+              {location.description}
+            </p>
           )}
         </div>
-
-        {location.description && (
-          <p
-            className="mt-6 text-sm leading-relaxed"
-            style={{ color: 'rgb(var(--foreground))' }}
-          >
-            {location.description}
-          </p>
-        )}
-
-        <div className="mt-6">
-          <h2
-            className="mb-1 text-sm font-semibold uppercase tracking-wide"
-            style={{ color: 'rgb(var(--muted-foreground))' }}
-          >
-            Cancellation Policy
-          </h2>
-          <p
-            className="text-sm"
-            style={{ color: 'rgb(var(--foreground))' }}
-          >
-            {location.cancellation_policy}
-          </p>
-        </div>
-        </div>
       </div>
 
-      <div className="mt-6">
-        <h2
-          className="mb-4 text-xl font-bold"
-          style={{ fontFamily: 'var(--font-heading)', color: 'rgb(var(--foreground))' }}
-        >
-          Available Times
-        </h2>
-
-        {conflictError && (
-          <p
-            className="mb-4 rounded p-3 text-sm"
-            style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}
+      {/* Two-column section: Adventure Details (left) + Available Times (right) */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: hasRuleset ? 'minmax(0, 1fr) 320px' : '1fr',
+          gap: '1.5rem',
+          alignItems: 'start',
+          marginBottom: '1.5rem',
+        }}
+      >
+        {/* Left column — Adventure Details */}
+        {hasRuleset && (
+          <div
+            style={{
+              borderRadius: 'var(--radius)',
+              backgroundColor: 'rgb(var(--card))',
+              boxShadow: 'var(--shadow-card)',
+              padding: '1.5rem',
+            }}
           >
-            {conflictError}
-          </p>
-        )}
-
-        {bookingError && (
-          <p
-            className="mb-4 rounded p-3 text-sm"
-            style={{ backgroundColor: 'rgb(var(--destructive) / 0.1)', color: 'rgb(var(--destructive))' }}
-          >
-            {bookingError}
-          </p>
-        )}
-
-        {slotsLoading && (
-          <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
-            Loading available slots…
-          </p>
-        )}
-
-        {!slotsLoading && slotsError && (
-          <p className="text-sm" style={{ color: 'rgb(var(--destructive))' }}>
-            Failed to load available times. Please try again.
-          </p>
-        )}
-
-        {!slotsLoading && !slotsError && slots && slots.length === 0 && (
-          <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
-            No available time slots at this time.
-          </p>
-        )}
-
-        {!slotsLoading && !slotsError && slots && slots.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {slots.map((slot) => (
-              <SlotCard
-                key={slot.id}
-                slot={slot}
-                isPending={pendingSlot?.id === slot.id}
-                bookingLoading={bookingLoading}
-                onReserve={handleReserveClick}
-                onConfirm={handleConfirm}
-                onCancel={handleCancelConfirm}
-              />
-            ))}
+            <h2
+              style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.05rem',
+                fontWeight: 'var(--weight-bold)',
+                color: 'rgb(var(--foreground))',
+                marginBottom: '1rem',
+                paddingBottom: '0.5rem',
+                borderBottom: '2px solid rgb(var(--accent) / 0.3)',
+              }}
+            >
+              Adventure Details
+            </h2>
+            <RulesetDisplay location={location} />
           </div>
         )}
+
+        {/* Right column — Available Times */}
+        <div>
+          <BookingPanel
+            location={location}
+            slots={slots}
+            slotsLoading={slotsLoading}
+            slotsError={slotsError}
+            pendingSlot={pendingSlot}
+            bookingLoading={bookingLoading}
+            conflictError={conflictError}
+            bookingError={bookingError}
+            onReserve={handleReserveClick}
+            onConfirm={handleConfirm}
+            onCancel={handleCancelConfirm}
+          />
+        </div>
       </div>
 
+      {/* Reviews — full width */}
       {id && (
         <div
-          className="mt-6 rounded-lg"
           style={{
-            padding: '1.25rem',
+            borderRadius: 'var(--radius)',
             backgroundColor: 'rgb(var(--card))',
             boxShadow: 'var(--shadow-card)',
+            padding: '1.5rem',
           }}
         >
           <h2
-            className="mb-4 text-xl font-bold"
-            style={{ fontFamily: 'var(--font-heading)', color: 'rgb(var(--foreground))' }}
+            style={{
+              fontFamily: 'var(--font-heading)',
+              fontSize: '1.05rem',
+              fontWeight: 'var(--weight-bold)',
+              color: 'rgb(var(--foreground))',
+              marginBottom: '1rem',
+              paddingBottom: '0.5rem',
+              borderBottom: '2px solid rgb(var(--accent) / 0.3)',
+            }}
           >
             Reviews
           </h2>
           <ReviewList targetId={id} targetType="location" refreshKey={reviewRefreshKey} />
           {role === 'customer' && (
-            <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgb(var(--border))', paddingTop: '1.25rem' }}>
+            <div style={{ marginTop: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid rgb(var(--border))' }}>
               {eligibleBooking ? (
                 <ReviewForm
                   bookingId={eligibleBooking.id}
@@ -416,7 +609,7 @@ export function LocationDetail() {
                   onSuccess={() => setReviewRefreshKey((k) => k + 1)}
                 />
               ) : (
-                <p className="text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'rgb(var(--muted-foreground))' }}>
                   Book this adventure to leave a review.
                 </p>
               )}

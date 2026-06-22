@@ -2,7 +2,7 @@ import { BookingLocationRepository } from '../repositories/booking-location.repo
 import { LocationImagesRepository } from '../repositories/location-images.repository';
 import { TimeSlotRepository } from '../repositories/time-slot.repository';
 import { BookingRepository } from '../repositories/booking.repository';
-import { Booking, BookingLocation, Difficulty, LocationImage, TimeSlot } from '../types';
+import { Booking, BookingLocation, Difficulty, LocationFilters, LocationImage, TimeSlot } from '../types';
 
 export class CustomerNotFoundError extends Error {
   constructor() {
@@ -76,8 +76,8 @@ export class CustomerService {
     private readonly bookingRepo: BookingRepository
   ) {}
 
-  async browseLocations(difficulty?: Difficulty): Promise<BookingLocation[]> {
-    return this.locationRepo.list(difficulty);
+  async browseLocations(filters: LocationFilters = {}): Promise<BookingLocation[]> {
+    return this.locationRepo.findAll(filters);
   }
 
   async getLocation(locationId: string): Promise<BookingLocation | null> {

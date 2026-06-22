@@ -2,8 +2,31 @@ export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'LEGENDARY'
 
 export const DIFFICULTY_OPTIONS = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'] as const satisfies ReadonlyArray<Difficulty>
 
+export type LandscapeType = 'tundra' | 'forest' | 'desert' | 'cave' | 'coastal' | 'volcanic' | 'urban' | 'plains' | 'mountain' | 'swamp'
+export type LocationSetting = 'interior' | 'exterior'
+export type ToneTag = 'horror' | 'heroic' | 'comedic' | 'mystery' | 'political'
+export type PrimaryFocus = number
+export type LootType = 'guaranteed' | 'random' | 'none'
+export type BookingType = 'concurrent' | 'exclusive'
+
+export const LANDSCAPE_TYPE_OPTIONS: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp']
+export const TONE_TAG_OPTIONS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political']
+export const SETTING_OPTIONS: LocationSetting[] = ['interior', 'exterior']
+export const LOOT_TYPE_OPTIONS: LootType[] = ['guaranteed', 'random', 'none']
+export const BOOKING_TYPE_OPTIONS: BookingType[] = ['concurrent', 'exclusive']
+
 export interface LocationFilters {
-  difficulty?: Difficulty
+  difficulties?: Difficulty[]
+  levelRangeMin?: number
+  levelRangeMax?: number
+  runTimeMax?: number
+  setting?: LocationSetting
+  landscapeType?: LandscapeType
+  toneTags?: ToneTag[]
+  partySizeMin?: number
+  partySizeMax?: number
+  primaryFocusMin?: number
+  primaryFocusMax?: number
 }
 
 export type BookingStatus = 'BOOKED' | 'CANCELLED'
@@ -35,6 +58,53 @@ export interface BookingLocation {
   provider_first_name?: string
   provider_last_name?: string
   provider_profile_picture_url?: string | null
+
+  // Core specs
+  party_size_min: number | null
+  party_size_max: number | null
+  level_range_min: number | null
+  level_range_max: number | null
+
+  // Environment
+  landscape_type: LandscapeType | null
+  setting: LocationSetting | null
+  environment_tags: string[] | null
+
+  // Restrictions
+  magic_restrictions: string[] | null
+  class_restrictions: string[] | null
+  race_restrictions: string[] | null
+  faction_restrictions: string[] | null
+  party_composition_tags: string[] | null
+  physical_access: string[] | null
+  mount_permitted: boolean
+  familiar_permitted: boolean
+  solo_permitted: boolean
+  booking_type: BookingType | null
+
+  // Tone & content
+  tone_tags: ToneTag[] | null
+  gore_level: number | null
+  non_lethal_mode: boolean
+  permadeath_risk: boolean
+  primary_focus: PrimaryFocus | null
+  boss_encounter: boolean
+  pvp_permitted: boolean
+  scouting_permitted: boolean
+
+  // Run logistics
+  run_time_minutes: number | null
+  reset_time_hours: number | null
+  time_limit_minutes: number | null
+
+  // Amenities & loot
+  has_safe_room: boolean
+  has_merchant: boolean
+  equipment_provided: boolean
+  guide_provided: boolean
+  loot_type: LootType | null
+  boss_loot: boolean
+  unique_item_chance: boolean
 }
 
 export interface BookingLocationWithSlotCount extends BookingLocation {

@@ -13,14 +13,24 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
-  const difficulty = filters?.difficulty
+  const difficultiesKey = filters?.difficulties?.join(',')
+  const levelRangeMin = filters?.levelRangeMin
+  const levelRangeMax = filters?.levelRangeMax
+  const runTimeMax = filters?.runTimeMax
+  const setting = filters?.setting
+  const landscapeType = filters?.landscapeType
+  const toneTagsKey = filters?.toneTags?.join(',')
+  const partySizeMin = filters?.partySizeMin
+  const partySizeMax = filters?.partySizeMax
+  const primaryFocusMin = filters?.primaryFocusMin
+  const primaryFocusMax = filters?.primaryFocusMax
 
   useEffect(() => {
     let cancelled = false
     setIsLoading(true)
     setError(null)
 
-    getBookingLocations(difficulty ? { difficulty } : undefined)
+    getBookingLocations(filters)
       .then((result) => {
         if (!cancelled) {
           setData(result)
@@ -37,7 +47,7 @@ export function useBookingLocations(filters?: LocationFilters): UseBookingLocati
     return () => {
       cancelled = true
     }
-  }, [difficulty])
+  }, [difficultiesKey, levelRangeMin, levelRangeMax, runTimeMax, setting, landscapeType, toneTagsKey, partySizeMin, partySizeMax, primaryFocusMin, primaryFocusMax])
 
   return { data, isLoading, error }
 }

@@ -1,220 +1,193 @@
 # Phase 11.8: "Will" AI Location Assistant (Will-o'-the-Wisp)
 
-_Created: 2026-06-15 | Status: DRAFT_
+_Created: 2026-06-15 | Updated: 2026-06-21 | Status: REWORKED_
 
 ## Goal
 
-Introduce Will, a conversational AI assistant styled as a will-o'-the-wisp, that accepts a customer's natural language description of what they're looking for and translates it into filter selections on the Browse Locations page. Will bridges the gap between the rich filter schema introduced in Phase 11.7 and customers who don't know how to navigate it — turning "a spooky underground cave for 4–6 players, nothing too deadly" into snapped filter state the customer can see and adjust.
+Introduce Will, a conversational assistant styled as a will-o'-the-wisp, that accepts a customer's natural language description of what they're looking for and translates it into filter selections on the Browse Locations page. Will bridges the gap between the rich filter schema introduced in Phase 11.7 and customers who don't know how to navigate it — turning "a spooky underground cave for 4–6 players, nothing too deadly" into snapped filter state the customer can see and adjust.
+
+**Architecture decision (2026-06-21):** The original implementation used a Claude API backend approach (POST /api/ai/location-filter, Anthropic client module). This was reworked to a fully client-side keyword/rule matching approach. No Claude API dependency, no backend AI route, no ANTHROPIC_API_KEY required.
 
 ## Context
 
-Phase 11.7 (Expanded Location Rulesets & Provider Survey) is a hard prerequisite for this phase. The customer-facing filter schema it established — the query parameter names, enum values, and filter logic — is what Will's structured JSON output must map to. The canonical filter parameter mapping is defined in the Phase 11.7 phase plan (Step 2, filter parameter table). Those names are API-stable and must not be changed after 11.7 ships.
+Phase 11.7 (Expanded Location Rulesets & Provider Survey) is a hard prerequisite for this phase. The customer-facing filter schema it established — the URL parameter names, enum values, and filter logic — is what Will's keyword output must map to. **The canonical filter schema is defined by the live codebase.** The `LocationFilters` interface in `questreserve-frontend/src/types/domain.ts` and the `readFiltersFromParams` function in `BrowseLocations.tsx` are the authoritative sources.
 
-The codebase this phase builds on:
+**Authoritative filter schema (from live code as of 2026-06-21):**
 
-- **Backend:** `GET /api/customer/locations` now accepts `levelRangeMin`, `levelRangeMax`, `runTimeMax`, `setting`, `landscapeType`, `toneTag`, `partySizeMin`, `partySizeMax`, and `difficulty` as query parameters, validated at the controller and applied at the repository via Knex clauses.
-- **Frontend:** `BrowseLocations` is a split-panel page driven by `useSearchParams`. `LocationFilterPanel` is a controlled component that reads from and writes to URL params. `useBookingLocations` passes all filter fields to `customer.api.ts`, which serializes them into the Axios `params` object.
-- **No AI infrastructure exists yet.** There is no `POST /ai/location-filter` endpoint, no Claude API integration, and no Will UI of any kind. This phase builds all of it.
+| URL param | Type | Values / notes |
+|---|---|---|
+| `difficulties` | `Difficulty[]` | Comma-separated; `EASY`, `MEDIUM`, `HARD`, `LEGENDARY` (uppercase) |
+| `levelRangeMin` | `number` | Positive integer |
+| `levelRangeMax` | `number` | Positive integer |
+| `runTimeMax` | `number` | Positive integer (minutes) |
+| `setting` | `LocationSetting` | `interior` or `exterior` (no `both` value) |
+| `landscapeType` | `LandscapeType` | `tundra`, `forest`, `desert`, `cave`, `coastal`, `volcanic`, `urban`, `plains`, `mountain`, `swamp` |
+| `toneTags` | `ToneTag[]` | Comma-separated; `horror`, `heroic`, `comedic`, `mystery`, `political` |
+| `partySizeMin` | `number` | Positive integer |
+| `partySizeMax` | `number` | Positive integer |
 
-**User-dependent asset prerequisite:** Visual assets for Will — an orb illustration and glow/animation style direction — are a user-deliverable that is required for final visual polish. This phase begins with placeholder CSS styling (a glowing pulsing circle) and proceeds to completion with that placeholder. Final polish (replacing the placeholder with approved visuals) is blocked until the user provides or approves assets. This is called out explicitly in Step 5 below.
+---
+
+## Architecture: Client-Side Keyword Matching
+
+Will operates entirely in the browser. No network call is made when a user submits a query. The matching logic lives in `questreserve-frontend/src/utils/willMatcher.ts` and exports a pure function `matchFilters(input: string): Partial<LocationFilters>`.
+
+**How it works:**
+
+1. The input string is lowercased.
+2. Keyword tables are checked for matches against the input:
+   - Landscape/terrain keywords map to `landscapeType`
+   - Tone keywords map to entries in `toneTags` (multiple matches allowed)
+   - Difficulty keywords map to entries in `difficulties` (multiple matches allowed)
+   - Setting keywords map to `setting`
+   - Numeric patterns (party of N, N players, level N, etc.) extract `partySizeMin/Max` and `levelRangeMin/Max`
+   - Run-time phrases map to `runTimeMax` (minutes)
+3. Only matched fields are included in the output — unmatched fields are omitted entirely.
+4. The function is pure: no side effects, no API calls.
+
+**Canned prompts** (`CANNED_PROMPTS` array in `willMatcher.ts`) provide 5–6 pre-built filter objects with Will-flavored labels. Clicking a chip in the WillOrb panel populates the textarea and immediately applies those filters.
+
+**Will's in-character responses** are generated locally based on what filters were matched. No LLM is involved.
 
 ---
 
 ## Steps
 
-### Step 1: Backend — Claude API client module
+### Step 1: Backend — Claude API client module (REMOVED)
 
-Create a backend module that wraps calls to the Claude API. This module is responsible for constructing the HTTP request to Anthropic's API, injecting the API key from environment variables, and returning the raw model response. It is not Will-specific — it is a thin, reusable client.
+~~Create a backend module that wraps calls to the Claude API.~~
 
-**What it does:**
-- Reads `ANTHROPIC_API_KEY` from `process.env`. The key is never passed to the frontend.
-- Exports a single function, e.g. `callClaude({ system, user, model })`, that posts to `https://api.anthropic.com/v1/messages`.
-- Uses the `claude-sonnet-4-6` model (or the most capable model available at implementation time — implementer should verify the current recommended model slug in the Anthropic docs).
-- Returns the text content of the first response message.
-- Throws a typed error if the API call fails (non-2xx, network error, or malformed response), with the Anthropic response body included in the error detail.
-
-**Files created:**
-- `questreserve-backend/src/ai/claude.client.ts`
-
-**Dependencies:** None. This step can begin immediately.
+**Status: Removed.** The `questreserve-backend/src/ai/` module (claude.client.ts, will.prompt.ts, types.ts) has been deleted. No Claude API dependency exists in the codebase.
 
 ---
 
-### Step 2: Backend — Will's system prompt and filter-mapping logic
+### Step 2: Backend — Will's system prompt and filter-mapping logic (REMOVED)
 
-Define Will's personality and output contract in a dedicated module. This is the prompt engineering step — it shapes what Will says and what JSON structure Will produces.
+~~Define Will's personality and output contract in a dedicated module.~~
 
-**System prompt content:**
-- Establishes Will as a mysterious, whimsical spirit guide — not a chatbot. Instructs the model to respond in character with short, flavored prose (1–3 sentences), followed by a structured JSON block.
-- Instructs the model that its response must always contain a JSON object (fenced or inline, consistent) with keys that map to the Phase 11.7 filter schema. The JSON must use exactly these keys (all optional):
-  - `difficulty` — string: one of `easy`, `medium`, `hard`, `deadly`
-  - `levelRangeMin` — integer
-  - `levelRangeMax` — integer
-  - `partySizeMin` — integer
-  - `partySizeMax` — integer
-  - `setting` — string: one of `interior`, `exterior`, `both`
-  - `landscapeType` — string: one of `tundra`, `forest`, `desert`, `cave`, `coastal`, `volcanic`, `urban`, `plains`, `mountain`, `swamp`
-  - `toneTag` — string: one of `horror`, `heroic`, `comedic`, `mystery`, `political`
-  - `runTimeMax` — integer (minutes)
-- Instructs the model that if a field cannot be inferred from the customer's request, it must be omitted from the JSON — never emit null or empty string for a field that is uncertain.
-- Instructs the model to end the response with the JSON block so it can be reliably extracted.
-
-**Filter parsing logic:**
-- Export a function `parseWillResponse(rawText: string): WillResponse` that extracts Will's prose and the JSON block from the raw model output.
-- Returns `{ message: string, filters: LocationFilterParams }` where `LocationFilterParams` matches the keys above.
-- If no valid JSON block is found, returns `{ message: rawText, filters: {} }` — the empty filters case is handled gracefully in Step 3.
-
-**Files created:**
-- `questreserve-backend/src/ai/will.prompt.ts` (system prompt string and `parseWillResponse` function)
-- `questreserve-backend/src/ai/types.ts` (shared types: `WillResponse`, `LocationFilterParams`)
-
-**Dependencies:** Step 1 (Claude client must exist before the prompt module is integrated in Step 3).
+**Status: Removed.** The system prompt and parseWillResponse logic have been removed along with the ai/ module. Filter mapping is now handled client-side in `willMatcher.ts`.
 
 ---
 
-### Step 3: Backend — POST /ai/location-filter endpoint
+### Step 3: Backend — POST /ai/location-filter endpoint (REMOVED)
 
-Create the `ai` router and implement the `POST /ai/location-filter` endpoint that orchestrates the Claude call and returns Will's response to the frontend.
+~~Create the `ai` router and implement the `POST /ai/location-filter` endpoint.~~
 
-**What it does:**
-- Accepts a JSON request body: `{ message: string }` where `message` is the customer's natural language input.
-- Validates that `message` is a non-empty string (no longer than 500 characters); returns `400` if not.
-- Calls `callClaude` with Will's system prompt and the customer's message as the user turn.
-- Calls `parseWillResponse` on the model output.
-- Returns a `200` response body: `{ message: string, filters: LocationFilterParams }`.
-- If the Claude API call throws (network failure, quota error, API key invalid, etc.), catches the error and returns a `200` response with a graceful fallback: `{ message: "The mist grows thick... I've lost the thread. Speak to me again, traveler.", filters: {} }`. This is the canonical fallback copy — Will never returns a 5xx to the customer UI.
-- The endpoint is public (no `authenticate` middleware required — guests and customers both have access to Will).
-
-**Router registration:**
-- Create `questreserve-backend/src/api/ai/ai.router.ts` and register it on the root API router at `/ai`.
-
-**Files created:**
-- `questreserve-backend/src/api/ai/ai.router.ts`
-- `questreserve-backend/src/api/ai/ai.controller.ts`
-
-**Files changed:**
-- Root API router (wherever `/api/customer`, `/api/provider`, etc. are mounted — confirm exact file path from codebase)
-
-**Dependencies:** Steps 1 and 2.
+**Status: Removed.** The `questreserve-backend/src/api/ai/` directory (ai.router.ts, ai.controller.ts) has been deleted and the AI router has been unregistered from the root API router.
 
 ---
 
-### Step 4: Frontend — Will API module and types
+### Step 4: Frontend — Will API module and types (REMOVED)
 
-Add a client-side API function and the shared TypeScript types needed to call `POST /ai/location-filter` from the frontend.
+~~Add a client-side API function and shared TypeScript types to call `POST /ai/location-filter`.~~
 
-**What it does:**
-- Creates `will.api.ts` in the frontend API directory with a single exported function `askWill(message: string): Promise<WillApiResponse>`.
-- `WillApiResponse` is typed as `{ message: string; filters: LocationFilterParams }` where `LocationFilterParams` uses the same keys as the backend types (these should be co-located or imported from a shared types file in the frontend — confirm pattern from existing `customer.api.ts`).
-- Uses the existing Axios instance (or fetch setup, matching the pattern in `customer.api.ts`) for the request.
-
-**Files created:**
-- `questreserve-frontend/src/api/will.api.ts`
-- `questreserve-frontend/src/types/will.types.ts` (or equivalent, matching the frontend's existing types directory convention)
-
-**Dependencies:** Step 3 (endpoint must exist for integration, though frontend types can be drafted in parallel against the agreed contract).
+**Status: Removed.** `questreserve-frontend/src/api/will.api.ts` and `questreserve-frontend/src/types/will.types.ts` have been deleted. No network call is made for Will queries.
 
 ---
 
-### Step 5: Frontend — Will orb UI and chat panel (placeholder styling)
+### Step 5: Frontend — Client-side keyword matcher
 
-Build the floating Will orb button and expandable chat panel as a self-contained component. This step uses placeholder CSS styling — a glowing pulsing circle — because final visual assets have not yet been provided by the user.
+Create `questreserve-frontend/src/utils/willMatcher.ts` exporting:
+- `matchFilters(input: string): Partial<LocationFilters>` — pure keyword matching function
+- `CANNED_PROMPTS: Array<{ label: string; filters: Partial<LocationFilters> }>` — 5–6 pre-built filter sets with Will-flavored labels
 
-**USER-DEPENDENT ASSET FLAG:** Final visual polish (replacing the placeholder circle with an approved orb illustration and any asset-driven glow references) is blocked until the user provides or approves visual assets. The component is built to completion with placeholder styling and marked with a code comment noting where the asset swap occurs.
+**Keyword coverage:**
+- Landscape: cave/underground/cavern, forest/woods/jungle, desert/sand/arid, mountain/alpine/peak, swamp/marsh/bog, coastal/ocean/sea/beach, volcanic/lava/magma, tundra/arctic/frozen/icy, urban/city/town, plains/grassland/meadow/field
+- Tone (multi-match): spooky/scary/eerie/creepy/haunted/horror → horror; heroic/epic/legendary/glorious → heroic; funny/comedic/silly/lighthearted → comedic; mystery/mysterious/investigative → mystery; political/intrigue/court/noble → political
+- Difficulty (multi-match): easy/beginner/simple/starter → EASY; medium/moderate/average → MEDIUM; hard/difficult/challenging/tough → HARD; deadly/lethal/extreme/brutal/punishing → LEGENDARY
+- Setting: indoor/inside/interior/enclosed → interior; outdoor/outside/exterior/open air/open-air → exterior
+- Party size: "party of N", "N players", "N to M", "solo", "group of N", etc.
+- Level range: "level N", "level N-M", "lvl N to M", "experienced/veteran" → min 10; "novice/beginner" → min 1
+- Run time: quick/short/1 hour → runTimeMax 60; half day/3-4 hours → runTimeMax 240; full day/long/6+ hours → runTimeMax 480
+
+**Note on tone keyword "legendary":** The word "legendary" maps to `heroic` tone (not LEGENDARY difficulty) when no other difficulty context is present. The keyword "legendary" in difficulty context (deadly/extreme/punishing) maps to LEGENDARY difficulty. The matcher uses the full phrase context — "legendary difficulty" → LEGENDARY difficulty, standalone "legendary/glorious/epic" → heroic tone.
+
+**Files created:**
+- `questreserve-frontend/src/utils/willMatcher.ts`
+
+---
+
+### Step 6: Frontend — Will orb UI and chat panel
+
+Build the floating Will orb button and expandable chat panel as a self-contained component.
 
 **Component: `WillOrb`**
 
-- Renders as a fixed-position floating button in the bottom-right corner of the viewport (e.g. `position: fixed; bottom: 2rem; right: 2rem`).
-- Default state: a circular glowing element with a CSS pulse animation (keyframe animation cycling opacity and box-shadow scale). Uses Spell Gold or a luminescent equivalent from the Phase 7/8 design token system as the glow color. The orb is visually distinct and recognizable as a character element, not a generic action button.
-- Click state: the orb expands to reveal a small chat panel overlaid above it (or the orb transitions to a header element of the panel).
-- The panel contains:
-  - Will's avatar/orb representation at the top (placeholder: the same glowing circle, smaller)
-  - A text input area labeled with Will's voice (e.g., placeholder text: "Describe your quest, traveler…")
-  - A "Send" button (or Enter key) to submit the message
-  - A response area below the input that shows Will's in-character prose reply
-  - A "Clear" button that resets the input, clears the response, and removes all Will-applied filter params from the URL
-  - A close button (×) to collapse the panel back to the orb
+- Fixed-position floating element, bottom-right corner (`position: fixed; bottom: 2rem; right: 2rem; z-index: 100`).
+- **Collapsed state:** Glowing circular button with CSS pulse animation (`@keyframes`), using `--accent` CSS property. Diameter ~56px.
+- **Expanded state:** Chat panel above the orb anchor. Contains:
+  - Header row with Will's name and close button
+  - Response display area (Will's in-character prose, local — no network call)
+  - 5–6 canned prompt chips (small clickable buttons) — clicking populates textarea and immediately applies filters
+  - `<textarea>` input ("Describe your quest, traveler…")
+  - "Ask Will" submit button (or Enter key)
+  - "Clear" button
 
 **Behavior:**
-- Single-turn: customer types a message and submits. Will responds with prose. Filters snap into place in the URL (handled in Step 6). The customer can then adjust filters manually via `LocationFilterPanel` as normal.
-- While awaiting response: the orb pulses faster (CSS animation speed change) or a loading indicator appears in the panel. The input and Send button are disabled.
-- On error / fallback response: Will's fallback message is displayed in the response area. No filters are applied.
-- Panel dismissal does not clear applied filters — only the explicit "Clear" button does.
+- Canned chip click: populates textarea with chip label, immediately runs `matchFilters` and applies filters to URL params, shows Will's in-character response.
+- Free text submit: runs `matchFilters(input)` locally (no network call), applies matched filters to URL, shows in-character confirmation.
+  - Filters matched: "I sense the [terrain/tone description]… I've set your path."
+  - No filters matched: "The mist swirls without direction… try describing the peril or terrain you seek."
+- No loading state (response is instant).
+- Clear button: clears URL params, response text, and input.
+- Panel dismiss (×): does not clear filters.
 
-**CSS animation:** A keyframe pulse using `box-shadow` and `opacity` only. No JavaScript animation libraries. No external animation dependencies. The animation is defined in a co-located CSS module (`.module.css`) or styled-component, matching the pattern used elsewhere in the frontend.
+**USER-DEPENDENT ASSET FLAG:** Final visual polish (replacing placeholder circle) is blocked until user provides or approves visual assets. `// ASSET: replace with approved orb illustration` marks the swap point.
 
-**Files created:**
+**Files created/changed:**
 - `questreserve-frontend/src/components/WillOrb/WillOrb.tsx`
-- `questreserve-frontend/src/components/WillOrb/WillOrb.module.css` (or equivalent per project styling convention)
-
-**Dependencies:** Step 4 (API module must be importable). This step can be built in parallel with Step 4 using a stub for `askWill`.
-
----
-
-### Step 6: Frontend — Filter application logic (Will → URL params)
-
-Wire Will's response into the existing URL-param-driven filter system so that when Will returns a `filters` object, those filters snap into place in the URL, causing `LocationFilterPanel` and `useBookingLocations` to react automatically.
-
-**What it does:**
-- Inside `WillOrb` (or in a hook it calls), after `askWill` resolves successfully, iterates the returned `filters` object and sets each key as a URL search param using `useSearchParams`'s `setSearchParams`.
-- Clears any previously set filter params before applying Will's new set (so Will's response always represents a fresh filter state, not additive to existing manual selections).
-- If `filters` is empty (fallback case or Will inferred nothing), `setSearchParams` is called with no Will-sourced params — existing manual filters are also cleared to avoid stale state.
-- The "Clear" button in the `WillOrb` panel calls `setSearchParams({})` to remove all filter params from the URL, resetting both Will-applied and manually-applied filters.
-- No new hooks or state management beyond `useSearchParams` are introduced — the filter state lives entirely in the URL, consistent with Phase 11.7.
-
-**Files changed:**
-- `questreserve-frontend/src/components/WillOrb/WillOrb.tsx` (primary location for this logic)
-
-**Dependencies:** Steps 4 and 5. Step 7 (mounting Will on `BrowseLocations`) is also required before this can be exercised end-to-end, but the filter-wiring logic itself lives inside `WillOrb`.
+- `questreserve-frontend/src/components/WillOrb/WillOrb.module.css` (if split out from inline styles)
 
 ---
 
 ### Step 7: Frontend — Mount WillOrb on BrowseLocations page
 
-Add `WillOrb` to the `BrowseLocations` page so it appears for all visitors to the browse view (guests and authenticated customers alike).
-
-**What it does:**
-- Imports and renders `<WillOrb />` inside `BrowseLocations.tsx`.
-- `WillOrb` is positioned fixed, so it does not affect the page layout.
-- No props are required — `WillOrb` reads and writes URL params internally.
-- Will is visible and usable on both the guest and authenticated customer versions of the Browse Locations page (if these share the same `BrowseLocations` component, this is automatic; if not, confirm both render paths).
+`WillOrb` is already mounted on BrowseLocations from the initial implementation. No additional work required if the component is in place.
 
 **Files changed:**
-- `questreserve-frontend/src/pages/BrowseLocations/BrowseLocations.tsx`
-
-**Dependencies:** Steps 5 and 6.
+- `questreserve-frontend/src/pages/BrowseLocations/BrowseLocations.tsx` (already done)
 
 ---
 
 ### Step 8: End-to-end verification
 
-Verify the complete Phase 11.8 feature set against a running backend with the Anthropic API key configured. No new source code is written in this step. All failures discovered must be fixed (as separate commits) before the phase is closed.
+Verify the complete Phase 11.8 feature set with the keyword-matching approach. No Claude API or ANTHROPIC_API_KEY is needed.
 
 **Test paths:**
 
-1. **Endpoint — valid request** — POST to `/ai/location-filter` with `{ "message": "a spooky underground cave for a party of 4 to 6, nothing too deadly" }`. Confirm the response body contains a `message` string (Will's in-character prose) and a `filters` object with at least `landscapeType: "cave"` and `toneTag: "horror"` (or similar inferred values). The exact JSON keys must match the Phase 11.7 filter schema.
-2. **Endpoint — invalid body** — POST with no `message` field. Confirm `400` is returned. POST with `message` exceeding 500 characters. Confirm `400` is returned.
-3. **Endpoint — graceful fallback** — Temporarily set an invalid API key and POST a valid request. Confirm the response is `200` with Will's fallback prose and `filters: {}`. Restore the valid key.
-4. **Orb appearance** — Navigate to Browse Locations as a guest. Confirm the glowing orb is visible in the bottom-right corner. Confirm the pulse animation is running. Confirm no console errors.
-5. **Orb open/close** — Click the orb. Confirm the chat panel expands. Click the × button. Confirm the panel collapses back to the orb.
-6. **Full turn — filter snap** — Open the panel. Type "a spooky underground cave for 4–6 players". Submit. Confirm Will's response prose appears in the panel. Confirm the URL updates with the inferred filter params (e.g. `landscapeType=cave&toneTag=horror`). Confirm `LocationFilterPanel` reflects those values. Confirm the location list updates to show only matching results.
-7. **Loading state** — Submit a message and confirm the orb/panel shows a loading state and the input is disabled while the request is in flight.
-8. **Fallback UI** — Simulate a failed API call (can temporarily break the endpoint). Confirm Will's fallback message appears in the panel. Confirm no filters are applied to the URL.
-9. **Clear button** — After Will applies filters, click "Clear". Confirm all filter params are removed from the URL. Confirm the location list returns to showing all results. Confirm Will's response text is cleared from the panel.
-10. **Manual override** — After Will applies filters, manually change a filter value in `LocationFilterPanel`. Confirm the URL updates correctly. Confirm Will's panel remains open (dismissal is not triggered by manual filter changes).
-11. **ANTHROPIC_API_KEY safety** — Confirm the API key is never present in any frontend bundle, network request from the browser, or console output. The key must only travel from the server's environment to Anthropic's API.
+1. **Orb appearance** — Navigate to Browse Locations. Confirm the glowing orb is visible bottom-right. Confirm pulse animation is running. Confirm no console errors.
+2. **Orb open/close** — Click orb. Panel expands. Click ×. Panel collapses. Filters in URL are unaffected.
+3. **Canned chips visible** — Open panel. Confirm 5–6 canned prompt chips appear above the textarea.
+4. **Chip click** — Click a chip. Confirm textarea is populated with chip label. Confirm URL updates with chip's filters. Confirm `FilterPanelDrawer` reflects those values.
+5. **Free text — match** — Type "a spooky underground cave". Submit. Confirm URL updates with `landscapeType=cave&toneTags=horror`. Confirm Will's in-character response appears.
+6. **Free text — no match** — Type "xyzzy". Submit. Confirm Will's "mist swirls" response. Confirm no filters applied.
+7. **Multi-value tone** — Type "heroic horror adventure". Confirm `toneTags=heroic,horror` in URL.
+8. **Multi-value difficulty** — Type "hard and deadly". Confirm `difficulties=HARD,LEGENDARY` in URL.
+9. **Party size extraction** — Type "party of 4 to 6". Confirm `partySizeMin=4&partySizeMax=6`.
+10. **Level range extraction** — Type "level 5 to 10". Confirm `levelRangeMin=5&levelRangeMax=10`.
+11. **Clear button** — After filters applied, click Clear. Confirm URL params cleared. Confirm list shows all results.
+12. **No network call** — Open DevTools Network tab. Submit a query. Confirm no request is made to `/api/ai/location-filter` or any Anthropic endpoint.
+13. **Guest path** — Confirm Will works for unauthenticated guests (no 401, no redirect).
 
 ---
 
 ## Notes
 
-- **Filter schema is Phase 11.7's responsibility.** Will's JSON output keys must exactly match the query parameter names from Phase 11.7. If any parameter name changes after 11.7 ships, both the system prompt in `will.prompt.ts` and the backend controller must be updated in lockstep.
-- **Single-turn design.** Will is not a multi-turn chatbot. Each submission is an independent call — no conversation history is maintained. This keeps the implementation simple and avoids session/memory management complexity.
-- **Graceful fallback is a 200, never a 5xx.** The customer UI must never see an error state caused by the AI backend. All Claude API failures are caught at the controller level and converted to Will's in-character fallback prose with empty filters.
-- **Model slug.** The system prompt module specifies `claude-sonnet-4-6` as the default model. If a newer or more capable slug is available at implementation time, the implementer should verify and update the constant — this is a one-line change in `claude.client.ts` or a config constant.
-- **API key environment variable.** `ANTHROPIC_API_KEY` must be added to the backend `.env` file and documented in any `.env.example` or equivalent reference file. The frontend must not have access to this variable.
-- **Public endpoint.** `POST /ai/location-filter` is intentionally unauthenticated — guests can use Will without logging in. Rate limiting is a post-MVP concern.
-- **Visual asset placeholder.** The placeholder orb (glowing CSS circle with pulse animation) is shipped and fully functional. When the user delivers approved visual assets, a targeted styling update replaces the placeholder — no structural component changes are needed.
-- **Array-column fields not surfaced by Will.** The Phase 11.7 filter schema does not expose array-column filters (magic restrictions, class restrictions, physical access, etc.) as query parameters. Will's JSON output schema mirrors this: Will cannot filter by these fields. They are metadata-only on the detail page.
-- **`difficulty` enum values.** The system prompt must list the exact `difficulty` enum values accepted by the backend. Confirm these values against the existing `booking_location.difficulty` column constraint before finalizing the prompt.
-- **Step sequence.** Steps 1 and 2 (backend AI infrastructure) can proceed in parallel. Step 3 depends on Steps 1 and 2. Step 4 (frontend types/API) can be drafted in parallel against the agreed contract but requires Step 3 for live integration. Steps 5, 6, and 7 (frontend UI) can proceed after Step 4 is stubbed — Step 7 closes the loop. Step 8 requires all prior steps complete.
+- **No backend AI route.** The `/api/ai/location-filter` endpoint has been removed. The backend `src/ai/` module has been deleted. No ANTHROPIC_API_KEY is needed for Will to function.
+- **Instant responses.** Because matching is local, Will's response is synchronous — no loading state needed.
+- **Filter schema is live codebase.** Authoritative source remains `LocationFilters` in `domain.ts` and `readFiltersFromParams` in `BrowseLocations.tsx`.
+- **`setting` has no `both` value.** Only `interior` and `exterior` are valid.
+- **Single-turn design.** Each submission is independent. No conversation history.
+- **`filtersToParams` is in `src/utils/filters.ts`.** Both `BrowseLocations` and `WillOrb` import from there.
+- **Visual asset placeholder.** Placeholder orb (glowing CSS circle) ships as MVP. Asset swap is post-user-delivery.
+- **Canned prompts are static.** `CANNED_PROMPTS` is a compile-time constant in `willMatcher.ts`.
+
+## Out of Scope
+
+- **Multi-turn conversation.** Each submission is a fresh, independent match.
+- **Final visual assets.** Blocked on user delivery.
+- **NLP/AI matching.** Will uses deterministic keyword tables only. No probabilistic or learned matching.
+- **Array-column filtering via Will.** Will cannot filter by magic restrictions, class restrictions, physical access, etc.
+- **Will on pages other than Browse Locations.**
+- **Saved Will sessions or history.**
+- **Multi-language support.**

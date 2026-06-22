@@ -19,7 +19,7 @@ import {
 } from '../../services/provider.service';
 import { BookingRepository } from '../../repositories/booking.repository';
 import { Difficulty } from '../../types';
-import { validateRequiredStrings } from '../../utils/validation';
+import { validateRequiredStrings, extractRulesetFields, validateRulesetFields } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
 const ACCEPTED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
@@ -181,17 +181,21 @@ router.post('/profile/picture', (req: Request, res: Response, next: NextFunction
 router.post('/locations', async (req: Request, res: Response, next: NextFunction) => {
   const validationError = validateRequiredStrings(req.body, ['name', 'difficulty', 'cancellation_policy']);
   if (validationError) { res.status(400).json({ error: validationError }); return; }
-  const b = req.body as Record<string, string | undefined>;
+  const b = req.body as Record<string, unknown>;
   if (!VALID_DIFFICULTIES.includes(b.difficulty as Difficulty)) {
     res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
     return;
   }
+  const rulesetFields = extractRulesetFields(b);
+  const rulesetError = validateRulesetFields(rulesetFields);
+  if (rulesetError) { res.status(400).json({ error: rulesetError }); return; }
   try {
     const location = await providerService.createLocation(getUser(req).sub, {
       name: b.name as string,
-      description: b.description,
+      description: b.description as string | undefined,
       difficulty: b.difficulty as Difficulty,
       cancellation_policy: b.cancellation_policy as string,
+      ...rulesetFields,
     });
     res.status(201).json(location);
   } catch (err) {
@@ -226,7 +230,7 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
     res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
     return;
   }
-  const updates: { name?: string; description?: string; difficulty?: Difficulty; cancellation_policy?: string } = {};
+  const updates: Record<string, unknown> = {};
   if (b.name !== undefined) {
     if (typeof b.name !== 'string') { res.status(400).json({ error: 'name must be a string' }); return; }
     updates.name = b.name;
@@ -240,8 +244,12 @@ router.patch('/locations/:id', async (req: Request, res: Response, next: NextFun
     if (typeof b.cancellation_policy !== 'string') { res.status(400).json({ error: 'cancellation_policy must be a string' }); return; }
     updates.cancellation_policy = b.cancellation_policy;
   }
+  const rulesetFields = extractRulesetFields(b);
+  const rulesetError = validateRulesetFields(rulesetFields);
+  if (rulesetError) { res.status(400).json({ error: rulesetError }); return; }
+  Object.assign(updates, rulesetFields);
   try {
-    const location = await providerService.updateLocation(getUser(req).sub, req.params.id, updates);
+    const location = await providerService.updateLocation(getUser(req).sub, req.params.id, updates as import('../../services/provider.service').UpdateLocationInput);
     res.json(location);
   } catch (err) {
     handleProviderError(err, res, next);

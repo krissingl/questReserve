@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseRepository } from '../infrastructure';
-import { BookingLocation, Difficulty } from '../types';
+import { BookingLocation, LocationFilters } from '../types';
 
 export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   constructor(knex: Knex) {
@@ -13,15 +13,43 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
     return row ?? null;
   }
 
-  async findAll(): Promise<BookingLocation[]> {
-    return this.knex<BookingLocation>('booking_location').select('*');
-  }
-
-  async list(difficulty?: Difficulty): Promise<BookingLocation[]> {
+  async findAll(filters: LocationFilters = {}): Promise<BookingLocation[]> {
     const query = this.knex<BookingLocation>('booking_location').select('*');
-    if (difficulty) {
-      query.where('difficulty', difficulty);
+
+    if (filters.difficulties && filters.difficulties.length > 0) {
+      query = query.whereIn('difficulty', filters.difficulties);
     }
+    if (filters.levelRangeMin !== undefined) {
+      query = query.where('level_range_max', '>=', filters.levelRangeMin);
+    }
+    if (filters.levelRangeMax !== undefined) {
+      query = query.where('level_range_min', '<=', filters.levelRangeMax);
+    }
+    if (filters.runTimeMax !== undefined) {
+      query = query.where('run_time_minutes', '<=', filters.runTimeMax);
+    }
+    if (filters.setting) {
+      query = query.where('setting', filters.setting);
+    }
+    if (filters.landscapeType) {
+      query = query.where('landscape_type', filters.landscapeType);
+    }
+    if (filters.toneTags && filters.toneTags.length > 0) {
+      query = query.whereRaw('tone_tags && ?::text[]', [filters.toneTags]);
+    }
+    if (filters.partySizeMin !== undefined) {
+      query = query.where('party_size_max', '>=', filters.partySizeMin);
+    }
+    if (filters.partySizeMax !== undefined) {
+      query = query.where('party_size_min', '<=', filters.partySizeMax);
+    }
+    if (filters.primaryFocusMin !== undefined) {
+      query = query.where('primary_focus', '>=', filters.primaryFocusMin);
+    }
+    if (filters.primaryFocusMax !== undefined) {
+      query = query.where('primary_focus', '<=', filters.primaryFocusMax);
+    }
+
     return query;
   }
 

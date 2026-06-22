@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { LocationForm } from '@/components/LocationForm/LocationForm'
+import { LocationSurvey, type SurveyState } from '@/components/LocationSurvey/LocationSurvey'
 import { createLocation } from '@/api/provider.api'
-import type { LocationFormValues } from '@/components/LocationForm/LocationForm'
+import type { CreateLocationPayload } from '@/api/provider.api'
 
 const MAX_GALLERY_IMAGES = 15
 
@@ -180,19 +180,34 @@ function NewGallerySection() {
 export function ProviderLocationNew() {
   const navigate = useNavigate()
   const [apiError, setApiError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [surveyState, setSurveyState] = useState<SurveyState>({})
 
-  async function handleSubmit(values: LocationFormValues) {
+  function handleChange(updates: Partial<SurveyState>) {
+    setSurveyState((prev) => ({ ...prev, ...updates }))
+  }
+
+  async function handleSubmit() {
+    if (!surveyState.name?.trim() || !surveyState.difficulty) {
+      setApiError('Name and Difficulty are required. Please complete Step 1.')
+      return
+    }
     setApiError(null)
+    setIsSubmitting(true)
     try {
-      const location = await createLocation({
-        name: values.name,
-        description: values.description || undefined,
-        difficulty: values.difficulty,
-        cancellation_policy: values.cancellation_policy,
-      })
+      const payload: CreateLocationPayload = {
+        ...surveyState,
+        name: surveyState.name.trim(),
+        description: surveyState.description || undefined,
+        difficulty: surveyState.difficulty,
+        cancellation_policy: surveyState.cancellation_policy ?? '',
+      }
+      const location = await createLocation(payload)
       navigate(`/provider/locations/${location.id}`)
     } catch (err: unknown) {
       setApiError(err instanceof Error ? err.message : 'Failed to create adventure. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -232,21 +247,13 @@ export function ProviderLocationNew() {
           marginBottom: '1.5rem',
         }}
       >
-        <h2
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '1rem',
-            fontWeight: 'var(--weight-semibold)',
-            color: 'rgb(var(--foreground))',
-            marginBottom: '1.25rem',
-          }}
-        >
-          Adventure Details
-        </h2>
-        <LocationForm
+        <LocationSurvey
+          formState={surveyState}
+          onChange={handleChange}
           onSubmit={handleSubmit}
-          submitLabel="Create Adventure"
+          submitLabel="Publish Location"
           apiError={apiError}
+          isSubmitting={isSubmitting}
         />
       </div>
 

@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useMyLocation } from '@/hooks/useMyLocation'
 import { TimeSlotManager } from '@/components/TimeSlotManager/TimeSlotManager'
 import { ReviewList, StarDisplay } from '@/components/ReviewList/ReviewList'
+import { RulesetDisplay } from '@/components/RulesetDisplay/RulesetDisplay'
 import { getReviews } from '@/api/guest.api'
 import { DIFFICULTY_COLOURS } from '@/constants/difficulty'
 
@@ -72,6 +73,7 @@ export function ProviderLocationDetail() {
         </Link>
       </div>
 
+      {/* Header card */}
       <div
         style={{
           padding: '1.5rem',
@@ -105,10 +107,11 @@ export function ProviderLocationDetail() {
             <span
               style={{
                 display: 'inline-block',
-                padding: '0.15rem 0.6rem',
-                borderRadius: 'var(--radius-pill)',
-                fontSize: '0.7rem',
-                fontWeight: 'var(--weight-medium)',
+                padding: '0.2rem 0.65rem',
+                borderRadius: 'var(--radius)',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 'var(--weight-bold)',
+                letterSpacing: '0.04em',
                 backgroundColor: DIFFICULTY_COLOURS[location.difficulty],
                 color: 'rgb(var(--primary-foreground, 255 255 255))',
               }}
@@ -155,17 +158,18 @@ export function ProviderLocationDetail() {
 
         {location.description && (
           <div style={{ marginBottom: '1.25rem' }}>
-            <h2
+            <p
               style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1rem',
-                fontWeight: 'var(--weight-semibold)',
-                color: 'rgb(var(--foreground))',
-                marginBottom: '0.5rem',
+                fontSize: '0.7rem',
+                fontWeight: 'var(--weight-bold)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
+                color: 'rgb(var(--muted-foreground))',
+                marginBottom: '0.4rem',
               }}
             >
               Description
-            </h2>
+            </p>
             <p
               style={{
                 fontSize: 'var(--text-sm)',
@@ -179,17 +183,18 @@ export function ProviderLocationDetail() {
         )}
 
         <div>
-          <h2
+          <p
             style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '1rem',
-              fontWeight: 'var(--weight-semibold)',
-              color: 'rgb(var(--foreground))',
-              marginBottom: '0.5rem',
+              fontSize: '0.7rem',
+              fontWeight: 'var(--weight-bold)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.07em',
+              color: 'rgb(var(--muted-foreground))',
+              marginBottom: '0.4rem',
             }}
           >
             Cancellation Policy
-          </h2>
+          </p>
           <p
             style={{
               fontSize: 'var(--text-sm)',
@@ -202,8 +207,35 @@ export function ProviderLocationDetail() {
         </div>
       </div>
 
+      {/* Ruleset card */}
+      <div
+        style={{
+          padding: '1.5rem',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'rgb(var(--card))',
+          boxShadow: 'var(--shadow-card)',
+          marginBottom: '1.5rem',
+        }}
+      >
+        <h2
+          style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1rem',
+            fontWeight: 'var(--weight-bold)',
+            color: 'rgb(var(--foreground))',
+            marginBottom: '1rem',
+            paddingBottom: '0.5rem',
+            borderBottom: '2px solid rgb(var(--accent) / 0.3)',
+          }}
+        >
+          Adventure Details
+        </h2>
+        <RulesetDisplay location={location} emptyState={{ editPath: `/provider/locations/${id}/edit` }} />
+      </div>
+
       <TimeSlotManager locationId={id} />
 
+      {/* Reviews accordion */}
       <div
         style={{
           marginTop: '1.5rem',

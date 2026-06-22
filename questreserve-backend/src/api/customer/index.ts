@@ -17,8 +17,8 @@ import {
   BookingAlreadyCancelledError,
   LocationNotFoundError,
 } from '../../services/customer.service';
-import { Booking, Difficulty } from '../../types';
-import { validateRequiredStrings } from '../../utils/validation';
+import { Booking, Difficulty, LandscapeType, LocationSetting, ToneTag } from '../../types';
+import { validateRequiredStrings, parsePositiveInt, parseSignedInt } from '../../utils/validation';
 import { UnauthenticatedError } from '../../utils/errors';
 
 const PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? 'http://localhost:3001';
@@ -34,6 +34,9 @@ const bookingRepo = new BookingRepository(db);
 const customerService = new CustomerService(locationRepo, locationImagesRepo, slotRepo, bookingRepo);
 
 const VALID_DIFFICULTIES: Difficulty[] = ['EASY', 'MEDIUM', 'HARD', 'LEGENDARY'];
+const VALID_SETTINGS: LocationSetting[] = ['interior', 'exterior'];
+const VALID_LANDSCAPE_TYPES: LandscapeType[] = ['tundra', 'forest', 'desert', 'cave', 'coastal', 'volcanic', 'urban', 'plains', 'mountain', 'swamp'];
+const VALID_TONE_TAGS: ToneTag[] = ['horror', 'heroic', 'comedic', 'mystery', 'political'];
 
 function getUser(req: Request): NonNullable<Request['user']> {
   if (!req.user) throw new UnauthenticatedError();
@@ -61,15 +64,79 @@ function handleCustomerError(err: unknown, res: Response, next: NextFunction): v
 }
 
 publicRouter.get('/locations', async (req: Request, res: Response, next: NextFunction) => {
-  const { difficulty } = req.query;
-  if (difficulty !== undefined) {
-    if (typeof difficulty !== 'string' || !VALID_DIFFICULTIES.includes(difficulty as Difficulty)) {
-      res.status(400).json({ error: `difficulty must be one of: ${VALID_DIFFICULTIES.join(', ')}` });
+  const q = req.query as Record<string, string | undefined>;
+
+  let parsedDifficulties: Difficulty[] | undefined;
+  if (q.difficulties !== undefined) {
+    const parts = q.difficulties.split(',').map((s) => s.trim());
+    const invalid = parts.filter((p) => !VALID_DIFFICULTIES.includes(p as Difficulty));
+    if (invalid.length > 0) {
+      res.status(400).json({ error: `difficulties contains invalid values: ${invalid.join(', ')}` });
+      return;
+    }
+    parsedDifficulties = parts as Difficulty[];
+  }
+
+  if (q.setting !== undefined) {
+    if (!VALID_SETTINGS.includes(q.setting as LocationSetting)) {
+      res.status(400).json({ error: `setting must be one of: ${VALID_SETTINGS.join(', ')}` });
       return;
     }
   }
+
+  if (q.landscapeType !== undefined) {
+    if (!VALID_LANDSCAPE_TYPES.includes(q.landscapeType as LandscapeType)) {
+      res.status(400).json({ error: `landscapeType must be one of: ${VALID_LANDSCAPE_TYPES.join(', ')}` });
+      return;
+    }
+  }
+
+  let parsedToneTags: ToneTag[] | undefined;
+  if (q.toneTags !== undefined) {
+    const parts = q.toneTags.split(',').map((s) => s.trim());
+    const invalid = parts.filter((p) => !VALID_TONE_TAGS.includes(p as ToneTag));
+    if (invalid.length > 0) {
+      res.status(400).json({ error: `toneTags contains invalid values: ${invalid.join(', ')}` });
+      return;
+    }
+    parsedToneTags = parts as ToneTag[];
+  }
+
+  const levelRangeMinResult = parsePositiveInt(q.levelRangeMin, 'levelRangeMin');
+  if (levelRangeMinResult && !levelRangeMinResult.ok) { res.status(400).json({ error: levelRangeMinResult.error }); return; }
+
+  const levelRangeMaxResult = parsePositiveInt(q.levelRangeMax, 'levelRangeMax');
+  if (levelRangeMaxResult && !levelRangeMaxResult.ok) { res.status(400).json({ error: levelRangeMaxResult.error }); return; }
+
+  const runTimeMaxResult = parsePositiveInt(q.runTimeMax, 'runTimeMax');
+  if (runTimeMaxResult && !runTimeMaxResult.ok) { res.status(400).json({ error: runTimeMaxResult.error }); return; }
+
+  const partySizeMinResult = parsePositiveInt(q.partySizeMin, 'partySizeMin');
+  if (partySizeMinResult && !partySizeMinResult.ok) { res.status(400).json({ error: partySizeMinResult.error }); return; }
+
+  const partySizeMaxResult = parsePositiveInt(q.partySizeMax, 'partySizeMax');
+  if (partySizeMaxResult && !partySizeMaxResult.ok) { res.status(400).json({ error: partySizeMaxResult.error }); return; }
+
+  const primaryFocusMinResult = parseSignedInt(q.primaryFocusMin, 'primaryFocusMin');
+  if (primaryFocusMinResult && !primaryFocusMinResult.ok) { res.status(400).json({ error: primaryFocusMinResult.error }); return; }
+
+  const primaryFocusMaxResult = parseSignedInt(q.primaryFocusMax, 'primaryFocusMax');
+  if (primaryFocusMaxResult && !primaryFocusMaxResult.ok) { res.status(400).json({ error: primaryFocusMaxResult.error }); return; }
+
   try {
-    const locations = await customerService.browseLocations(difficulty as Difficulty | undefined);
+    const locations = await customerService.browseLocations({
+      difficulties: parsedDifficulties,
+      setting: q.setting as LocationSetting | undefined,
+      landscapeType: q.landscapeType as LandscapeType | undefined,
+      toneTags: parsedToneTags,
+      levelRangeMin: levelRangeMinResult ? levelRangeMinResult.value : undefined,
+      levelRangeMax: levelRangeMaxResult ? levelRangeMaxResult.value : undefined,
+      runTimeMax: runTimeMaxResult ? runTimeMaxResult.value : undefined,
+      partySizeMin: partySizeMinResult ? partySizeMinResult.value : undefined,
+      partySizeMax: partySizeMaxResult ? partySizeMaxResult.value : undefined,
+      primaryFocusMin: primaryFocusMinResult ? primaryFocusMinResult.value : undefined,
+      primaryFocusMax: primaryFocusMaxResult ? primaryFocusMaxResult.value : undefined,
+    });
     res.json(locations);
   } catch (err) {
     handleCustomerError(err, res, next);

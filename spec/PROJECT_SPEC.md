@@ -27,6 +27,7 @@ The platform serves three user types:
 - **BookingLocation** — A bookable dungeon experience owned by a Provider.
   Difficulty: `EASY`, `MEDIUM`, `HARD`, `LEGENDARY`.
   Has a name, description, and cancellation policy (plain text string).
+  Carries all ruleset metadata as direct columns (see extended definition below).
 
 - **TimeSlot** — A specific available window within a BookingLocation
   (`start_time`, `end_time`). Belongs to one BookingLocation.
@@ -40,8 +41,15 @@ The platform serves three user types:
   One review per reviewer per booking. Providers may review customers; customers
   may review providers or locations.
 
-- **BookingLocationRule** _(Post-MVP)_ — Dynamic rulesets attached to a
-  BookingLocation (party size limits, level requirements, cancellation policies).
+- **BookingLocation** (extended) — Ruleset metadata is stored as columns directly
+  on the `booking_location` table rather than a separate entity. Fields include:
+  party size limits, level range, landscape type, setting, environment and tone
+  tags, restrictions (magic, class, race, faction, party composition, physical
+  access), permission flags (mount, familiar, solo), booking type, gore level,
+  content flags (permadeath, PvP, boss encounter, non-lethal, scouting),
+  primary focus (integer −5 to +5, puzzle-to-combat scale), run/reset/time-limit
+  minutes, amenity flags (safe room, merchant, equipment, guide), loot type, and
+  loot flags (boss loot, unique item chance).
 
 ## Architecture
 
@@ -119,7 +127,7 @@ The platform serves three user types:
 - Admin aggregated analytics (regional demand)
 - Admin global configuration (fees, commissions, default policies)
 - Audit logs for critical actions
-- Dynamic BookingLocationRules (seasonal, special events)
+- Dynamic ruleset variants (seasonal, special events) — the static ruleset fields are already in place; dynamic per-event overrides remain Post-MVP
 - Refunds, deposits, and additional payment workflows
 
 ## API Contracts
@@ -145,7 +153,7 @@ Minimum MVP surface:
 
 - Multi-tenancy is IN scope — Provider data isolated by `provider_id`
 - Payment processing is Post-MVP until schema is defined
-- Full BookingLocationRule enforcement is Post-MVP
+- Dynamic BookingLocationRule enforcement (per-event overrides, seasonal rules) is Post-MVP; static ruleset fields are stored on BookingLocation and displayed in the UI
 - Marketing features are Post-MVP
 - Advanced analytics are Post-MVP
 - Automated tests encouraged but not required for Done status
