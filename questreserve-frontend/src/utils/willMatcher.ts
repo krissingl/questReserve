@@ -123,6 +123,38 @@ function extractRunTime(input: string): Pick<LocationFilters, 'runTimeMax'> {
   return {}
 }
 
+export interface CannedPrompt {
+  label: string
+  filters: Partial<LocationFilters>
+}
+
+export const CANNED_PROMPTS: CannedPrompt[] = [
+  {
+    label: 'A spooky cave for beginners',
+    filters: { landscapeType: 'cave', toneTags: ['horror'], difficulties: ['EASY'] },
+  },
+  {
+    label: 'Epic outdoor adventure for veterans',
+    filters: { setting: 'exterior', toneTags: ['heroic'], difficulties: ['HARD'], levelRangeMin: 10 },
+  },
+  {
+    label: 'Quick dungeon crawl, 1–4 players',
+    filters: { landscapeType: 'cave', setting: 'interior', runTimeMax: 90, partySizeMax: 4 },
+  },
+  {
+    label: 'Mystery and intrigue in the city',
+    filters: { landscapeType: 'urban', toneTags: ['mystery', 'political'] },
+  },
+  {
+    label: 'Brutal endgame raid',
+    filters: { difficulties: ['LEGENDARY'], levelRangeMin: 15 },
+  },
+  {
+    label: 'Light-hearted romp for all levels',
+    filters: { toneTags: ['comedic'], difficulties: ['EASY'] },
+  },
+]
+
 export function matchFilters(input: string): Partial<LocationFilters> {
   const lower = input.toLowerCase()
   const filters: Partial<LocationFilters> = {}
