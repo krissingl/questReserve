@@ -1,7 +1,6 @@
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { HeaderNav } from '@/components/HeaderNav/HeaderNav'
-import { SiteFooter } from '@/components/SiteFooter/SiteFooter'
+import { AdminSidebar } from '@/components/AdminSidebar/AdminSidebar'
 
 export function AdminLayout() {
   const { token, role, isLoading } = useAuth()
@@ -12,12 +11,11 @@ export function AdminLayout() {
   if (role !== 'admin') return <Navigate to={`/${role}`} replace />
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'rgb(var(--surface))' }}>
-      <HeaderNav />
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'rgb(var(--surface))' }}>
+      <AdminSidebar />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Outlet />
       </main>
-      <SiteFooter />
     </div>
   )
 }
