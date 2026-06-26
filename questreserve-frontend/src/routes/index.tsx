@@ -33,6 +33,7 @@ import { AdminLogin } from '@/pages/AdminLogin/AdminLogin'
 import { AdminProviders } from '@/pages/AdminProviders/AdminProviders'
 import { AdminProviderDetail } from '@/pages/AdminProviderDetail/AdminProviderDetail'
 import { AdminBookings } from '@/pages/AdminBookings/AdminBookings'
+import { AdminUsers } from '@/pages/AdminUsers/AdminUsers'
 
 export const router = createBrowserRouter([
   {
@@ -229,6 +230,10 @@ export const router = createBrowserRouter([
       {
         path: 'bookings',
         element: <AdminBookings />,
+      },
+      {
+        path: 'users',
+        element: <AdminUsers />,
       },
     ],
   },
