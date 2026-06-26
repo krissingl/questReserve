@@ -31,6 +31,7 @@ import { ProviderMessageThread } from '@/pages/ProviderMessageThread/ProviderMes
 import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
 import { AdminLogin } from '@/pages/AdminLogin/AdminLogin'
 import { AdminProviders } from '@/pages/AdminProviders/AdminProviders'
+import { AdminProviderDetail } from '@/pages/AdminProviderDetail/AdminProviderDetail'
 
 export const router = createBrowserRouter([
   {
@@ -219,6 +220,10 @@ export const router = createBrowserRouter([
       {
         path: 'providers',
         element: <AdminProviders />,
+      },
+      {
+        path: 'providers/:id',
+        element: <AdminProviderDetail />,
       },
     ],
   },
