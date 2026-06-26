@@ -8,7 +8,7 @@ export function AdminLayout() {
 
   if (isLoading) return null
 
-  if (!token || role === null) return <Navigate to="/login" replace />
+  if (!token || role === null) return <Navigate to="/admin/login" replace />
   if (role !== 'admin') return <Navigate to={`/${role}`} replace />
 
   return (

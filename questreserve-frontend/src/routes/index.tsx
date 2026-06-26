@@ -29,6 +29,7 @@ import { ProviderCustomerProfile } from '@/pages/ProviderCustomerProfile/Provide
 import { CustomerMessageThread } from '@/pages/CustomerMessageThread/CustomerMessageThread'
 import { ProviderMessageThread } from '@/pages/ProviderMessageThread/ProviderMessageThread'
 import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
+import { AdminLogin } from '@/pages/AdminLogin/AdminLogin'
 
 export const router = createBrowserRouter([
   {
@@ -195,6 +196,15 @@ export const router = createBrowserRouter([
         element: <ProviderMessageThread />,
       },
     ],
+  },
+  {
+    path: '/admin/login',
+    element: (
+      <AlreadyAuthRedirect pageRole="admin">
+        <AdminLogin />
+      </AlreadyAuthRedirect>
+    ),
+    errorElement: <RouteErrorPage />,
   },
   {
     path: '/admin',
