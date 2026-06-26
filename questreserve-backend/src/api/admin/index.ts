@@ -22,6 +22,22 @@ function handleAdminError(err: unknown, res: Response, next: NextFunction): void
 
 router.use(authenticate, requireRole('admin'));
 
+router.get('/me', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const row = await db('admin_user')
+      .select('id', 'first_name', 'last_name', 'email', 'role', 'created_at', 'updated_at')
+      .where({ id: req.user!.sub })
+      .first();
+    if (!row) {
+      res.status(404).json({ error: 'Admin user not found' });
+      return;
+    }
+    res.json(row);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/providers', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const providers = await adminService.listProviders();
