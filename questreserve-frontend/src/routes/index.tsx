@@ -32,6 +32,7 @@ import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
 import { AdminLogin } from '@/pages/AdminLogin/AdminLogin'
 import { AdminProviders } from '@/pages/AdminProviders/AdminProviders'
 import { AdminProviderDetail } from '@/pages/AdminProviderDetail/AdminProviderDetail'
+import { AdminBookings } from '@/pages/AdminBookings/AdminBookings'
 
 export const router = createBrowserRouter([
   {
@@ -224,6 +225,10 @@ export const router = createBrowserRouter([
       {
         path: 'providers/:id',
         element: <AdminProviderDetail />,
+      },
+      {
+        path: 'bookings',
+        element: <AdminBookings />,
       },
     ],
   },
