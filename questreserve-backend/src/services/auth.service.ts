@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import { Knex } from 'knex';
 import { signToken } from '../utils/jwt';
-import { AdminUser, EndUser, Provider, ProviderPlan } from '../types';
+import { AdminRole, AdminUser, EndUser, Provider, ProviderPlan } from '../types';
 
 const SALT_ROUNDS = 10;
 const DEFAULT_PROVIDER_PLAN: ProviderPlan = 'FREE';
@@ -28,6 +28,13 @@ export class SuspendedAccountError extends Error {
   }
 }
 
+export class ForbiddenError extends Error {
+  constructor() {
+    super('Insufficient permissions');
+    this.name = 'ForbiddenError';
+  }
+}
+
 export interface RegisterEndUserInput {
   first_name: string;
   last_name: string;
@@ -46,6 +53,20 @@ export interface RegisterProviderInput {
 export interface LoginInput {
   email: string;
   password: string;
+}
+
+export interface RegisterAdminInput {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  role: AdminRole;
+}
+
+export interface AdminCreateResult {
+  id: string;
+  email: string;
+  role: AdminRole;
 }
 
 export interface AuthResult {
@@ -124,5 +145,27 @@ export class AuthService {
     if (!valid) throw new InvalidCredentialsError();
 
     return { token: signToken({ sub: user.id, type: 'admin' }) };
+  }
+
+  async registerAdmin(callerId: string, input: RegisterAdminInput): Promise<AdminCreateResult> {
+    const caller = await this.knex<AdminUser>('admin_user').where({ id: callerId }).first();
+    if (!caller || caller.role !== 'SUPERUSER') throw new ForbiddenError();
+
+    const existing = await this.knex<AdminUser>('admin_user').where({ email: input.email }).first();
+    if (existing) throw new DuplicateAccountError();
+
+    const password_hash = await bcrypt.hash(input.password, SALT_ROUNDS);
+    const id = uuidv4();
+
+    await this.knex<AdminUser>('admin_user').insert({
+      id,
+      first_name: input.first_name,
+      last_name: input.last_name,
+      email: input.email,
+      password_hash,
+      role: input.role,
+    });
+
+    return { id, email: input.email, role: input.role };
   }
 }
