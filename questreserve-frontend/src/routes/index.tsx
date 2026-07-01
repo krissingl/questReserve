@@ -29,6 +29,11 @@ import { ProviderCustomerProfile } from '@/pages/ProviderCustomerProfile/Provide
 import { CustomerMessageThread } from '@/pages/CustomerMessageThread/CustomerMessageThread'
 import { ProviderMessageThread } from '@/pages/ProviderMessageThread/ProviderMessageThread'
 import { RouteErrorPage } from '@/pages/RouteErrorPage/RouteErrorPage'
+import { AdminLogin } from '@/pages/AdminLogin/AdminLogin'
+import { AdminProviders } from '@/pages/AdminProviders/AdminProviders'
+import { AdminProviderDetail } from '@/pages/AdminProviderDetail/AdminProviderDetail'
+import { AdminBookings } from '@/pages/AdminBookings/AdminBookings'
+import { AdminUsers } from '@/pages/AdminUsers/AdminUsers'
 
 export const router = createBrowserRouter([
   {
@@ -197,6 +202,15 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: '/admin/login',
+    element: (
+      <AlreadyAuthRedirect pageRole="admin">
+        <AdminLogin />
+      </AlreadyAuthRedirect>
+    ),
+    errorElement: <RouteErrorPage />,
+  },
+  {
     path: '/admin',
     element: <AdminLayout />,
     errorElement: <RouteErrorPage />,
@@ -204,6 +218,22 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <AdminHome />,
+      },
+      {
+        path: 'providers',
+        element: <AdminProviders />,
+      },
+      {
+        path: 'providers/:id',
+        element: <AdminProviderDetail />,
+      },
+      {
+        path: 'bookings',
+        element: <AdminBookings />,
+      },
+      {
+        path: 'users',
+        element: <AdminUsers />,
       },
     ],
   },

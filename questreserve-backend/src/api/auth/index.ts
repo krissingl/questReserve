@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import db from '../../db/db';
-import { AuthService, InvalidCredentialsError, DuplicateAccountError, SuspendedAccountError } from '../../services/auth.service';
+import { AuthService, InvalidCredentialsError, DuplicateAccountError, SuspendedAccountError, ForbiddenError } from '../../services/auth.service';
 import { authenticate, requireRole } from '../../middleware';
 import { BookingLocationRepository } from '../../repositories/booking-location.repository';
 import { BookingRepository } from '../../repositories/booking.repository';
@@ -38,6 +38,8 @@ function handleAuthError(err: unknown, res: Response, next: NextFunction): void 
   } else if (err instanceof InvalidCredentialsError) {
     res.status(401).json({ error: err.message });
   } else if (err instanceof SuspendedAccountError) {
+    res.status(403).json({ error: err.message });
+  } else if (err instanceof ForbiddenError) {
     res.status(403).json({ error: err.message });
   } else {
     next(err);
@@ -130,6 +132,39 @@ router.patch('/provider/password', authenticate, requireRole('provider'), async 
       res.status(401).json({ error: err.message }); return;
     }
     next(err);
+  }
+});
+
+const VALID_ADMIN_ROLES = ['PLATFORM_ADMIN', 'CLIENT_SUCCESS', 'SUPERUSER'] as const;
+
+router.post('/admin/register', authenticate, requireRole('admin'), async (req: Request, res: Response, next: NextFunction) => {
+  if (typeof req.body !== 'object' || req.body === null) {
+    res.status(400).json({ error: 'Request body must be a JSON object' }); return;
+  }
+  const b = req.body as Record<string, unknown>;
+  for (const field of ['first_name', 'last_name', 'email', 'password', 'role']) {
+    if (typeof b[field] !== 'string' || (b[field] as string).trim() === '') {
+      res.status(400).json({ error: `${field} is required` }); return;
+    }
+  }
+  const { first_name, last_name, email, password, role } = b as Record<string, string>;
+  if (!VALID_ADMIN_ROLES.includes(role as typeof VALID_ADMIN_ROLES[number])) {
+    res.status(400).json({ error: `role must be one of: ${VALID_ADMIN_ROLES.join(', ')}` }); return;
+  }
+  if (password.length < 8) {
+    res.status(400).json({ error: 'password must be at least 8 characters' }); return;
+  }
+  if (password.length > 72) {
+    res.status(400).json({ error: 'password must not exceed 72 characters' }); return;
+  }
+  try {
+    const result = await authService.registerAdmin(req.user!.sub, {
+      first_name, last_name, email, password,
+      role: role as typeof VALID_ADMIN_ROLES[number],
+    });
+    res.status(201).json(result);
+  } catch (err) {
+    handleAuthError(err, res, next);
   }
 });
 
