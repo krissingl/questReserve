@@ -1,13 +1,40 @@
 import { Knex } from 'knex';
-import { AdminBookingView, Provider, ProviderStatus } from '../types';
+import { AdminBookingView, AdminRole, AdminUser, Provider, ProviderPlan, ProviderStatus } from '../types';
 import { ProviderRepository } from '../repositories/provider.repository';
 
 type SafeProvider = Omit<Provider, 'password_hash'>;
+type SafeAdminUser = Omit<AdminUser, 'password_hash'>;
+
+export interface UpdateAdminUserInput {
+  role?: AdminRole;
+  is_active?: boolean;
+}
 
 export class ProviderNotFoundError extends Error {
   constructor() {
     super('Provider not found');
     this.name = 'ProviderNotFoundError';
+  }
+}
+
+export class AdminUserNotFoundError extends Error {
+  constructor() {
+    super('Admin user not found');
+    this.name = 'AdminUserNotFoundError';
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor() {
+    super('Insufficient permissions');
+    this.name = 'ForbiddenError';
+  }
+}
+
+export class SelfDeactivationError extends Error {
+  constructor() {
+    super('You cannot deactivate your own account');
+    this.name = 'SelfDeactivationError';
   }
 }
 
@@ -34,6 +61,43 @@ export class AdminService {
     if (!updated) throw new ProviderNotFoundError();
     const { password_hash: _ph, ...safe } = updated;
     return safe;
+  }
+
+  async setProviderPlan(providerId: string, plan: ProviderPlan): Promise<SafeProvider> {
+    const updated = await this.providerRepo.update(providerId, { plan });
+    if (!updated) throw new ProviderNotFoundError();
+    const { password_hash: _ph, ...safe } = updated;
+    return safe;
+  }
+
+  async listAdminUsers(callerId: string): Promise<SafeAdminUser[]> {
+    await this.requireSuperuser(callerId);
+    return this.knex<AdminUser>('admin_user')
+      .select('id', 'first_name', 'last_name', 'email', 'role', 'is_active', 'created_at', 'updated_at')
+      .orderBy('created_at', 'asc');
+  }
+
+  async updateAdminUser(
+    callerId: string,
+    targetId: string,
+    data: UpdateAdminUserInput
+  ): Promise<SafeAdminUser> {
+    await this.requireSuperuser(callerId);
+    if (targetId === callerId && data.is_active === false) {
+      throw new SelfDeactivationError();
+    }
+    const [updated] = await this.knex<AdminUser>('admin_user')
+      .where({ id: targetId })
+      .update({ ...data, updated_at: new Date() })
+      .returning('*');
+    if (!updated) throw new AdminUserNotFoundError();
+    const { password_hash: _ph, ...safe } = updated;
+    return safe;
+  }
+
+  private async requireSuperuser(callerId: string): Promise<void> {
+    const caller = await this.knex<AdminUser>('admin_user').where({ id: callerId }).first();
+    if (!caller || caller.role !== 'SUPERUSER') throw new ForbiddenError();
   }
 
   async getPlatformBookings(): Promise<AdminBookingView[]> {

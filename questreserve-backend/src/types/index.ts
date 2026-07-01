@@ -12,6 +12,7 @@ export interface AdminUser {
   email: string;
   password_hash: string;
   role: AdminRole;
+  is_active: boolean;
   created_at: Date;
   updated_at: Date;
 }

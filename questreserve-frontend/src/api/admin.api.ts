@@ -15,6 +15,22 @@ export interface AdminProfile {
   updated_at: string
 }
 
+export interface AdminUserView {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  role: AdminRole
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface UpdateAdminUserInput {
+  role?: AdminRole
+  is_active?: boolean
+}
+
 export interface AdminProvider {
   id: string
   first_name: string
@@ -72,6 +88,11 @@ export async function setProviderStatus(id: string, status: 'ACTIVE' | 'SUSPENDE
   return response.data
 }
 
+export async function setProviderPlan(id: string, plan: ProviderPlan): Promise<AdminProvider> {
+  const response = await apiClient.patch<AdminProvider>(`/admin/providers/${id}/plan`, { plan })
+  return response.data
+}
+
 export async function getPlatformBookings(): Promise<AdminBookingView[]> {
   const response = await apiClient.get<AdminBookingView[]>('/admin/bookings')
   return response.data
@@ -79,4 +100,14 @@ export async function getPlatformBookings(): Promise<AdminBookingView[]> {
 
 export async function registerAdminUser(input: RegisterAdminInput): Promise<void> {
   await apiClient.post('/auth/admin/register', input)
+}
+
+export async function listAdminUsers(): Promise<AdminUserView[]> {
+  const response = await apiClient.get<AdminUserView[]>('/admin/users')
+  return response.data
+}
+
+export async function updateAdminUser(id: string, input: UpdateAdminUserInput): Promise<AdminUserView> {
+  const response = await apiClient.patch<AdminUserView>(`/admin/users/${id}`, input)
+  return response.data
 }

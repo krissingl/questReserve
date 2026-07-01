@@ -65,6 +65,7 @@ const adminUser: AdminUser = {
   email: 'admin@test.local',
   password_hash: 'hashed',
   role: 'PLATFORM_ADMIN',
+  is_active: true,
   created_at: new Date(),
   updated_at: new Date(),
 };

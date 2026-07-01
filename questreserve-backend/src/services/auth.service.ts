@@ -144,6 +144,8 @@ export class AuthService {
     const valid = await bcrypt.compare(input.password, user.password_hash);
     if (!valid) throw new InvalidCredentialsError();
 
+    if (!user.is_active) throw new SuspendedAccountError();
+
     return { token: signToken({ sub: user.id, type: 'admin' }) };
   }
 
