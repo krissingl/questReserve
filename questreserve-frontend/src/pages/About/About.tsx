@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export function About() {
   return (
     <div className="p-8" style={{ backgroundColor: 'rgb(var(--background))' }}>
@@ -17,6 +19,13 @@ export function About() {
         </p>
         <p className="mt-3 text-sm" style={{ color: 'rgb(var(--muted-foreground))' }}>
           More information about our team, mission, and partners is coming soon.
+        </p>
+        <p className="mt-6 text-xs" style={{ color: 'rgb(var(--muted-foreground))' }}>
+          Wizards, your tower awaits —{' '}
+          <Link to="/admin/login" style={{ color: 'rgb(var(--muted-foreground))', textDecoration: 'underline' }}>
+            log in here
+          </Link>
+          .
         </p>
       </div>
     </div>
