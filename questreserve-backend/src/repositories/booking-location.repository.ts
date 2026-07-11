@@ -14,7 +14,7 @@ export class BookingLocationRepository extends BaseRepository<BookingLocation> {
   }
 
   async findAll(filters: LocationFilters = {}): Promise<BookingLocation[]> {
-    const query = this.knex<BookingLocation>('booking_location').select('*');
+    let query = this.knex<BookingLocation>('booking_location').select('*');
 
     if (filters.difficulties && filters.difficulties.length > 0) {
       query = query.whereIn('difficulty', filters.difficulties);
