@@ -43,13 +43,13 @@ QuestReserve is three tailored experiences on one platform. Each role sees only 
 The customer portal is a split-view browser: a scannable list on the left, a rich image gallery on the right.
 
 <p align="center">
-  <a href="assets/readmePics/3.jpg" target="_blank"><img src="assets/readmePics/3.jpg" alt="Browse Adventures split view" width="880" /></a>
+  <img src="assets/readmePics/3.jpg" alt="Browse Adventures split view" width="880" />
 </p>
 
 **Meet Will — the natural-language quest finder.** Instead of fiddling with filter checkboxes, just *tell Will what you want*. Type "something spooky underground" or "an easy adventure for beginners" and Will translates your words into structured filters and reshapes the results in real time.
 
 <p align="center">
-  <a href="assets/readmePics/1.gif" target="_blank"><img src="assets/readmePics/1.gif" alt="Will natural-language quest finder demo" width="880" /></a>
+  <img src="assets/readmePics/1.gif" alt="Will natural-language quest finder demo" width="880" />
 </p>
 
 > <sub>Under the hood, Will is a client-side matcher that maps natural-language keywords to the same structured filter model the manual filter panel uses — no black box, no external API call. It's a fun front-end for a genuinely deep filtering system.</sub>
@@ -57,26 +57,26 @@ The customer portal is a split-view browser: a scannable list on the left, a ric
 Prefer the controls? The full filter panel supports multi-select difficulty and tone, party size, level range, run time, setting, landscape, and a puzzle-vs-combat focus scale.
 
 <p align="center">
-  <a href="assets/readmePics/5.jpg" target="_blank"><img src="assets/readmePics/5.jpg" alt="Filter panel" width="440" /></a>
-  <a href="assets/readmePics/4.jpg" target="_blank"><img src="assets/readmePics/4.jpg" alt="Location detail with ruleset" width="440" /></a>
+  <img src="assets/readmePics/5.jpg" alt="Filter panel" width="440" />
+  <img src="assets/readmePics/4.jpg" alt="Location detail with ruleset" width="440" />
 </p>
 
 Every location has a full detail page — ratings, its complete ruleset, and a gallery of the dungeon itself.
 
 <p align="center">
-  <a href="assets/readmePics/11.gif" target="_blank"><img src="assets/readmePics/11.gif" alt="Location image gallery" width="880" /></a>
+  <img src="assets/readmePics/11.gif" alt="Location image gallery" width="880" />
 </p>
 
 Booking a time slot is a clean, guarded flow that can't double-book…
 
 <p align="center">
-  <a href="assets/readmePics/2.gif" target="_blank"><img src="assets/readmePics/2.gif" alt="Booking a time slot" width="880" /></a>
+  <img src="assets/readmePics/2.gif" alt="Booking a time slot" width="880" />
 </p>
 
 …and after a raid, parties and providers can review each other and the location.
 
 <p align="center">
-  <a href="assets/readmePics/10.gif" target="_blank"><img src="assets/readmePics/10.gif" alt="Leaving a review" width="880" /></a>
+  <img src="assets/readmePics/10.gif" alt="Leaving a review" width="880" />
 </p>
 
 ### For Providers — run your dungeon
@@ -84,13 +84,13 @@ Booking a time slot is a clean, guarded flow that can't double-book…
 Dungeon owners get a dashboard to manage their listings, availability, and bookings.
 
 <p align="center">
-  <a href="assets/readmePics/6.jpg" target="_blank"><img src="assets/readmePics/6.jpg" alt="Provider dashboard" width="880" /></a>
+  <img src="assets/readmePics/6.jpg" alt="Provider dashboard" width="880" />
 </p>
 
 Creating a location means filling out that deep ruleset — party limits, level range, tone, gore level, the puzzle↔combat slider, permission flags, loot tables, and more. This is where the domain modeling shows.
 
 <p align="center">
-  <a href="assets/readmePics/7.gif" target="_blank"><img src="assets/readmePics/7.gif" alt="Provider location ruleset form" width="880" /></a>
+  <img src="assets/readmePics/7.gif" alt="Provider location ruleset form" width="880" />
 </p>
 
 ### For Platform Admins — oversee the network
@@ -98,13 +98,13 @@ Creating a location means filling out that deep ruleset — party limits, level 
 WizardsTowerCorp staff get a back office to manage providers, monitor platform-wide activity, and administer users — with role-gated capabilities (only a `SUPERUSER` can onboard new admins).
 
 <p align="center">
-  <a href="assets/readmePics/8.jpg" target="_blank"><img src="assets/readmePics/8.jpg" alt="Admin dashboard" width="880" /></a>
+  <img src="assets/readmePics/8.jpg" alt="Admin dashboard" width="880" />
 </p>
 
 The provider and booking tables support live column sorting and search.
 
 <p align="center">
-  <a href="assets/readmePics/9.gif" target="_blank"><img src="assets/readmePics/9.gif" alt="Admin table sorting and search" width="880" /></a>
+  <img src="assets/readmePics/9.gif" alt="Admin table sorting and search" width="880" />
 </p>
 
 ### Messaging across roles
@@ -112,7 +112,7 @@ The provider and booking tables support live column sorting and search.
 Providers and customers can hold threaded conversations tied to their bookings.
 
 <p align="center">
-  <a href="assets/readmePics/13.jpg" target="_blank"><img src="assets/readmePics/13.jpg" alt="Messaging thread" width="880" /></a>
+  <img src="assets/readmePics/13.jpg" alt="Messaging thread" width="880" />
 </p>
 
 ---
