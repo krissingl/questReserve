@@ -207,7 +207,7 @@ export function WillOrb() {
                   borderRadius: 'var(--radius)',
                   border: '1px solid rgb(var(--border))',
                   backgroundColor: 'rgb(var(--input, var(--background)))',
-                  color: 'rgb(var(--foreground))',
+                  color: '#1a1a1a',
                   padding: '0.5rem',
                   fontSize: 'var(--text-sm)',
                   fontFamily: 'inherit',
